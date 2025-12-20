@@ -19,6 +19,9 @@ COPY . .
 # Build the application
 RUN yarn build
 
+# Copy admin build to expected location
+RUN mkdir -p ./public && cp -r ./.medusa/server/public/admin ./public/admin
+
 # Expose port
 EXPOSE 9000
 
