@@ -1,9 +1,0 @@
-# Override default yarn install to skip cache check
-[phases.install]
-cmds = ["yarn install"]
-
-[phases.build]
-cmds = ["yarn run build"]
-
-[start]
-cmd = "yarn run start"

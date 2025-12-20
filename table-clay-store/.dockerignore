@@ -1,0 +1,37 @@
+# Dependencies
+node_modules
+
+# Build outputs
+.medusa
+dist
+
+# Development files
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# Tests
+integration-tests
+*.spec.ts
+*.test.ts
+
+# Documentation
+README.md
+*.md
+
+# Deprecated config files
+nixpacks.toml
