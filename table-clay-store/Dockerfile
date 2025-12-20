@@ -23,8 +23,8 @@ RUN yarn build
 EXPOSE 9000
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:9000/health || exit 1
 
-# Start Medusa
-CMD ["yarn", "start"]
+# Run migrations then start server
+CMD ["sh", "-c", "yarn medusa db:migrate && yarn medusa start"]
