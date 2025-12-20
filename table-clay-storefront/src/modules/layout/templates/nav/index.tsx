@@ -1,4 +1,5 @@
 import { Suspense } from "react"
+import Image from "next/image"
 
 import { listRegions } from "@lib/data/regions"
 import { listLocales } from "@lib/data/locales"
@@ -17,28 +18,62 @@ export default async function Nav() {
 
   return (
     <div className="sticky top-0 inset-x-0 z-50 group">
-      <header className="relative h-16 mx-auto border-b duration-200 bg-white border-ui-border-base">
-        <nav className="content-container txt-xsmall-plus text-ui-fg-subtle flex items-center justify-between w-full h-full text-small-regular">
-          <div className="flex-1 basis-0 h-full flex items-center">
-            <div className="h-full">
-              <SideMenu regions={regions} locales={locales} currentLocale={currentLocale} />
-            </div>
+      <header className="relative h-20 mx-auto border-b duration-200 bg-cream-100 border-cream-300">
+        <nav className="content-container flex items-center justify-between w-full h-full">
+          {/* Mobile menu (left side on mobile) */}
+          <div className="flex-1 basis-0 h-full flex items-center small:hidden">
+            <SideMenu regions={regions} locales={locales} currentLocale={currentLocale} />
           </div>
 
-          <div className="flex items-center h-full">
+          {/* Desktop navigation links (left side) */}
+          <div className="hidden small:flex items-center gap-x-8 h-full flex-1 basis-0">
             <LocalizedClientLink
-              href="/"
-              className="txt-compact-xlarge-plus hover:text-ui-fg-base uppercase"
-              data-testid="nav-store-link"
+              href="/store"
+              className="text-stone-600 hover:text-brand-600 uppercase text-sm tracking-wider font-medium transition-colors"
+              data-testid="nav-shop-link"
             >
-              Medusa Store
+              Shop
+            </LocalizedClientLink>
+            <LocalizedClientLink
+              href="/about"
+              className="text-stone-600 hover:text-brand-600 uppercase text-sm tracking-wider font-medium transition-colors"
+            >
+              About
+            </LocalizedClientLink>
+            <LocalizedClientLink
+              href="/shipping"
+              className="text-stone-600 hover:text-brand-600 uppercase text-sm tracking-wider font-medium transition-colors"
+            >
+              Shipping
             </LocalizedClientLink>
           </div>
 
+          {/* Logo (center) */}
+          <div className="flex items-center h-full">
+            <LocalizedClientLink
+              href="/"
+              className="flex items-center gap-3 hover:opacity-90 transition-opacity"
+              data-testid="nav-store-link"
+            >
+              <Image
+                src="/images/logo/logo-badge.jpg"
+                alt="Table Clay - Handmade Pottery"
+                width={56}
+                height={56}
+                className="rounded-full"
+                priority
+              />
+              <span className="hidden medium:block font-display text-2xl text-stone-800">
+                table clay
+              </span>
+            </LocalizedClientLink>
+          </div>
+
+          {/* Right side: Account & Cart */}
           <div className="flex items-center gap-x-6 h-full flex-1 basis-0 justify-end">
             <div className="hidden small:flex items-center gap-x-6 h-full">
               <LocalizedClientLink
-                className="hover:text-ui-fg-base"
+                className="text-stone-600 hover:text-brand-600 uppercase text-sm tracking-wider font-medium transition-colors"
                 href="/account"
                 data-testid="nav-account-link"
               >
@@ -48,7 +83,7 @@ export default async function Nav() {
             <Suspense
               fallback={
                 <LocalizedClientLink
-                  className="hover:text-ui-fg-base flex gap-2"
+                  className="text-stone-600 hover:text-brand-600 flex gap-2 uppercase text-sm tracking-wider font-medium transition-colors"
                   href="/cart"
                   data-testid="nav-cart-link"
                 >

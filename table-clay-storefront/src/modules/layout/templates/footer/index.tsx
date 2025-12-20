@@ -1,155 +1,138 @@
 import { listCategories } from "@lib/data/categories"
-import { listCollections } from "@lib/data/collections"
-import { Text, clx } from "@medusajs/ui"
-
+import { Text } from "@medusajs/ui"
+import Image from "next/image"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
-import MedusaCTA from "@modules/layout/components/medusa-cta"
 
 export default async function Footer() {
-  const { collections } = await listCollections({
-    fields: "*products",
-  })
   const productCategories = await listCategories()
 
   return (
-    <footer className="border-t border-ui-border-base w-full">
+    <footer className="border-t border-cream-300 w-full bg-cream-100">
       <div className="content-container flex flex-col w-full">
-        <div className="flex flex-col gap-y-6 xsmall:flex-row items-start justify-between py-40">
-          <div>
+        <div className="flex flex-col gap-y-8 xsmall:flex-row items-start justify-between py-16">
+          {/* Logo and tagline */}
+          <div className="flex flex-col gap-4">
             <LocalizedClientLink
               href="/"
-              className="txt-compact-xlarge-plus text-ui-fg-subtle hover:text-ui-fg-base uppercase"
+              className="flex items-center gap-3"
             >
-              Medusa Store
+              <Image
+                src="/images/logo/logo-badge.jpg"
+                alt="Table Clay"
+                width={64}
+                height={64}
+                className="rounded-full"
+              />
             </LocalizedClientLink>
+            <p className="text-stone-500 text-sm max-w-xs">
+              Made by hand, made with care. Each piece of pottery is crafted with love in our studio.
+            </p>
           </div>
+
+          {/* Navigation links */}
           <div className="text-small-regular gap-10 md:gap-x-16 grid grid-cols-2 sm:grid-cols-3">
+            {/* Shop categories */}
             {productCategories && productCategories?.length > 0 && (
-              <div className="flex flex-col gap-y-2">
-                <span className="txt-small-plus txt-ui-fg-base">
-                  Categories
+              <div className="flex flex-col gap-y-3">
+                <span className="text-sm font-medium text-stone-800 uppercase tracking-wider">
+                  Shop
                 </span>
-                <ul
-                  className="grid grid-cols-1 gap-2"
-                  data-testid="footer-categories"
-                >
+                <ul className="grid grid-cols-1 gap-2" data-testid="footer-categories">
                   {productCategories?.slice(0, 6).map((c) => {
                     if (c.parent_category) {
-                      return
+                      return null
                     }
-
-                    const children =
-                      c.category_children?.map((child) => ({
-                        name: child.name,
-                        handle: child.handle,
-                        id: child.id,
-                      })) || null
-
                     return (
-                      <li
-                        className="flex flex-col gap-2 text-ui-fg-subtle txt-small"
-                        key={c.id}
-                      >
+                      <li key={c.id}>
                         <LocalizedClientLink
-                          className={clx(
-                            "hover:text-ui-fg-base",
-                            children && "txt-small-plus"
-                          )}
+                          className="text-stone-500 hover:text-brand-600 text-sm transition-colors"
                           href={`/categories/${c.handle}`}
                           data-testid="category-link"
                         >
                           {c.name}
                         </LocalizedClientLink>
-                        {children && (
-                          <ul className="grid grid-cols-1 ml-3 gap-2">
-                            {children &&
-                              children.map((child) => (
-                                <li key={child.id}>
-                                  <LocalizedClientLink
-                                    className="hover:text-ui-fg-base"
-                                    href={`/categories/${child.handle}`}
-                                    data-testid="category-link"
-                                  >
-                                    {child.name}
-                                  </LocalizedClientLink>
-                                </li>
-                              ))}
-                          </ul>
-                        )}
                       </li>
                     )
                   })}
+                  <li>
+                    <LocalizedClientLink
+                      className="text-stone-500 hover:text-brand-600 text-sm transition-colors"
+                      href="/store"
+                    >
+                      All Products
+                    </LocalizedClientLink>
+                  </li>
                 </ul>
               </div>
             )}
-            {collections && collections.length > 0 && (
-              <div className="flex flex-col gap-y-2">
-                <span className="txt-small-plus txt-ui-fg-base">
-                  Collections
-                </span>
-                <ul
-                  className={clx(
-                    "grid grid-cols-1 gap-2 text-ui-fg-subtle txt-small",
-                    {
-                      "grid-cols-2": (collections?.length || 0) > 3,
-                    }
-                  )}
-                >
-                  {collections?.slice(0, 6).map((c) => (
-                    <li key={c.id}>
-                      <LocalizedClientLink
-                        className="hover:text-ui-fg-base"
-                        href={`/collections/${c.handle}`}
-                      >
-                        {c.title}
-                      </LocalizedClientLink>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            <div className="flex flex-col gap-y-2">
-              <span className="txt-small-plus txt-ui-fg-base">Medusa</span>
-              <ul className="grid grid-cols-1 gap-y-2 text-ui-fg-subtle txt-small">
+
+            {/* About section */}
+            <div className="flex flex-col gap-y-3">
+              <span className="text-sm font-medium text-stone-800 uppercase tracking-wider">
+                About
+              </span>
+              <ul className="grid grid-cols-1 gap-y-2">
+                <li>
+                  <LocalizedClientLink
+                    className="text-stone-500 hover:text-brand-600 text-sm transition-colors"
+                    href="/about"
+                  >
+                    Our Story
+                  </LocalizedClientLink>
+                </li>
+                <li>
+                  <LocalizedClientLink
+                    className="text-stone-500 hover:text-brand-600 text-sm transition-colors"
+                    href="/care"
+                  >
+                    Care Guide
+                  </LocalizedClientLink>
+                </li>
+                <li>
+                  <LocalizedClientLink
+                    className="text-stone-500 hover:text-brand-600 text-sm transition-colors"
+                    href="/shipping"
+                  >
+                    Shipping & Returns
+                  </LocalizedClientLink>
+                </li>
+              </ul>
+            </div>
+
+            {/* Connect section */}
+            <div className="flex flex-col gap-y-3">
+              <span className="text-sm font-medium text-stone-800 uppercase tracking-wider">
+                Connect
+              </span>
+              <ul className="grid grid-cols-1 gap-y-2">
                 <li>
                   <a
-                    href="https://github.com/medusajs"
+                    href="https://instagram.com/tableclay"
                     target="_blank"
                     rel="noreferrer"
-                    className="hover:text-ui-fg-base"
+                    className="text-stone-500 hover:text-brand-600 text-sm transition-colors"
                   >
-                    GitHub
+                    Instagram
                   </a>
                 </li>
                 <li>
                   <a
-                    href="https://docs.medusajs.com"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="hover:text-ui-fg-base"
+                    href="mailto:hello@tableclay.com"
+                    className="text-stone-500 hover:text-brand-600 text-sm transition-colors"
                   >
-                    Documentation
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="https://github.com/medusajs/nextjs-starter-medusa"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="hover:text-ui-fg-base"
-                  >
-                    Source code
+                    Contact Us
                   </a>
                 </li>
               </ul>
             </div>
           </div>
         </div>
-        <div className="flex w-full mb-16 justify-between text-ui-fg-muted">
-          <Text className="txt-compact-small">
-            © {new Date().getFullYear()} Medusa Store. All rights reserved.
+
+        {/* Bottom bar */}
+        <div className="flex w-full py-6 justify-between items-center border-t border-cream-300">
+          <Text className="text-stone-400 text-xs">
+            © {new Date().getFullYear()} Table Clay. Made by hand, made with care.
           </Text>
-          <MedusaCTA />
         </div>
       </div>
     </footer>

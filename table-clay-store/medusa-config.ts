@@ -12,5 +12,14 @@ module.exports = defineConfig({
       jwtSecret: process.env.JWT_SECRET || "supersecret",
       cookieSecret: process.env.COOKIE_SECRET || "supersecret",
     }
-  }
+  },
+  // Stripe payment provider will be added once API keys are configured
+  // modules: [
+  //   {
+  //     resolve: "@medusajs/medusa/payment-stripe",
+  //     options: {
+  //       apiKey: process.env.STRIPE_API_KEY,
+  //     },
+  //   },
+  // ],
 })

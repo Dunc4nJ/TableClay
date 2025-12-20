@@ -21,6 +21,55 @@ module.exports = {
         padding: "padding-top padding-right padding-bottom padding-left",
       },
       colors: {
+        // Table Clay brand colors - soft sky blue, handmade feel
+        // Primary brand color matches the badge logo
+        brand: {
+          50: '#f0f7fa',   // Lightest blue (backgrounds)
+          100: '#e1eff5',  // Very light blue
+          200: '#c4dfeb',  // Light blue
+          300: '#a7cfe1',  // Soft blue
+          400: '#8abdd4',  // Medium blue
+          500: '#6daac7',  // PRIMARY - matches logo
+          600: '#5a9bba',  // Darker blue (hover)
+          700: '#4a8aa8',  // Dark blue
+          800: '#3a7896',  // Very dark blue
+          900: '#2a5a70',  // Near black blue
+        },
+        cream: {
+          50: '#fefefe',   // Pure white
+          100: '#fafaf8',  // Off-white
+          200: '#f5f5f3',  // Light cream (main bg)
+          300: '#eeede9',  // Cream
+          400: '#e5e3dd',  // Darker cream
+        },
+        stone: {
+          50: '#fafaf9',
+          100: '#f5f5f4',
+          200: '#e7e5e4',
+          300: '#d6d3d1',
+          400: '#a8a29e',
+          500: '#78716c',  // Neutral text
+          600: '#57534e',
+          700: '#44403c',
+          800: '#292524',
+          900: '#1c1917',
+        },
+        sky: {
+          // CloudLine Sky Blue (product variant)
+          100: '#e8f4f8',
+          200: '#d4e8ed',
+          300: '#b8d9e3',
+          400: '#8fc4d4',
+          500: '#5a8fa0',
+        },
+        sunset: {
+          // CloudLine Sunset Pink (product variant)
+          100: '#fdf0f0',
+          200: '#f5e1e1',
+          300: '#ecc8c8',
+          400: '#d4a5a5',
+          500: '#c17575',
+        },
         grey: {
           0: "#FFFFFF",
           5: "#F9FAFB",
@@ -59,8 +108,15 @@ module.exports = {
         "3xl": "2rem",
       },
       fontFamily: {
+        // Display font for headings - elegant, artisan feel
+        display: [
+          "var(--font-dm-serif)",
+          "Georgia",
+          "serif",
+        ],
+        // Body font - clean, readable
         sans: [
-          "Inter",
+          "var(--font-inter)",
           "-apple-system",
           "BlinkMacSystemFont",
           "Segoe UI",

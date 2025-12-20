@@ -1,33 +1,44 @@
-import { Github } from "@medusajs/icons"
-import { Button, Heading } from "@medusajs/ui"
+import Image from "next/image"
+import LocalizedClientLink from "@modules/common/components/localized-client-link"
 
 const Hero = () => {
   return (
-    <div className="h-[75vh] w-full border-b border-ui-border-base relative bg-ui-bg-subtle">
-      <div className="absolute inset-0 z-10 flex flex-col justify-center items-center text-center small:p-32 gap-6">
-        <span>
-          <Heading
-            level="h1"
-            className="text-3xl leading-10 text-ui-fg-base font-normal"
+    <div className="relative w-full h-[85vh] min-h-[600px]">
+      {/* Background Image */}
+      <Image
+        src="/images/hero/hero-mugs.png"
+        alt="Table Clay handcrafted ceramic mugs"
+        fill
+        className="object-cover object-center"
+        priority
+        quality={90}
+      />
+
+      {/* Overlay for better text readability */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/20 to-transparent" />
+
+      {/* Content */}
+      <div className="absolute inset-0 flex flex-col justify-end items-center text-center pb-20 px-6">
+        <div className="max-w-2xl">
+          {/* Tagline */}
+          <h1 className="font-display text-4xl small:text-5xl medium:text-6xl text-white mb-4 drop-shadow-lg">
+            Made by Hand, Made with Care
+          </h1>
+
+          {/* Subtitle */}
+          <p className="text-lg small:text-xl text-white/90 mb-8 font-light drop-shadow-md">
+            Discover our collection of handcrafted ceramic mugs, bowls, and more.
+            Each piece tells a story.
+          </p>
+
+          {/* CTA Button */}
+          <LocalizedClientLink
+            href="/store"
+            className="inline-block bg-brand-500 hover:bg-brand-600 text-white px-8 py-4 rounded-full uppercase text-sm tracking-wider font-medium transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5"
           >
-            Ecommerce Starter Template
-          </Heading>
-          <Heading
-            level="h2"
-            className="text-3xl leading-10 text-ui-fg-subtle font-normal"
-          >
-            Powered by Medusa and Next.js
-          </Heading>
-        </span>
-        <a
-          href="https://github.com/medusajs/nextjs-starter-medusa"
-          target="_blank"
-        >
-          <Button variant="secondary">
-            View on GitHub
-            <Github />
-          </Button>
-        </a>
+            Shop Now
+          </LocalizedClientLink>
+        </div>
       </div>
     </div>
   )
