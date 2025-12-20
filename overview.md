@@ -35,7 +35,7 @@ This project is a fully functional e-commerce platform built on **Medusa.js**, a
 │                      ▼                                           │
 │           ┌──────────────────────┐                               │
 │           │  PostgreSQL Database │                               │
-│           │   my-medusa-store    │                               │
+│           │   table-clay-store    │                               │
 │           └──────────────────────┘                               │
 │                                                                  │
 └─────────────────────────────────────────────────────────────────┘
@@ -47,7 +47,7 @@ This project is a fully functional e-commerce platform built on **Medusa.js**, a
 
 ```
 TableClay/
-├── my-medusa-store/           # Medusa Backend
+├── table-clay-store/           # Medusa Backend
 │   ├── medusa-config.ts       # Main configuration
 │   ├── src/
 │   │   ├── api/               # Custom API routes
@@ -56,7 +56,7 @@ TableClay/
 │   │   └── subscribers/       # Event subscribers
 │   └── package.json
 │
-├── my-medusa-store-storefront/ # Next.js Storefront
+├── table-clay-storefront/ # Next.js Storefront
 │   ├── src/
 │   │   ├── app/               # Next.js app router
 │   │   ├── modules/           # UI components
@@ -83,7 +83,7 @@ TableClay/
 ### Start the Medusa Backend
 
 ```bash
-cd my-medusa-store
+cd table-clay-store
 export PATH="/opt/homebrew/opt/postgresql@15/bin:$PATH"
 yarn dev
 ```
@@ -93,7 +93,7 @@ The backend runs at: **http://localhost:9000**
 ### Start the Storefront
 
 ```bash
-cd my-medusa-store-storefront
+cd table-clay-storefront
 npm run dev
 ```
 
@@ -124,14 +124,14 @@ Password: table.clay!
 ## Database
 
 - **Type:** PostgreSQL 15
-- **Database Name:** my-medusa-store
+- **Database Name:** table-clay-store
 - **Connection:** localhost:5432
 
 ### Accessing the Database
 
 ```bash
 export PATH="/opt/homebrew/opt/postgresql@15/bin:$PATH"
-psql my-medusa-store
+psql table-clay-store
 ```
 
 ---
@@ -151,13 +151,13 @@ The store is seeded with 4 demo products:
 
 ## Environment Variables
 
-### Medusa Backend (`my-medusa-store/.env`)
+### Medusa Backend (`table-clay-store/.env`)
 
 ```env
-DATABASE_URL=postgres://localhost/my-medusa-store
+DATABASE_URL=postgres://localhost/table-clay-store
 ```
 
-### Storefront (`my-medusa-store-storefront/.env.local`)
+### Storefront (`table-clay-storefront/.env.local`)
 
 ```env
 NEXT_PUBLIC_MEDUSA_BACKEND_URL=http://localhost:9000
@@ -182,7 +182,7 @@ Navigate to the Admin Dashboard and:
 To accept real payments:
 
 1. Get Stripe API keys from https://dashboard.stripe.com
-2. Add to `my-medusa-store/medusa-config.ts`:
+2. Add to `table-clay-store/medusa-config.ts`:
 
 ```typescript
 {
@@ -229,14 +229,14 @@ For production deployment:
 
 ```bash
 # Medusa Backend
-cd my-medusa-store
+cd table-clay-store
 yarn dev                    # Start development server
 yarn build                  # Build for production
 yarn medusa db:migrate      # Run database migrations
 yarn medusa user -e admin@example.com -p password  # Create admin user
 
 # Storefront
-cd my-medusa-store-storefront
+cd table-clay-storefront
 npm run dev                 # Start development server
 npm run build               # Build for production
 npm start                   # Start production server

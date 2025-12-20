@@ -13227,32 +13227,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"my-medusa-store@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "my-medusa-store@workspace:."
-  dependencies:
-    "@medusajs/admin-sdk": 2.12.3
-    "@medusajs/cli": 2.12.3
-    "@medusajs/framework": 2.12.3
-    "@medusajs/medusa": 2.12.3
-    "@medusajs/test-utils": 2.12.3
-    "@swc/core": ^1.7.28
-    "@swc/jest": ^0.2.36
-    "@types/jest": ^29.5.13
-    "@types/node": ^20.12.11
-    "@types/react": ^18.3.2
-    "@types/react-dom": ^18.2.25
-    jest: ^29.7.0
-    prop-types: ^15.8.1
-    react: ^18.3.1
-    react-dom: ^18.3.1
-    ts-node: ^10.9.2
-    typescript: ^5.6.2
-    vite: ^5.4.14
-    yalc: ^1.0.0-pre.53
-  languageName: unknown
-  linkType: soft
-
 "mz@npm:^2.7.0":
   version: 2.7.0
   resolution: "mz@npm:2.7.0"
@@ -15587,6 +15561,32 @@ __metadata:
   checksum: 6a47c1926e06395ead750905e103be388aeec8c9697f20b14bc3e1e86fcb4fc78e5033197afe6cc8bbed80f0a4ee1f184b0fa22eec7f4a767bdfd278683d52eb
   languageName: node
   linkType: hard
+
+"table-clay-store@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "table-clay-store@workspace:."
+  dependencies:
+    "@medusajs/admin-sdk": 2.12.3
+    "@medusajs/cli": 2.12.3
+    "@medusajs/framework": 2.12.3
+    "@medusajs/medusa": 2.12.3
+    "@medusajs/test-utils": 2.12.3
+    "@swc/core": ^1.7.28
+    "@swc/jest": ^0.2.36
+    "@types/jest": ^29.5.13
+    "@types/node": ^20.12.11
+    "@types/react": ^18.3.2
+    "@types/react-dom": ^18.2.25
+    jest: ^29.7.0
+    prop-types: ^15.8.1
+    react: ^18.3.1
+    react-dom: ^18.3.1
+    ts-node: ^10.9.2
+    typescript: ^5.6.2
+    vite: ^5.4.14
+    yalc: ^1.0.0-pre.53
+  languageName: unknown
+  linkType: soft
 
 "tailwind-merge@npm:^2.2.1":
   version: 2.6.0
