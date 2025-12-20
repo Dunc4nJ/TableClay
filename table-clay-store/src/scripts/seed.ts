@@ -148,13 +148,6 @@ export default async function seedDemoData({ container }: ExecArgs) {
   });
   const stockLocation = stockLocationResult[0];
 
-  await fulfillmentModuleService.updateFulfillmentProviders([
-    {
-      id: "manual_manual",
-      is_enabled: true,
-    },
-  ]);
-
   const fulfillmentSetResult =
     await fulfillmentModuleService.createFulfillmentSets({
       name: "Table Clay Shipping",
