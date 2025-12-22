@@ -290,6 +290,95 @@ psql table-clay-store        # Access database
 
 ---
 
+## Production Deployment
+
+### Live URLs
+
+| Service | URL |
+|---------|-----|
+| **Backend API** | https://tableclay-production.up.railway.app |
+| **Admin Dashboard** | https://tableclay-production.up.railway.app/app |
+| **Health Check** | https://tableclay-production.up.railway.app/health |
+| **Storefront** | https://table-clay-storefront.vercel.app (pending) |
+
+### Backend Deployment (Railway)
+
+The backend auto-deploys from the `develop` branch via GitHub integration.
+
+**Deployment Workflow:**
+1. Make changes to `table-clay-store/`
+2. Commit and push to `develop` branch
+3. Railway automatically triggers a build
+4. Monitor deployment status using Railway MCP
+
+**Monitor with Railway MCP:**
+```bash
+# Check deployment status (Claude Code will use these automatically)
+mcp__Railway__list-deployments    # List recent deployments
+mcp__Railway__get-logs            # View deploy/build logs
+mcp__Railway__list-services       # List all services
+```
+
+**Manual Railway CLI Commands:**
+```bash
+cd table-clay-store
+railway link                      # Link to Railway project (first time)
+railway logs                      # View live logs
+railway status                    # Check deployment status
+```
+
+**Pre-deployment Checklist:**
+- [ ] Test changes locally with `yarn dev`
+- [ ] Ensure `yarn build` succeeds
+- [ ] Check for TypeScript errors
+- [ ] Verify database migrations if schema changed
+
+### Frontend Deployment (Vercel)
+
+The storefront deploys to Vercel.
+
+**Environment Variables (Vercel Dashboard):**
+```env
+NEXT_PUBLIC_MEDUSA_BACKEND_URL=https://tableclay-production.up.railway.app
+NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=pk_...
+NEXT_PUBLIC_BASE_URL=https://tableclay.com
+NEXT_PUBLIC_DEFAULT_REGION=us
+NEXT_PUBLIC_STRIPE_KEY=pk_test_...
+```
+
+**Deploy Commands:**
+```bash
+cd table-clay-storefront
+vercel                           # Preview deployment
+vercel --prod                    # Production deployment
+vercel logs                      # View deployment logs
+```
+
+### Deployment Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                     Production Environment                       │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  ┌──────────────────┐         ┌──────────────────┐             │
+│  │  Vercel          │         │  Railway         │             │
+│  │  (Storefront)    │────────▶│  (Backend)       │             │
+│  │  Next.js SSR     │         │  Medusa.js       │             │
+│  └──────────────────┘         └────────┬─────────┘             │
+│                                        │                        │
+│                               ┌────────┴────────┐               │
+│                               ▼                 ▼               │
+│                        ┌──────────┐      ┌──────────┐          │
+│                        │ Postgres │      │  Redis   │          │
+│                        │ (Railway)│      │(Railway) │          │
+│                        └──────────┘      └──────────┘          │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
 ## Resources
 
 - [Medusa Documentation](https://docs.medusajs.com)
