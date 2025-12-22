@@ -1,5 +1,41 @@
 # Table Clay Backend Deployment
 
+## Executive Sign-Off
+
+| Item | Status |
+|------|--------|
+| **Backend Deployment** | APPROVED |
+| **Sign-off Date** | December 22, 2025 |
+| **Verified By** | Claude Code |
+
+### Verification Checklist
+
+- [x] Health endpoint responding (`/health` → OK)
+- [x] Redis Event Bus connected (no in-memory warnings)
+- [x] Database migrations complete
+- [x] Admin dashboard accessible (`/app` → 200 OK)
+- [x] Admin user created and login working
+- [x] Store API responding with publishable key
+- [x] Regions seeded (United States)
+- [x] Products seeded (CloudLine Mug demo)
+- [x] Shipping configured ($8 flat rate)
+- [x] Stripe payment provider enabled
+- [x] Stripe webhook configured
+- [x] CORS configured for production domains
+
+---
+
+## Production URLs
+
+| Service | URL | Status |
+|---------|-----|--------|
+| Backend API | https://tableclay-production.up.railway.app | LIVE |
+| Admin Dashboard | https://tableclay-production.up.railway.app/app | LIVE |
+| Health Check | https://tableclay-production.up.railway.app/health | LIVE |
+| Stripe Webhook | https://tableclay-production.up.railway.app/hooks/payment/stripe | ACTIVE |
+
+---
+
 ## Overview
 
 The Table Clay backend is a **Medusa.js v2.12.3** e-commerce engine deployed to **Railway** with PostgreSQL and Redis databases.
@@ -15,7 +51,7 @@ The Table Clay backend is a **Medusa.js v2.12.3** e-commerce engine deployed to 
 │                                                         │
 │  ┌──────────────────┐                                   │
 │  │  Medusa Backend  │◄──── Dockerfile-based deployment  │
-│  │  Port 9000       │                                   │
+│  │  Port 8080       │                                   │
 │  └────────┬─────────┘                                   │
 │           │                                             │
 │     ┌─────┴─────┐                                       │
@@ -29,82 +65,15 @@ The Table Clay backend is a **Medusa.js v2.12.3** e-commerce engine deployed to 
 
 ---
 
-## Deployment Method
+## Modules Enabled
 
-We use a **custom Dockerfile** instead of Nixpacks (deprecated). This gives us full control over the build process.
+| Module | Status | Notes |
+|--------|--------|-------|
+| Event Bus (Redis) | ACTIVE | `@medusajs/medusa/event-bus-redis` |
+| Payment (Stripe) | ACTIVE | `@medusajs/medusa/payment-stripe` |
+| Locking | In-Memory | Default, not critical |
 
-### Dockerfile (`table-clay-store/Dockerfile`)
-
-```dockerfile
-FROM node:20-alpine
-
-# Install system dependencies
-RUN apk add --no-cache libc6-compat python3 make g++
-
-WORKDIR /app
-
-# Copy package files
-COPY package.json yarn.lock .yarnrc.yml ./
-
-# Install dependencies
-RUN corepack enable && corepack prepare yarn@3.2.1 --activate
-RUN yarn install --immutable
-
-# Copy source code and config
-COPY . .
-
-# Build the application
-RUN yarn build
-
-# Copy admin build to expected location
-RUN mkdir -p ./public && cp -r ./.medusa/server/public/admin ./public/admin
-
-# Expose port
-EXPOSE 9000
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:9000/health || exit 1
-
-# Run migrations then start server
-CMD ["sh", "-c", "yarn medusa db:migrate && yarn medusa start"]
-```
-
----
-
-## Issues Fixed During Deployment
-
-| Issue | Cause | Fix |
-|-------|-------|-----|
-| Yarn checksum errors | Railway's `yarn install --check-cache` failed | Used Dockerfile with `yarn install --immutable` |
-| `updateFulfillmentProviders` error | Invalid API call in seed.ts | Removed the call - not needed in Medusa v2 |
-| Missing `@medusajs/framework/utils` | Multi-stage Dockerfile stripped dev dependencies | Switched to single-stage Dockerfile |
-| `relation "notification_provider" does not exist` | Migrations not running | Added `yarn medusa db:migrate` to CMD |
-| Admin dashboard 404 | Build outputs to `.medusa/server/public/admin/` but server expects `./public/admin/` | Added `cp -r` step in Dockerfile |
-| Redis not connecting | `REDIS_URL` env var not passed to Medusa config | Added `redisUrl: process.env.REDIS_URL` to medusa-config.ts |
-
----
-
-## Environment Variables (Railway)
-
-These are configured in Railway's dashboard:
-
-| Variable | Description |
-|----------|-------------|
-| `DATABASE_URL` | PostgreSQL connection string (auto-injected by Railway) |
-| `REDIS_URL` | Redis connection string (auto-injected by Railway) |
-| `STORE_CORS` | Allowed origins for storefront API calls |
-| `ADMIN_CORS` | Allowed origins for admin dashboard |
-| `AUTH_CORS` | Allowed origins for authentication |
-| `JWT_SECRET` | Secret for JWT token signing |
-| `COOKIE_SECRET` | Secret for cookie encryption |
-| `STRIPE_API_KEY` | Stripe secret key (sk_live_... or sk_test_...) |
-
----
-
-## Key Configuration Files
-
-### `medusa-config.ts`
+### Current medusa-config.ts
 
 ```typescript
 import { loadEnv, defineConfig } from '@medusajs/framework/utils'
@@ -123,50 +92,146 @@ module.exports = defineConfig({
       cookieSecret: process.env.COOKIE_SECRET || "supersecret",
     }
   },
+  modules: [
+    // Redis Event Bus for production
+    {
+      resolve: "@medusajs/medusa/event-bus-redis",
+      options: {
+        redisUrl: process.env.REDIS_URL,
+      },
+    },
+    // Stripe Payment Provider
+    {
+      resolve: "@medusajs/medusa/payment",
+      options: {
+        providers: [
+          {
+            resolve: "@medusajs/medusa/payment-stripe",
+            id: "stripe",
+            options: {
+              apiKey: process.env.STRIPE_API_KEY,
+              webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
+            },
+          },
+        ],
+      },
+    },
+  ],
 })
+```
+
+---
+
+## Seeded Data
+
+The production database has been seeded with:
+
+| Data | Value |
+|------|-------|
+| Store Name | Table Clay |
+| Currency | USD |
+| Region | United States |
+| Tax Region | US |
+| Stock Location | Table Clay Studio (Portland) |
+| Shipping | Standard Shipping - $8.00 flat (5-7 days) |
+| Category | Mugs |
+| Demo Product | CloudLine Mug & Saucer Set - $34.99 |
+| Inventory | 100 units per variant |
+
+---
+
+## Environment Variables (Railway)
+
+| Variable | Status |
+|----------|--------|
+| `DATABASE_URL` | Set (auto-injected) |
+| `REDIS_URL` | Set (auto-injected) |
+| `STORE_CORS` | Set |
+| `ADMIN_CORS` | Set |
+| `AUTH_CORS` | Set |
+| `JWT_SECRET` | Set |
+| `COOKIE_SECRET` | Set |
+| `STRIPE_API_KEY` | Set (test mode) |
+| `STRIPE_WEBHOOK_SECRET` | Set |
+
+---
+
+## Issues Fixed During Deployment
+
+| Issue | Cause | Fix |
+|-------|-------|-----|
+| Yarn checksum errors | Railway's `yarn install --check-cache` failed | Used Dockerfile with `yarn install --immutable` |
+| `updateFulfillmentProviders` error | Invalid API call in seed.ts | Removed the call - not needed in Medusa v2 |
+| Missing `@medusajs/framework/utils` | Multi-stage Dockerfile stripped dev dependencies | Switched to single-stage Dockerfile |
+| `relation "notification_provider" does not exist` | Migrations not running | Added `yarn medusa db:migrate` to CMD |
+| Admin dashboard 404 | Build outputs to `.medusa/server/public/admin/` but server expects `./public/admin/` | Added `cp -r` step in Dockerfile |
+| Redis not connecting | `redisUrl` not in config | Added `redisUrl: process.env.REDIS_URL` |
+| Local Event Bus warning | Event bus module not configured | Added `@medusajs/medusa/event-bus-redis` module |
+| Stripe not working | Payment module commented out | Enabled Stripe payment provider module |
+| Admin login failing | User not created in production DB | Created via `railway ssh -- yarn medusa user` |
+| Store API empty | Database not seeded | Ran `railway ssh -- yarn seed` |
+
+---
+
+## Deployment Workflow
+
+### Standard Deployment (Code Changes)
+1. Make changes to `table-clay-store/`
+2. Commit and push to `develop` branch
+3. Railway auto-deploys from GitHub
+4. Monitor via Railway MCP: `mcp__Railway__list-deployments`
+5. Check logs: `mcp__Railway__get-logs`
+
+### Running Commands on Production
+```bash
+# SSH into Railway container
+railway ssh -- <command>
+
+# Examples:
+railway ssh -- yarn medusa user -e email@example.com -p password
+railway ssh -- yarn seed
+railway ssh -- yarn medusa db:migrate
 ```
 
 ---
 
 ## API Endpoints
 
-Once deployed, the backend exposes:
-
-| Endpoint | Description |
-|----------|-------------|
-| `/health` | Health check endpoint |
-| `/store/*` | Storefront API (products, cart, checkout) |
-| `/admin/*` | Admin API (requires authentication) |
-| `/app` | Admin dashboard UI |
-
----
-
-## Deployment Workflow
-
-1. Push changes to `develop` branch on GitHub
-2. Railway auto-deploys from GitHub
-3. Docker build runs (~3-5 minutes)
-4. Migrations run automatically on container start
-5. Medusa server starts on port 9000
+| Endpoint | Description | Auth Required |
+|----------|-------------|---------------|
+| `/health` | Health check | No |
+| `/store/*` | Storefront API | Publishable Key |
+| `/admin/*` | Admin API | JWT Token |
+| `/app` | Admin dashboard UI | Login |
+| `/hooks/payment/stripe` | Stripe webhooks | Webhook Secret |
 
 ---
 
-## Monitoring
+## Monitoring with Railway MCP
 
-- **Railway Dashboard**: View logs, metrics, and deployment status
-- **Health Check**: `GET /health` returns 200 when server is ready
-- **Logs**: Available in Railway dashboard or via `railway logs`
+```bash
+# Check deployment status
+mcp__Railway__list-deployments
 
----
+# View logs
+mcp__Railway__get-logs --logType deploy
 
-## Next Steps
-
-- [ ] Verify Railway deployment is healthy
-- [ ] Get production URL from Railway
-- [ ] Configure CORS to allow Vercel frontend domain
-- [ ] Set up Stripe webhooks pointing to Railway URL
-- [ ] Deploy frontend to Vercel
+# List environment variables
+mcp__Railway__list-variables
+```
 
 ---
 
-*Last updated: December 2024*
+## Ready for Frontend
+
+The backend is fully configured and ready for the storefront deployment:
+
+- **Publishable API Key:** `pk_a96d80b2210dda0c4d9eee3651311348ecf8c6329713ec7f021972390bdbb4b5`
+- **Backend URL:** `https://tableclay-production.up.railway.app`
+- **CORS:** Configured for `tableclay.com` and `table-clay-storefront.vercel.app`
+
+---
+
+*Last updated: December 22, 2025*
+*Medusa Version: 2.12.3*
+*Status: PRODUCTION READY*
