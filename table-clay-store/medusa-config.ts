@@ -14,13 +14,29 @@ module.exports = defineConfig({
       cookieSecret: process.env.COOKIE_SECRET || "supersecret",
     }
   },
-  // Stripe payment provider will be added once API keys are configured
-  // modules: [
-  //   {
-  //     resolve: "@medusajs/medusa/payment-stripe",
-  //     options: {
-  //       apiKey: process.env.STRIPE_API_KEY,
-  //     },
-  //   },
-  // ],
+  modules: [
+    // Redis Event Bus for production (replaces in-memory)
+    {
+      resolve: "@medusajs/medusa/event-bus-redis",
+      options: {
+        redisUrl: process.env.REDIS_URL,
+      },
+    },
+    // Stripe Payment Provider
+    {
+      resolve: "@medusajs/medusa/payment",
+      options: {
+        providers: [
+          {
+            resolve: "@medusajs/medusa/payment-stripe",
+            id: "stripe",
+            options: {
+              apiKey: process.env.STRIPE_API_KEY,
+              webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
+            },
+          },
+        ],
+      },
+    },
+  ],
 })
