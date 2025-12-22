@@ -287,8 +287,13 @@ export default async function seedDemoData({ container }: ExecArgs) {
           status: ProductStatus.PUBLISHED,
           shipping_profile_id: shippingProfile.id,
           images: [
-            { url: "http://localhost:8000/images/products/cloudline-mug/blue/product-2.png" },
-            { url: "http://localhost:8000/images/products/cloudline-mug/pink/product-1.png" },
+            { url: "https://tableclay-images.s3.us-east-1.amazonaws.com/products/cloudline-mug/blue/hero.png" },
+            { url: "https://tableclay-images.s3.us-east-1.amazonaws.com/products/cloudline-mug/blue/angle-1.png" },
+            { url: "https://tableclay-images.s3.us-east-1.amazonaws.com/products/cloudline-mug/blue/angle-2.png" },
+            { url: "https://tableclay-images.s3.us-east-1.amazonaws.com/products/cloudline-mug/blue/angle-3.png" },
+            { url: "https://tableclay-images.s3.us-east-1.amazonaws.com/products/cloudline-mug/blue/angle-4.png" },
+            { url: "https://tableclay-images.s3.us-east-1.amazonaws.com/products/cloudline-mug/blue/angle-5.png" },
+            { url: "https://tableclay-images.s3.us-east-1.amazonaws.com/products/cloudline-mug/blue/angle-6.png" },
           ],
           options: [
             {
