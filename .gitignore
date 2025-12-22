@@ -39,3 +39,4 @@ dist/**
 # Credentials (never commit)
 .secrets
 *.secrets
+Docs/environment-variables.md
