@@ -38,8 +38,8 @@ module.exports = defineConfig({
         ],
       },
     },
-    // S3 File Storage for product images
-    {
+    // S3 File Storage for product images (only loaded if credentials are present)
+    ...(process.env.S3_ACCESS_KEY_ID && process.env.S3_SECRET_ACCESS_KEY ? [{
       resolve: "@medusajs/medusa/file",
       options: {
         providers: [
@@ -56,6 +56,6 @@ module.exports = defineConfig({
           },
         ],
       },
-    },
+    }] : []),
   ],
 })
