@@ -13,8 +13,10 @@ export const retrieveCollection = async (id: string) => {
     .fetch<{ collection: HttpTypes.StoreCollection }>(
       `/store/collections/${id}`,
       {
-        next,
-        cache: "force-cache",
+        next: {
+          ...next,
+          revalidate: 60,
+        },
       }
     )
     .then(({ collection }) => collection)
@@ -56,8 +58,10 @@ export const getCollectionByHandle = async (
   return sdk.client
     .fetch<HttpTypes.StoreCollectionListResponse>(`/store/collections`, {
       query: { handle, fields: "*products,+metadata" },
-      next,
-      cache: "force-cache",
+      next: {
+        ...next,
+        revalidate: 60,
+      },
     })
     .then(({ collections }) => collections[0])
 }

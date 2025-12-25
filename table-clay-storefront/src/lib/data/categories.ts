@@ -41,8 +41,10 @@ export const getCategoryByHandle = async (categoryHandle: string[]) => {
           fields: "*category_children, *products, +metadata",
           handle,
         },
-        next,
-        cache: "force-cache",
+        next: {
+          ...next,
+          revalidate: 60,
+        },
       }
     )
     .then(({ product_categories }) => product_categories[0])
