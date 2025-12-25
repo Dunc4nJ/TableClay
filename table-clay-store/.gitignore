@@ -24,3 +24,6 @@ build
 !.yarn/versions
 
 .medusa
+
+# Scripts with sensitive data
+scripts/manage-metadata.sh

@@ -29,7 +29,7 @@ export default async function Nav() {
 
   return (
     <div className="sticky top-0 inset-x-0 z-50 group">
-      <header className="relative h-28 mx-auto border-b duration-200 bg-cream-100 border-cream-300">
+      <header className="relative h-20 mx-auto border-b duration-200 bg-cream-100 border-cream-300">
         <nav className="content-container flex items-center justify-between w-full h-full">
           {/* Mobile menu (left side on mobile) */}
           <div className="flex-1 basis-0 h-full flex items-center small:hidden">
@@ -66,21 +66,23 @@ export default async function Nav() {
             </LocalizedClientLink>
           </div>
 
-          {/* Logo (center) */}
+          {/* Logo (center) - breaks out of header for prominence */}
           <div className="flex items-center h-full">
             <LocalizedClientLink
               href="/"
-              className="flex items-center hover:opacity-90 transition-opacity"
+              className="flex items-center hover:opacity-90 transition-opacity relative"
               data-testid="nav-store-link"
             >
               <Image
                 src="/images/logo/table-clay-logo.jpeg"
                 alt="Table Clay - Handmade Pottery"
-                width={100}
-                height={100}
-                className="rounded-full object-cover"
+                width={140}
+                height={140}
+                className="rounded-full object-cover absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 shadow-md"
                 priority
               />
+              {/* Spacer to maintain layout width */}
+              <div className="w-[140px]" />
             </LocalizedClientLink>
           </div>
 
