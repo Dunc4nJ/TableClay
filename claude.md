@@ -379,6 +379,107 @@ vercel logs                      # View deployment logs
 
 ---
 
+## Key Learnings & Best Practices
+
+### Medusa Admin API Authentication
+
+To make authenticated requests to the Admin API, you must first obtain a JWT token:
+
+```bash
+# 1. Authenticate and get JWT token
+curl -X POST "https://tableclay-production.up.railway.app/auth/user/emailpass" \
+  -H "Content-Type: application/json" \
+  -d '{"email": "tableclayy@gmail.com", "password": "table.clay!"}'
+
+# Response: {"token": "eyJhbGciOiJIUzI1NiIs..."}
+
+# 2. Use token for Admin API requests
+TOKEN="eyJhbGciOiJIUzI1NiIs..."
+curl -X GET "https://tableclay-production.up.railway.app/admin/products" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+**Important endpoints:**
+- Auth: `POST /auth/user/emailpass` - Get JWT token
+- Products: `GET/POST /admin/products`
+- Collections: `GET/POST /admin/collections`
+- Categories: `GET/POST /admin/product-categories`
+- API Keys: `GET /admin/api-keys` - Get publishable keys
+
+### Vercel Auto-Deploy Configuration (Monorepo)
+
+When using Vercel with a monorepo where the Next.js app is in a subdirectory:
+
+**Project Settings → Build and Deployment → Root Directory:**
+- Set to `table-clay-storefront` (the subdirectory containing the Next.js app)
+
+**Important:**
+- GitHub auto-deploys work from repo root → needs Root Directory set
+- CLI deploys (`vercel deploy`) from within the subdirectory → conflicts with Root Directory setting
+- **Best Practice:** Use GitHub auto-deploys exclusively when Root Directory is configured
+
+**Triggering Deploys:**
+```bash
+# Push to develop branch triggers auto-deploy
+git add .
+git commit -m "feat: Your changes"
+git push origin develop
+
+# DO NOT use `vercel deploy` from subdirectory when Root Directory is set
+# It will look for table-clay-storefront/table-clay-storefront and fail
+```
+
+### Next.js Data Fetching & Caching
+
+**Problem:** Static data not updating after backend changes
+
+**Root Cause:** Using `cache: "force-cache"` causes Next.js to cache API responses indefinitely during build
+
+**Solution:** Use `revalidate` for time-based cache invalidation:
+
+```typescript
+// ❌ Bad - caches forever
+return sdk.client.fetch("/store/collections", {
+  cache: "force-cache",
+})
+
+// ✅ Good - revalidates every 60 seconds
+return sdk.client.fetch("/store/collections", {
+  next: {
+    ...cacheOptions,
+    revalidate: 60,
+  },
+})
+```
+
+**Files updated:**
+- `table-clay-storefront/src/lib/data/collections.ts`
+- `table-clay-storefront/src/lib/data/categories.ts`
+
+### Store API vs Admin API
+
+| Feature | Store API | Admin API |
+|---------|-----------|-----------|
+| Base Path | `/store/*` | `/admin/*` |
+| Auth | Publishable Key | JWT Bearer Token |
+| Purpose | Customer-facing | Management |
+| Example | `/store/products` | `/admin/products` |
+
+**Store API (for storefront):**
+```typescript
+// Uses publishable key from env
+const response = await sdk.client.fetch("/store/products")
+```
+
+**Admin API (for management scripts):**
+```bash
+# Requires JWT token from /auth/user/emailpass
+curl -H "Authorization: Bearer $TOKEN" \
+  "https://tableclay-production.up.railway.app/admin/collections"
+```
+
+---
+
 ## Resources
 
 - [Medusa Documentation](https://docs.medusajs.com)
