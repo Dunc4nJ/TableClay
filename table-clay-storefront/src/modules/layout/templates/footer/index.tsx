@@ -29,8 +29,8 @@ export default async function Footer() {
               <Image
                 src="/images/logo/table-clay-logo.jpeg"
                 alt="Table Clay"
-                width={64}
-                height={64}
+                width={80}
+                height={80}
                 className="rounded-full object-cover"
               />
             </LocalizedClientLink>

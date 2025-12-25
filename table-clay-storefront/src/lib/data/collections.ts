@@ -27,6 +27,10 @@ export const listCollections = async (
 
   queryParams.limit = queryParams.limit || "100"
   queryParams.offset = queryParams.offset || "0"
+  // Include metadata for admin-configurable images
+  queryParams.fields = queryParams.fields
+    ? `${queryParams.fields},+metadata`
+    : "+metadata"
 
   return sdk.client
     .fetch<{ collections: HttpTypes.StoreCollection[]; count: number }>(
@@ -51,7 +55,7 @@ export const getCollectionByHandle = async (
 
   return sdk.client
     .fetch<HttpTypes.StoreCollectionListResponse>(`/store/collections`, {
-      query: { handle, fields: "*products" },
+      query: { handle, fields: "*products,+metadata" },
       next,
       cache: "force-cache",
     })

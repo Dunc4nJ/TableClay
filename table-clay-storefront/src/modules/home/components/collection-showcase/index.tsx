@@ -58,7 +58,7 @@ const CollectionShowcase = ({
             {/* CTA Button */}
             <LocalizedClientLink
               href={`/collections/${collection.handle}`}
-              className="inline-block bg-brand-500 hover:bg-brand-600 text-white px-8 py-4 rounded-full uppercase text-sm tracking-wider font-medium transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-0.5"
+              className="inline-block bg-black hover:bg-stone-800 text-white px-8 py-4 rounded-none uppercase text-sm tracking-wider font-medium transition-all duration-300"
             >
               {ctaText}
             </LocalizedClientLink>

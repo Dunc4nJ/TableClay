@@ -108,15 +108,17 @@ module.exports = {
         "3xl": "2rem",
       },
       fontFamily: {
-        // Display font for headings - elegant, artisan feel
+        // Display font for headings - geometric sans-serif
         display: [
-          "var(--font-dm-serif)",
-          "Georgia",
-          "serif",
+          "var(--font-outfit)",
+          "-apple-system",
+          "BlinkMacSystemFont",
+          "Segoe UI",
+          "sans-serif",
         ],
-        // Body font - clean, readable
+        // Body font - same geometric sans-serif for consistency
         sans: [
-          "var(--font-inter)",
+          "var(--font-outfit)",
           "-apple-system",
           "BlinkMacSystemFont",
           "Segoe UI",

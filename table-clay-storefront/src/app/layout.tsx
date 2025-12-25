@@ -1,18 +1,11 @@
 import { getBaseURL } from "@lib/util/env"
 import { Metadata } from "next"
-import { DM_Serif_Display, Inter } from "next/font/google"
+import { Outfit } from "next/font/google"
 import "styles/globals.css"
 
-const inter = Inter({
+const outfit = Outfit({
   subsets: ["latin"],
-  variable: "--font-inter",
-  display: "swap",
-})
-
-const dmSerif = DM_Serif_Display({
-  weight: "400",
-  subsets: ["latin"],
-  variable: "--font-dm-serif",
+  variable: "--font-outfit",
   display: "swap",
 })
 
@@ -33,7 +26,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout(props: { children: React.ReactNode }) {
   return (
-    <html lang="en" data-mode="light" className={`${inter.variable} ${dmSerif.variable}`}>
+    <html lang="en" data-mode="light" className={outfit.variable}>
       <body className="font-sans antialiased">
         <main className="relative">{props.children}</main>
       </body>
