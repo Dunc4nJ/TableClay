@@ -3,9 +3,7 @@ import { HttpTypes } from "@medusajs/types"
 import { getCacheOptions } from "./cookies"
 
 export const listCategories = async (query?: Record<string, any>) => {
-  const next = {
-    ...(await getCacheOptions("categories")),
-  }
+  const cacheOptions = await getCacheOptions("categories")
 
   const limit = query?.limit || 100
 
@@ -19,8 +17,10 @@ export const listCategories = async (query?: Record<string, any>) => {
           limit,
           ...query,
         },
-        next,
-        cache: "force-cache",
+        next: {
+          ...cacheOptions,
+          revalidate: 60, // Revalidate every 60 seconds
+        },
       }
     )
     .then(({ product_categories }) => product_categories)
