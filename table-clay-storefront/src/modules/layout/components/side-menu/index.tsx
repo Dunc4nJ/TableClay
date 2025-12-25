@@ -11,9 +11,32 @@ import LanguageSelect from "../language-select"
 import { HttpTypes } from "@medusajs/types"
 import { Locale } from "@lib/data/locales"
 
-const SideMenuItems = {
+// Main menu items
+const MainMenuItems = {
   Home: "/",
-  Store: "/store",
+  "Shop All": "/store",
+}
+
+// Collections menu items
+const CollectionItems = {
+  "Cloud Line": "/collections/cloud-line",
+  "Modern Line": "/collections/modern-line",
+  "Japanese Line": "/collections/japanese-line",
+  "Love Line": "/collections/love-line",
+  "Nature Line": "/collections/nature-line",
+  "Odd & Ends": "/collections/no-line",
+}
+
+// Category menu items
+const CategoryItems = {
+  Mugs: "/categories/mugs",
+  Vases: "/categories/vases",
+  Bowls: "/categories/bowls",
+  "Odd & Ends": "/categories/odd-and-ends",
+}
+
+// Account menu items
+const AccountMenuItems = {
   Account: "/account",
   Cart: "/cart",
 }
@@ -61,7 +84,7 @@ const SideMenu = ({ regions, locales, currentLocale }: SideMenuProps) => {
                 leaveFrom="opacity-100 backdrop-blur-2xl"
                 leaveTo="opacity-0"
               >
-                <PopoverPanel className="flex flex-col absolute w-full pr-4 sm:pr-0 sm:w-1/3 2xl:w-1/4 sm:min-w-min h-[calc(100vh-1rem)] z-[51] inset-x-0 text-sm text-ui-fg-on-color m-2 backdrop-blur-2xl">
+                <PopoverPanel className="flex flex-col absolute w-full pr-4 sm:pr-0 sm:w-1/3 2xl:w-1/4 sm:min-w-min h-[calc(100vh-1rem)] z-[51] inset-x-0 text-sm text-ui-fg-on-color m-2 backdrop-blur-2xl overflow-y-auto">
                   <div
                     data-testid="nav-menu-popup"
                     className="flex flex-col h-full bg-[rgba(3,7,18,0.5)] rounded-rounded justify-between p-6"
@@ -71,23 +94,82 @@ const SideMenu = ({ regions, locales, currentLocale }: SideMenuProps) => {
                         <XMark />
                       </button>
                     </div>
-                    <ul className="flex flex-col gap-6 items-start justify-start">
-                      {Object.entries(SideMenuItems).map(([name, href]) => {
-                        return (
+
+                    <div className="flex flex-col gap-8 flex-1">
+                      {/* Main Navigation */}
+                      <ul className="flex flex-col gap-4 items-start justify-start">
+                        {Object.entries(MainMenuItems).map(([name, href]) => (
                           <li key={name}>
                             <LocalizedClientLink
                               href={href}
-                              className="text-3xl leading-10 hover:text-ui-fg-disabled"
+                              className="text-2xl leading-8 hover:text-ui-fg-disabled"
+                              onClick={close}
+                              data-testid={`${name.toLowerCase().replace(" ", "-")}-link`}
+                            >
+                              {name}
+                            </LocalizedClientLink>
+                          </li>
+                        ))}
+                      </ul>
+
+                      {/* Collections Section */}
+                      <div>
+                        <Text className="text-ui-fg-muted text-xs uppercase tracking-wider mb-3">
+                          Collections
+                        </Text>
+                        <ul className="flex flex-col gap-3 items-start justify-start">
+                          {Object.entries(CollectionItems).map(([name, href]) => (
+                            <li key={name}>
+                              <LocalizedClientLink
+                                href={href}
+                                className="text-lg leading-6 hover:text-ui-fg-disabled"
+                                onClick={close}
+                              >
+                                {name}
+                              </LocalizedClientLink>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      {/* Categories Section */}
+                      <div>
+                        <Text className="text-ui-fg-muted text-xs uppercase tracking-wider mb-3">
+                          Categories
+                        </Text>
+                        <ul className="flex flex-col gap-3 items-start justify-start">
+                          {Object.entries(CategoryItems).map(([name, href]) => (
+                            <li key={name}>
+                              <LocalizedClientLink
+                                href={href}
+                                className="text-lg leading-6 hover:text-ui-fg-disabled"
+                                onClick={close}
+                              >
+                                {name}
+                              </LocalizedClientLink>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      {/* Account Section */}
+                      <ul className="flex flex-col gap-4 items-start justify-start">
+                        {Object.entries(AccountMenuItems).map(([name, href]) => (
+                          <li key={name}>
+                            <LocalizedClientLink
+                              href={href}
+                              className="text-2xl leading-8 hover:text-ui-fg-disabled"
                               onClick={close}
                               data-testid={`${name.toLowerCase()}-link`}
                             >
                               {name}
                             </LocalizedClientLink>
                           </li>
-                        )
-                      })}
-                    </ul>
-                    <div className="flex flex-col gap-y-6">
+                        ))}
+                      </ul>
+                    </div>
+
+                    <div className="flex flex-col gap-y-6 mt-6">
                       {!!locales?.length && (
                         <div
                           className="flex justify-between"
@@ -126,7 +208,7 @@ const SideMenu = ({ regions, locales, currentLocale }: SideMenuProps) => {
                         />
                       </div>
                       <Text className="flex justify-between txt-compact-small">
-                        © {new Date().getFullYear()} Medusa Store. All rights
+                        © {new Date().getFullYear()} Table Clay. All rights
                         reserved.
                       </Text>
                     </div>

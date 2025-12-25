@@ -6,8 +6,8 @@ const Hero = () => {
     <div className="relative w-full h-[85vh] min-h-[600px]">
       {/* Background Image */}
       <Image
-        src="/images/hero/hero-mugs.png"
-        alt="Table Clay handcrafted ceramic mugs"
+        src="/images/hero/banner.png"
+        alt="Table Clay handcrafted pottery collection"
         fill
         className="object-cover object-center"
         priority

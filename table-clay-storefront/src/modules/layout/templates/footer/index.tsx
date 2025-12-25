@@ -3,6 +3,16 @@ import { Text } from "@medusajs/ui"
 import Image from "next/image"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 
+// Collections for the footer
+const COLLECTIONS = [
+  { label: "Cloud Line", href: "/collections/cloud-line" },
+  { label: "Modern Line", href: "/collections/modern-line" },
+  { label: "Japanese Line", href: "/collections/japanese-line" },
+  { label: "Love Line", href: "/collections/love-line" },
+  { label: "Nature Line", href: "/collections/nature-line" },
+  { label: "Odd & Ends", href: "/collections/no-line" },
+]
+
 export default async function Footer() {
   const productCategories = await listCategories()
 
@@ -30,12 +40,31 @@ export default async function Footer() {
           </div>
 
           {/* Navigation links */}
-          <div className="text-small-regular gap-10 md:gap-x-16 grid grid-cols-2 sm:grid-cols-3">
+          <div className="text-small-regular gap-10 md:gap-x-16 grid grid-cols-2 sm:grid-cols-4">
+            {/* Collections */}
+            <div className="flex flex-col gap-y-3">
+              <span className="text-sm font-medium text-stone-800 uppercase tracking-wider">
+                Collections
+              </span>
+              <ul className="grid grid-cols-1 gap-2">
+                {COLLECTIONS.map((collection) => (
+                  <li key={collection.href}>
+                    <LocalizedClientLink
+                      className="text-stone-500 hover:text-brand-600 text-sm transition-colors"
+                      href={collection.href}
+                    >
+                      {collection.label}
+                    </LocalizedClientLink>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
             {/* Shop categories */}
             {productCategories && productCategories?.length > 0 && (
               <div className="flex flex-col gap-y-3">
                 <span className="text-sm font-medium text-stone-800 uppercase tracking-wider">
-                  Shop
+                  Categories
                 </span>
                 <ul className="grid grid-cols-1 gap-2" data-testid="footer-categories">
                   {productCategories?.slice(0, 6).map((c) => {

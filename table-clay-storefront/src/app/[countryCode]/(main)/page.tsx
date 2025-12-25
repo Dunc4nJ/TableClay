@@ -1,41 +1,51 @@
 import { Metadata } from "next"
 
-import FeaturedProducts from "@modules/home/components/featured-products"
 import Hero from "@modules/home/components/hero"
+import CollectionShowcases from "@modules/home/components/collection-showcases"
+import CategoryNavigation from "@modules/home/components/category-navigation"
 import { listCollections } from "@lib/data/collections"
+import { listCategories } from "@lib/data/categories"
 import { getRegion } from "@lib/data/regions"
 
 export const metadata: Metadata = {
-  title: "Medusa Next.js Starter Template",
+  title: "Table Clay | Handcrafted Pottery & Ceramics",
   description:
-    "A performant frontend ecommerce starter template with Next.js 15 and Medusa.",
+    "Discover our collection of handcrafted ceramic mugs, bowls, vases, and more. Each piece is made by hand with care. Shop Cloud Line, Modern Line, Japanese Line, and more.",
 }
 
 export default async function Home(props: {
   params: Promise<{ countryCode: string }>
 }) {
   const params = await props.params
-
   const { countryCode } = params
 
   const region = await getRegion(countryCode)
 
-  const { collections } = await listCollections({
-    fields: "id, handle, title",
-  })
+  const [{ collections }, categories] = await Promise.all([
+    listCollections({
+      fields: "id, handle, title",
+    }),
+    listCategories(),
+  ])
 
-  if (!collections || !region) {
+  if (!region) {
     return null
   }
 
   return (
     <>
+      {/* Hero Banner */}
       <Hero />
-      <div className="py-12">
-        <ul className="flex flex-col gap-x-6">
-          <FeaturedProducts collections={collections} region={region} />
-        </ul>
-      </div>
+
+      {/* Featured Collections - Split Screen Showcases */}
+      {collections && collections.length > 0 && (
+        <CollectionShowcases collections={collections} />
+      )}
+
+      {/* Shop by Category */}
+      {categories && categories.length > 0 && (
+        <CategoryNavigation categories={categories} />
+      )}
     </>
   )
 }

@@ -8,6 +8,17 @@ import { StoreRegion } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import CartButton from "@modules/layout/components/cart-button"
 import SideMenu from "@modules/layout/components/side-menu"
+import NavDropdown from "@modules/layout/components/nav-dropdown"
+
+// Collections for the dropdown menu
+const COLLECTIONS = [
+  { label: "Cloud Line", href: "/collections/cloud-line" },
+  { label: "Modern Line", href: "/collections/modern-line" },
+  { label: "Japanese Line", href: "/collections/japanese-line" },
+  { label: "Love Line", href: "/collections/love-line" },
+  { label: "Nature Line", href: "/collections/nature-line" },
+  { label: "Odd & Ends", href: "/collections/no-line" },
+]
 
 export default async function Nav() {
   const [regions, locales, currentLocale] = await Promise.all([
@@ -32,19 +43,26 @@ export default async function Nav() {
               className="text-stone-600 hover:text-brand-600 uppercase text-sm tracking-wider font-medium transition-colors"
               data-testid="nav-shop-link"
             >
-              Shop
+              Shop All
             </LocalizedClientLink>
+            <NavDropdown label="Collections" items={COLLECTIONS} />
             <LocalizedClientLink
-              href="/about"
+              href="/categories/mugs"
               className="text-stone-600 hover:text-brand-600 uppercase text-sm tracking-wider font-medium transition-colors"
             >
-              About
+              Mugs
             </LocalizedClientLink>
             <LocalizedClientLink
-              href="/shipping"
+              href="/categories/vases"
               className="text-stone-600 hover:text-brand-600 uppercase text-sm tracking-wider font-medium transition-colors"
             >
-              Shipping
+              Vases
+            </LocalizedClientLink>
+            <LocalizedClientLink
+              href="/categories/bowls"
+              className="text-stone-600 hover:text-brand-600 uppercase text-sm tracking-wider font-medium transition-colors"
+            >
+              Bowls
             </LocalizedClientLink>
           </div>
 
