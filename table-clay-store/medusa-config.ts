@@ -22,18 +22,6 @@ module.exports = defineConfig({
         redisUrl: process.env.REDIS_URL,
       },
     },
-    // Tax Module with System Provider
-    {
-      resolve: "@medusajs/medusa/tax",
-      options: {
-        providers: [
-          {
-            resolve: "@medusajs/medusa/tax-system",
-            id: "system",
-          },
-        ],
-      },
-    },
     // Stripe Payment Provider
     {
       resolve: "@medusajs/medusa/payment",
