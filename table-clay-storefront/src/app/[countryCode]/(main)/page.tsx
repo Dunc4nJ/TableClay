@@ -37,6 +37,19 @@ export default async function Home(props: {
       {/* Hero Banner */}
       <Hero />
 
+      {/* Section Intro - Visual break between hero and collections */}
+      <section className="bg-cream-100 py-16 sm:py-20">
+        <div className="content-container text-center">
+          <h2 className="font-display text-3xl sm:text-4xl text-stone-800 mb-4">
+            Explore Our Collections
+          </h2>
+          <p className="text-stone-600 max-w-2xl mx-auto text-lg">
+            Each collection tells its own story, crafted with intention and care.
+            Find the perfect pieces for your home.
+          </p>
+        </div>
+      </section>
+
       {/* Featured Collections - Split Screen Showcases */}
       {collections && collections.length > 0 && (
         <CollectionShowcases collections={collections} />

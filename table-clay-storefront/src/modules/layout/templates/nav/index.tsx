@@ -74,11 +74,11 @@ export default async function Nav() {
               data-testid="nav-store-link"
             >
               <Image
-                src="/images/logo/logo-badge.jpg"
+                src="/images/logo/table-clay-logo.jpeg"
                 alt="Table Clay - Handmade Pottery"
                 width={56}
                 height={56}
-                className="rounded-full"
+                className="rounded-full object-cover"
                 priority
               />
               <span className="hidden medium:block font-display text-2xl text-stone-800">

@@ -27,11 +27,11 @@ export default async function Footer() {
               className="flex items-center gap-3"
             >
               <Image
-                src="/images/logo/logo-badge.jpg"
+                src="/images/logo/table-clay-logo.jpeg"
                 alt="Table Clay"
                 width={64}
                 height={64}
-                className="rounded-full"
+                className="rounded-full object-cover"
               />
             </LocalizedClientLink>
             <p className="text-stone-500 text-sm max-w-xs">
