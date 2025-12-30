@@ -22,6 +22,7 @@ RUN npx patch-package
 COPY . .
 
 # Build the application
+# Note: Currency formatting fix is now handled by Vite plugin in medusa-config.ts
 RUN yarn build
 
 # Copy admin build to expected location

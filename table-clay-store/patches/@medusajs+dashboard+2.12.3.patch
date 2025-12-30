@@ -53,6 +53,66 @@ index 24b0db4..cbf3e69 100644
      };
    }
  });
+diff --git a/node_modules/@medusajs/dashboard/dist/chunk-WATKBUHQ.mjs b/node_modules/@medusajs/dashboard/dist/chunk-WATKBUHQ.mjs
+index ee8277c..d14768c 100644
+--- a/node_modules/@medusajs/dashboard/dist/chunk-WATKBUHQ.mjs
++++ b/node_modules/@medusajs/dashboard/dist/chunk-WATKBUHQ.mjs
+@@ -1,10 +1,17 @@
++import {
++  currencies
++} from "./chunk-DK4WIVY6.mjs";
++
+ // src/lib/format-currency.ts
+ var formatCurrency = (amount, currency) => {
++  const decimalDigits = currencies[currency.toUpperCase()]?.decimal_digits ?? 2;
++  const divisor = Math.pow(10, decimalDigits);
++  const amountInMainUnit = amount / divisor;
+   return new Intl.NumberFormat(void 0, {
+     style: "currency",
+     currency,
+     signDisplay: "auto"
+-  }).format(amount);
++  }).format(amountInMainUnit);
+ };
+ 
+ export {
+diff --git a/node_modules/@medusajs/dashboard/dist/chunk-X6BAAGCL.mjs b/node_modules/@medusajs/dashboard/dist/chunk-X6BAAGCL.mjs
+index 0b53e7e..8dd4c8b 100644
+--- a/node_modules/@medusajs/dashboard/dist/chunk-X6BAAGCL.mjs
++++ b/node_modules/@medusajs/dashboard/dist/chunk-X6BAAGCL.mjs
+@@ -7,12 +7,15 @@ var getDecimalDigits = (currency) => {
+   return currencies[currency.toUpperCase()]?.decimal_digits ?? 0;
+ };
+ var getLocaleAmount = (amount, currencyCode) => {
++  const decimalDigits = getDecimalDigits(currencyCode);
++  const divisor = Math.pow(10, decimalDigits);
++  const amountInMainUnit = amount / divisor;
+   const formatter = new Intl.NumberFormat([], {
+     style: "currency",
+     currencyDisplay: "narrowSymbol",
+     currency: currencyCode
+   });
+-  return formatter.format(amount);
++  return formatter.format(amountInMainUnit);
+ };
+ var getNativeSymbol = (currencyCode) => {
+   const formatted = new Intl.NumberFormat([], {
+@@ -25,11 +28,13 @@ var getNativeSymbol = (currencyCode) => {
+ var getStylizedAmount = (amount, currencyCode) => {
+   const symbol = getNativeSymbol(currencyCode);
+   const decimalDigits = getDecimalDigits(currencyCode);
++  const divisor = Math.pow(10, decimalDigits);
++  const amountInMainUnit = amount / divisor;
+   const lessThanRoundingPrecission = isAmountLessThenRoundingError(
+-    amount,
++    amountInMainUnit,
+     currencyCode
+   );
+-  const total = amount.toLocaleString(void 0, {
++  const total = amountInMainUnit.toLocaleString(void 0, {
+     minimumFractionDigits: decimalDigits,
+     maximumFractionDigits: decimalDigits,
+     signDisplay: lessThanRoundingPrecission ? "exceptZero" : "auto"
 diff --git a/node_modules/@medusajs/dashboard/src/lib/format-currency.ts b/node_modules/@medusajs/dashboard/src/lib/format-currency.ts
 index c8e603f..45c1a4e 100644
 --- a/node_modules/@medusajs/dashboard/src/lib/format-currency.ts
