@@ -1,2 +1,2 @@
-// live stripe keys restored
+// live stripe - fix verified
 
