@@ -15657,6 +15657,7 @@ __metadata:
     "@medusajs/cli": 2.12.3
     "@medusajs/framework": 2.12.3
     "@medusajs/medusa": 2.12.3
+    "@medusajs/payment-stripe": 2.12.3
     "@medusajs/test-utils": 2.12.3
     "@swc/core": ^1.7.28
     "@swc/jest": ^0.2.36
