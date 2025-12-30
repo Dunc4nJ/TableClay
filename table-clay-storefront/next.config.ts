@@ -1,2 +1,2 @@
-// redeploy
+// live stripe keys restored
 
