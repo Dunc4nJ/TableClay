@@ -1,3 +1,58 @@
+diff --git a/node_modules/@medusajs/dashboard/dist/app.js b/node_modules/@medusajs/dashboard/dist/app.js
+index 24b0db4..cbf3e69 100644
+--- a/node_modules/@medusajs/dashboard/dist/app.js
++++ b/node_modules/@medusajs/dashboard/dist/app.js
+@@ -108024,12 +108024,15 @@ var init_money_amount_helpers = __esm({
+       return currencies[currency.toUpperCase()]?.decimal_digits ?? 0;
+     };
+     getLocaleAmount = (amount, currencyCode) => {
++      const decimalDigits2 = getDecimalDigits(currencyCode);
++      const divisor = Math.pow(10, decimalDigits2);
++      const amountInMainUnit = amount / divisor;
+       const formatter2 = new Intl.NumberFormat([], {
+         style: "currency",
+         currencyDisplay: "narrowSymbol",
+         currency: currencyCode
+       });
+-      return formatter2.format(amount);
++      return formatter2.format(amountInMainUnit);
+     };
+     getNativeSymbol = (currencyCode) => {
+       const formatted = new Intl.NumberFormat([], {
+@@ -108042,11 +108045,13 @@ var init_money_amount_helpers = __esm({
+     getStylizedAmount = (amount, currencyCode) => {
+       const symbol = getNativeSymbol(currencyCode);
+       const decimalDigits = getDecimalDigits(currencyCode);
++      const divisor = Math.pow(10, decimalDigits);
++      const amountInMainUnit = amount / divisor;
+       const lessThanRoundingPrecission = isAmountLessThenRoundingError(
+-        amount,
++        amountInMainUnit,
+         currencyCode
+       );
+-      const total = amount.toLocaleString(void 0, {
++      const total = amountInMainUnit.toLocaleString(void 0, {
+         minimumFractionDigits: decimalDigits,
+         maximumFractionDigits: decimalDigits,
+         signDisplay: lessThanRoundingPrecission ? "exceptZero" : "auto"
+@@ -135440,12 +135445,16 @@ var formatCurrency;
+ var init_format_currency = __esm({
+   "src/lib/format-currency.ts"() {
+     "use strict";
++    init_currencies2();
+     formatCurrency = (amount, currency) => {
++      const decimalDigits = currencies[currency.toUpperCase()]?.decimal_digits ?? 2;
++      const divisor = Math.pow(10, decimalDigits);
++      const amountInMainUnit = amount / divisor;
+       return new Intl.NumberFormat(void 0, {
+         style: "currency",
+         currency,
+         signDisplay: "auto"
+-      }).format(amount);
++      }).format(amountInMainUnit);
+     };
+   }
+ });
 diff --git a/node_modules/@medusajs/dashboard/src/lib/format-currency.ts b/node_modules/@medusajs/dashboard/src/lib/format-currency.ts
 index c8e603f..45c1a4e 100644
 --- a/node_modules/@medusajs/dashboard/src/lib/format-currency.ts
