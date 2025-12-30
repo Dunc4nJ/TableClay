@@ -3,7 +3,8 @@
 
 [build]
 builder = "dockerfile"
-dockerfilePath = "Dockerfile"
+dockerfilePath = "table-clay-store/Dockerfile"
+watchPatterns = ["table-clay-store/**"]
 
 [deploy]
 restartPolicyType = "ON_FAILURE"
