@@ -22,14 +22,13 @@ module.exports = defineConfig({
         redisUrl: process.env.REDIS_URL,
       },
     },
-    // Stripe Payment Provider (Custom - fixes 100x multiplication bug)
-    // See: https://github.com/medusajs/medusa/issues/13160
+    // Stripe Payment Provider
     {
       resolve: "@medusajs/medusa/payment",
       options: {
         providers: [
           {
-            resolve: "./src/modules/stripe-fixed",
+            resolve: "@medusajs/medusa/payment-stripe",
             id: "stripe",
             options: {
               apiKey: process.env.STRIPE_API_KEY,
