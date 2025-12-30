@@ -12,7 +12,8 @@ COPY patches/ ./patches/
 
 # Install dependencies (postinstall runs patch-package)
 RUN corepack enable && corepack prepare yarn@3.2.1 --activate
-RUN yarn install --immutable
+# Note: Not using --immutable to allow patch-package to modify node_modules
+RUN yarn install
 
 # Copy source code and config
 COPY . .
