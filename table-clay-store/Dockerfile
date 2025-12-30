@@ -15,6 +15,9 @@ RUN corepack enable && corepack prepare yarn@3.2.1 --activate
 # Note: Not using --immutable to allow patch-package to modify node_modules
 RUN yarn install
 
+# Explicitly run patch-package to ensure patches are applied
+RUN npx patch-package
+
 # Copy source code and config
 COPY . .
 
