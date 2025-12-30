@@ -510,6 +510,62 @@ with urllib.request.urlopen(req) as r:
 
 ---
 
+## Testing Requirements
+
+**IMPORTANT:** After successfully implementing and verifying any feature or bug fix, you MUST:
+
+1. **Add a regression/unit test** to the test suite that covers the new functionality
+2. **Run tests locally** to ensure they pass:
+   ```bash
+   # Backend
+   cd table-clay-store && TEST_TYPE=unit yarn test:unit
+
+   # Frontend
+   cd table-clay-storefront && yarn test
+   ```
+3. **Commit the changes** including the new tests
+4. **Push to develop** to trigger CI/CD
+5. **Validate deploys pass** on both Railway and Vercel
+
+### Test File Locations
+
+| Component | Location | Pattern |
+|-----------|----------|---------|
+| Backend unit tests | `table-clay-store/src/__tests__/` | `*.unit.spec.ts` |
+| Frontend tests | `table-clay-storefront/__tests__/` | `*.test.ts` |
+
+### Example: Adding a Backend Unit Test
+
+```typescript
+// table-clay-store/src/__tests__/feature.unit.spec.ts
+describe('Feature Name', () => {
+  it('should handle the expected behavior', () => {
+    const result = someFunction(input)
+    expect(result).toBe(expectedOutput)
+  })
+
+  it('should handle edge cases', () => {
+    expect(() => someFunction(null)).toThrow()
+  })
+})
+```
+
+### Example: Adding a Frontend Test
+
+```typescript
+// table-clay-storefront/__tests__/lib/feature.test.ts
+describe('Feature Name', () => {
+  it('should return correct value', () => {
+    const result = featureFunction(input)
+    expect(result).toEqual(expectedOutput)
+  })
+})
+```
+
+See `Docs/add-testing.md` for complete testing documentation.
+
+---
+
 ## Notes for Development
 
 - The `packages/` directory contains Medusa core source - reference only, don't modify
