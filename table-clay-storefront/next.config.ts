@@ -1,2 +1,2 @@
-// live stripe - fix verified
+// production ready
 
