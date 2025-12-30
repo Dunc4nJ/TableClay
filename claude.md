@@ -381,22 +381,37 @@ vercel logs                      # View deployment logs
 
 ## Key Learnings & Best Practices
 
-### Medusa Admin API Authentication
+### HTTP Requests: Use Python urllib (NOT curl)
 
-To make authenticated requests to the Admin API, you must first obtain a JWT token:
+**IMPORTANT:** Always use Python with `urllib` for HTTP requests, never `curl`. This ensures consistent, predictable behavior across environments.
 
-```bash
+```python
+import urllib.request
+import json
+
 # 1. Authenticate and get JWT token
-curl -X POST "https://tableclay-production.up.railway.app/auth/user/emailpass" \
-  -H "Content-Type: application/json" \
-  -d '{"email": "tableclayy@gmail.com", "password": "table.clay!"}'
-
-# Response: {"token": "eyJhbGciOiJIUzI1NiIs..."}
+auth_url = 'https://tableclay-production.up.railway.app/auth/user/emailpass'
+auth_data = json.dumps({'email': 'tableclayy@gmail.com', 'password': 'Table.clay!'}).encode('utf-8')
+auth_req = urllib.request.Request(auth_url, data=auth_data, headers={'Content-Type': 'application/json'})
+with urllib.request.urlopen(auth_req) as response:
+    token = json.loads(response.read().decode('utf-8'))['token']
 
 # 2. Use token for Admin API requests
-TOKEN="eyJhbGciOiJIUzI1NiIs..."
-curl -X GET "https://tableclay-production.up.railway.app/admin/products" \
-  -H "Authorization: Bearer $TOKEN"
+url = 'https://tableclay-production.up.railway.app/admin/products'
+req = urllib.request.Request(url, headers={'Authorization': f'Bearer {token}'})
+with urllib.request.urlopen(req) as response:
+    result = json.loads(response.read().decode('utf-8'))
+    print(json.dumps(result, indent=2))
+
+# 3. POST request example
+url = 'https://tableclay-production.up.railway.app/admin/regions/reg_xxx'
+data = json.dumps({'payment_providers': ['pp_stripe']}).encode('utf-8')
+req = urllib.request.Request(url, data=data, method='POST', headers={
+    'Content-Type': 'application/json',
+    'Authorization': f'Bearer {token}'
+})
+with urllib.request.urlopen(req) as response:
+    result = json.loads(response.read().decode('utf-8'))
 ```
 
 **Important endpoints:**
@@ -405,6 +420,7 @@ curl -X GET "https://tableclay-production.up.railway.app/admin/products" \
 - Collections: `GET/POST /admin/collections`
 - Categories: `GET/POST /admin/product-categories`
 - API Keys: `GET /admin/api-keys` - Get publishable keys
+- Regions: `GET/POST /admin/regions` - Manage regions and payment providers
 
 ### Vercel Auto-Deploy Configuration (Monorepo)
 
@@ -472,10 +488,15 @@ const response = await sdk.client.fetch("/store/products")
 ```
 
 **Admin API (for management scripts):**
-```bash
-# Requires JWT token from /auth/user/emailpass
-curl -H "Authorization: Bearer $TOKEN" \
-  "https://tableclay-production.up.railway.app/admin/collections"
+```python
+# Use Python urllib (see "HTTP Requests" section above)
+import urllib.request, json
+req = urllib.request.Request(
+    'https://tableclay-production.up.railway.app/admin/collections',
+    headers={'Authorization': f'Bearer {token}'}
+)
+with urllib.request.urlopen(req) as r:
+    print(json.loads(r.read()))
 ```
 
 ---
