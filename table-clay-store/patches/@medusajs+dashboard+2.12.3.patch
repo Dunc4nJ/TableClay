@@ -1,0 +1,92 @@
+diff --git a/node_modules/@medusajs/dashboard/src/lib/format-currency.ts b/node_modules/@medusajs/dashboard/src/lib/format-currency.ts
+index c8e603f..45c1a4e 100644
+--- a/node_modules/@medusajs/dashboard/src/lib/format-currency.ts
++++ b/node_modules/@medusajs/dashboard/src/lib/format-currency.ts
+@@ -1,7 +1,21 @@
++import { currencies } from "./data/currencies"
++
++/**
++ * Format an amount in smallest currency unit to a display string
++ * @param amount - The amount in smallest currency unit (cents for USD)
++ * @param currency - The currency code
++ */
+ export const formatCurrency = (amount: number, currency: string) => {
++  // FIX: Convert from smallest currency unit to main currency unit
++  // USD: 3499 cents → 34.99 dollars (divide by 100)
++  // JPY: 3499 yen → 3499 yen (divide by 1)
++  const decimalDigits = currencies[currency.toUpperCase()]?.decimal_digits ?? 2
++  const divisor = Math.pow(10, decimalDigits)
++  const amountInMainUnit = amount / divisor
++
+   return new Intl.NumberFormat(undefined, {
+     style: "currency",
+     currency,
+     signDisplay: "auto",
+-  }).format(amount)
++  }).format(amountInMainUnit)
+ }
+diff --git a/node_modules/@medusajs/dashboard/src/lib/money-amount-helpers.ts b/node_modules/@medusajs/dashboard/src/lib/money-amount-helpers.ts
+index a254590..962b5c2 100644
+--- a/node_modules/@medusajs/dashboard/src/lib/money-amount-helpers.ts
++++ b/node_modules/@medusajs/dashboard/src/lib/money-amount-helpers.ts
+@@ -6,22 +6,29 @@ export const getDecimalDigits = (currency: string) => {
+ 
+ /**
+  * Returns a formatted amount based on the currency code using the browser's locale
+- * @param amount - The amount to format
++ * @param amount - The amount in smallest currency unit (cents for USD)
+  * @param currencyCode - The currency code to format the amount in
+  * @returns - The formatted amount
+  *
+  * @example
+- * getFormattedAmount(10, "usd") // '$10.00' if the browser's locale is en-US
+- * getFormattedAmount(10, "usd") // '10,00 $' if the browser's locale is fr-FR
++ * getFormattedAmount(1000, "usd") // '$10.00' if the browser's locale is en-US
++ * getFormattedAmount(1000, "usd") // '10,00 $' if the browser's locale is fr-FR
+  */
+ export const getLocaleAmount = (amount: number, currencyCode: string) => {
++  // FIX: Convert from smallest currency unit to main currency unit
++  // USD: 3499 cents → 34.99 dollars (divide by 100)
++  // JPY: 3499 yen → 3499 yen (divide by 1)
++  const decimalDigits = getDecimalDigits(currencyCode)
++  const divisor = Math.pow(10, decimalDigits)
++  const amountInMainUnit = amount / divisor
++
+   const formatter = new Intl.NumberFormat([], {
+     style: "currency",
+     currencyDisplay: "narrowSymbol",
+     currency: currencyCode,
+   })
+ 
+-  return formatter.format(amount)
++  return formatter.format(amountInMainUnit)
+ }
+ 
+ export const getNativeSymbol = (currencyCode: string) => {
+@@ -39,17 +46,24 @@ export const getNativeSymbol = (currencyCode: string) => {
+  * in the format of "symbol amount currencyCode". This breaks from the
+  * user's locale and is only used in cases where we want to display the
+  * currency code and symbol explicitly, e.g. for totals.
++ * @param amount - The amount in smallest currency unit (cents for USD)
+  */
+ export const getStylizedAmount = (amount: number, currencyCode: string) => {
+   const symbol = getNativeSymbol(currencyCode)
+   const decimalDigits = getDecimalDigits(currencyCode)
+ 
++  // FIX: Convert from smallest currency unit to main currency unit
++  // USD: 3499 cents → 34.99 dollars (divide by 100)
++  // JPY: 3499 yen → 3499 yen (divide by 1)
++  const divisor = Math.pow(10, decimalDigits)
++  const amountInMainUnit = amount / divisor
++
+   const lessThanRoundingPrecission = isAmountLessThenRoundingError(
+-    amount,
++    amountInMainUnit,
+     currencyCode
+   )
+ 
+-  const total = amount.toLocaleString(undefined, {
++  const total = amountInMainUnit.toLocaleString(undefined, {
+     minimumFractionDigits: decimalDigits,
+     maximumFractionDigits: decimalDigits,
+     signDisplay: lessThanRoundingPrecission ? "exceptZero" : "auto",
