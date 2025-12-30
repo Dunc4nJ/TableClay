@@ -18,13 +18,19 @@
     "seed": "medusa exec ./src/scripts/seed.ts",
     "start": "medusa start",
     "dev": "medusa develop",
+    "test": "yarn test:unit",
+    "test:unit": "TEST_TYPE=unit NODE_OPTIONS=--experimental-vm-modules jest --silent --runInBand --forceExit --passWithNoTests",
+    "test:ci": "TEST_TYPE=unit NODE_OPTIONS=--experimental-vm-modules jest --ci --runInBand --forceExit --passWithNoTests",
+    "test:integration": "TEST_TYPE=integration:http NODE_OPTIONS=--experimental-vm-modules jest --silent=false --runInBand --forceExit",
     "test:integration:http": "TEST_TYPE=integration:http NODE_OPTIONS=--experimental-vm-modules jest --silent=false --runInBand --forceExit",
     "test:integration:modules": "TEST_TYPE=integration:modules NODE_OPTIONS=--experimental-vm-modules jest --silent=false --runInBand --forceExit",
-    "test:unit": "TEST_TYPE=unit NODE_OPTIONS=--experimental-vm-modules jest --silent --runInBand --forceExit"
+    "test:currency": "TEST_TYPE=integration:http NODE_OPTIONS=--experimental-vm-modules jest --testPathPattern=currency --silent=false --runInBand --forceExit",
+    "test:all": "yarn test:unit && yarn test:integration"
   },
   "dependencies": {
     "@medusajs/admin-sdk": "2.12.3",
     "@medusajs/cli": "2.12.3",
+    "@medusajs/dashboard": "2.12.3",
     "@medusajs/framework": "2.12.3",
     "@medusajs/medusa": "2.12.3",
     "@medusajs/payment-stripe": "2.12.3"
@@ -34,6 +40,7 @@
     "@swc/core": "^1.7.28",
     "@swc/jest": "^0.2.36",
     "@types/jest": "^29.5.13",
+    "@types/lodash": "^4.17.21",
     "@types/node": "^20.12.11",
     "@types/react": "^18.3.2",
     "@types/react-dom": "^18.2.25",

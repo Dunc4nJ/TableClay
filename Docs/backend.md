@@ -170,6 +170,84 @@ The production database has been seeded with:
 | Stripe not working | Payment module commented out | Enabled Stripe payment provider module |
 | Admin login failing | User not created in production DB | Created via `railway ssh -- yarn medusa user` |
 | Store API empty | Database not seeded | Ran `railway ssh -- yarn seed` |
+| **Admin dashboard prices 100x too high** | Dashboard formatting functions didn't convert cents→dollars | Patched `.mjs` files via patch-package (see below) |
+
+---
+
+## Admin Dashboard Currency Fix (December 2024)
+
+### Problem
+The admin dashboard displayed prices 100x too high:
+- Order #12 showed **$4,642.92** instead of **$46.43**
+- Product prices showed **$3,499.00** instead of **$34.99**
+
+### Root Cause
+Medusa stores all monetary amounts in **smallest currency unit** (cents for USD, yen for JPY). The admin dashboard's formatting functions (`getLocaleAmount`, `getStylizedAmount`, `formatCurrency`) were displaying these cent values as if they were dollars.
+
+### Key Discovery: .mjs vs .ts Files
+**Critical Learning:** The `@medusajs/dashboard` npm package ships **pre-compiled ESM modules** in `dist/`. During build, Vite uses these `.mjs` files, **NOT** the TypeScript sources in `src/`.
+
+```
+node_modules/@medusajs/dashboard/
+├── src/                    ← TypeScript sources (NOT USED during build)
+│   └── lib/
+│       ├── format-currency.ts
+│       └── money-amount-helpers.ts
+└── dist/                   ← Pre-compiled ESM modules (USED by Vite)
+    ├── chunk-X6BAAGCL.mjs  ← Contains getLocaleAmount, getStylizedAmount
+    ├── chunk-WATKBUHQ.mjs  ← Contains formatCurrency
+    └── app.js              ← Bundled version (backup)
+```
+
+### Solution: patch-package on Correct Files
+We use `patch-package` to modify the correct `.mjs` files:
+
+**Patch file:** `patches/@medusajs+dashboard+2.12.3.patch`
+
+**Files patched:**
+- `dist/chunk-X6BAAGCL.mjs` - `getLocaleAmount()`, `getStylizedAmount()`
+- `dist/chunk-WATKBUHQ.mjs` - `formatCurrency()`
+
+**Fix logic:** Divide amount by `10^decimalDigits` before formatting:
+```javascript
+// Before (broken)
+return formatter.format(amount);  // 3499 → "$3,499.00"
+
+// After (fixed)
+const decimalDigits = currencies[currency.toUpperCase()]?.decimal_digits ?? 2;
+const divisor = Math.pow(10, decimalDigits);
+const amountInMainUnit = amount / divisor;
+return formatter.format(amountInMainUnit);  // 3499 → "$34.99"
+```
+
+This correctly handles:
+- **USD (2 decimals):** 3499 cents ÷ 100 = $34.99
+- **JPY (0 decimals):** 3499 yen ÷ 1 = ¥3,499
+
+### Approaches That Did NOT Work
+
+| Approach | Why It Failed |
+|----------|---------------|
+| Patching `src/*.ts` files | Vite uses pre-compiled `.mjs` files, not TypeScript sources |
+| Patching `dist/app.js` | Vite uses chunk files, not the bundled app.js |
+| Vite transform plugin | Plugin added correctly but transforms weren't called on these files |
+| Dockerfile sed commands | Fragile, depends on minified variable names |
+
+### How to Fix Similar Dashboard Issues
+
+1. **Identify the function** in `src/lib/*.ts` that needs fixing
+2. **Find the compiled chunk** in `dist/chunk-*.mjs` that contains the function
+3. **Edit the chunk file** directly with the fix
+4. **Run `npx patch-package @medusajs/dashboard`** to create/update the patch
+5. **Commit the patch** to `patches/` directory
+6. **Deploy** - patch-package runs automatically during `yarn install`
+
+### Verifying the Fix
+
+Check these locations in the admin dashboard:
+- **Orders list** → Order Total column
+- **Order detail** → Item Subtotal, Shipping, Tax, Total
+- **Product variant** → Prices panel (right sidebar)
 
 ---
 
@@ -232,6 +310,6 @@ The backend is fully configured and ready for the storefront deployment:
 
 ---
 
-*Last updated: December 22, 2025*
+*Last updated: December 30, 2024*
 *Medusa Version: 2.12.3*
 *Status: PRODUCTION READY*
