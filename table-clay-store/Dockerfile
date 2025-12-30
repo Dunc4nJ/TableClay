@@ -22,8 +22,7 @@ RUN npx patch-package
 COPY . .
 
 # Run unit tests before build (fails build if tests fail)
-# Using --passWithNoTests so build doesn't fail if no unit tests exist yet
-RUN yarn test:unit --passWithNoTests || echo "No unit tests found, continuing..."
+RUN yarn test:unit --passWithNoTests
 
 # Build the application
 RUN yarn build
