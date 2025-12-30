@@ -1,0 +1,15 @@
+diff --git a/node_modules/@medusajs/core-flows/dist/cart/workflows/complete-cart.js b/node_modules/@medusajs/core-flows/dist/cart/workflows/complete-cart.js
+index 1c4cc60..fce7cff 100644
+--- a/node_modules/@medusajs/core-flows/dist/cart/workflows/complete-cart.js
++++ b/node_modules/@medusajs/core-flows/dist/cart/workflows/complete-cart.js
+@@ -348,7 +348,9 @@ exports.completeCartWorkflow = (0, workflows_sdk_1.createWorkflow)({
+                 return {
+                     name: sm.name,
+                     description: sm.description,
+-                    amount: sm.raw_amount ?? sm.amount,
++                    // FIX: Use sm.amount (serialized) instead of sm.raw_amount to match
++                    // how item.unit_price is handled, ensuring consistent amount format
++                    amount: sm.amount,
+                     is_tax_inclusive: sm.is_tax_inclusive,
+                     shipping_option_id: sm.shipping_option_id,
+                     data: sm.data,
