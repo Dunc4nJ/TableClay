@@ -6,10 +6,11 @@ RUN apk add --no-cache libc6-compat python3 make g++
 
 WORKDIR /app
 
-# Copy package files
+# Copy package files and patches
 COPY package.json yarn.lock .yarnrc.yml ./
+COPY patches/ ./patches/
 
-# Install dependencies
+# Install dependencies (postinstall runs patch-package)
 RUN corepack enable && corepack prepare yarn@3.2.1 --activate
 RUN yarn install --immutable
 
