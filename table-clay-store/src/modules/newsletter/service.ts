@@ -68,7 +68,7 @@ class NewsletterModuleService extends MedusaService({
             source,
           },
         })
-        return updated[0]
+        return Array.isArray(updated) ? updated[0] : updated
       }
 
       // Already active subscriber
@@ -91,7 +91,8 @@ class NewsletterModuleService extends MedusaService({
       tags: {},
     })
 
-    return created[0]
+    // MedusaService returns single object when single input, array when array input
+    return Array.isArray(created) ? created[0] : created
   }
 
   /**
@@ -112,7 +113,7 @@ class NewsletterModuleService extends MedusaService({
       },
     })
 
-    return updated[0]
+    return Array.isArray(updated) ? updated[0] : updated
   }
 
   /**
