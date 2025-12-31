@@ -21,8 +21,11 @@ const ExpressCheckout: React.FC<ExpressCheckoutProps> = ({ cart }) => {
   // Don't render section if no payment session
   // The ExpressCheckoutButton will handle hiding itself if no methods available
   if (!hasClientSecret) {
+    console.log("[ExpressCheckout] No client secret, section hidden")
     return null
   }
+
+  console.log("[ExpressCheckout] Rendering with client secret")
 
   return (
     <div className="bg-white">

@@ -258,8 +258,9 @@ const ExpressCheckoutButton: React.FC<ExpressCheckoutButtonProps> = ({
     setIsProcessing(false)
   }, [])
 
-  // Don't render if not ready, no client secret, or no express methods available
+  // Don't render if not ready or no client secret
   if (notReady || !clientSecret) {
+    console.log("[ExpressCheckout] Not rendering:", { notReady, hasClientSecret: !!clientSecret })
     return null
   }
 
