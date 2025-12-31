@@ -73,5 +73,9 @@ module.exports = defineConfig({
         ],
       },
     },
+    // Custom Newsletter Module for subscriber management
+    {
+      resolve: "./src/modules/newsletter",
+    },
   ],
 })

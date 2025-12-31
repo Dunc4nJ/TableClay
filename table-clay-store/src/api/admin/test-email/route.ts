@@ -19,15 +19,20 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
 
     const notificationModuleService = req.scope.resolve(Modules.NOTIFICATION)
 
-    // Send a test email
+    // Send a test email using inline content (no template required)
     const result = await notificationModuleService.createNotifications({
       to: email,
       channel: "email",
-      template: "test-email",
-      data: {
+      content: {
         subject: "Table Clay - Test Email",
-        message: "This is a test email to verify SendGrid configuration is working correctly.",
-        timestamp: new Date().toISOString(),
+        text: `This is a test email to verify SendGrid configuration is working correctly.\n\nTimestamp: ${new Date().toISOString()}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h1 style="color: #8B4513;">Table Clay</h1>
+            <p>This is a test email to verify SendGrid configuration is working correctly.</p>
+            <p style="color: #666; font-size: 12px;">Timestamp: ${new Date().toISOString()}</p>
+          </div>
+        `,
       },
     })
 
