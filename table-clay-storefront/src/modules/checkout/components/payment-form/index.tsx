@@ -3,14 +3,15 @@
 import { RadioGroup, Radio } from "@headlessui/react"
 import { isStripeLike, paymentInfoMap } from "@lib/constants"
 import { initiatePaymentSession } from "@lib/data/cart"
-import { clx } from "@medusajs/ui"
+import { Text, clx } from "@medusajs/ui"
 import ErrorMessage from "@modules/checkout/components/error-message"
-import PaymentContainer, {
-  StripeCardContainer,
-} from "@modules/checkout/components/payment-container"
 import { PaymentIcons, PayPalIcon } from "../payment-icons"
 import MedusaRadio from "@modules/common/components/radio"
-import { useCallback, useState, useEffect } from "react"
+import SkeletonCardDetails from "@modules/skeletons/components/skeleton-card-details"
+import { CardElement } from "@stripe/react-stripe-js"
+import { StripeCardElementOptions } from "@stripe/stripe-js"
+import { StripeContext } from "../payment-wrapper/stripe-wrapper"
+import { useContext, useMemo, useState, useEffect } from "react"
 
 interface PaymentFormProps {
   cart: any
@@ -23,6 +24,8 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
   availablePaymentMethods,
   onPaymentReady,
 }) => {
+  const stripeReady = useContext(StripeContext)
+
   const activeSession = cart.payment_collection?.payment_sessions?.find(
     (paymentSession: any) => paymentSession.status === "pending"
   )
@@ -33,6 +36,23 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(
     activeSession?.provider_id ?? availablePaymentMethods?.[0]?.id ?? ""
   )
+
+  // Stripe card element options
+  const cardElementOptions: StripeCardElementOptions = useMemo(() => ({
+    style: {
+      base: {
+        fontFamily: "Inter, sans-serif",
+        color: "#424270",
+        fontSize: "16px",
+        "::placeholder": {
+          color: "rgb(107 114 128)",
+        },
+      },
+    },
+    classes: {
+      base: "pt-3 pb-1 block w-full h-11 px-4 mt-0 bg-white border rounded-md appearance-none focus:outline-none focus:ring-0 focus:shadow-borders-interactive-with-active border-gray-300 hover:bg-gray-50 transition-all duration-300 ease-in-out",
+    },
+  }), [])
 
   const paidByGiftcard =
     cart?.gift_cards && cart?.gift_cards?.length > 0 && cart?.total === 0
@@ -144,14 +164,25 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
                 {/* Stripe Card Form (expanded when selected) */}
                 {isStripe && isSelected && (
                   <div className="px-4 pb-4 bg-tc-cream">
-                    <StripeCardContainer
-                      paymentProviderId={paymentMethod.id}
-                      selectedPaymentOptionId={selectedPaymentMethod}
-                      paymentInfoMap={paymentInfoMap}
-                      setCardBrand={setCardBrand}
-                      setError={setError}
-                      setCardComplete={setCardComplete}
-                    />
+                    {stripeReady ? (
+                      <div className="transition-all duration-150 ease-in-out">
+                        <Text className="txt-medium-plus text-gray-700 mb-2">
+                          Enter your card details:
+                        </Text>
+                        <CardElement
+                          options={cardElementOptions}
+                          onChange={(e) => {
+                            setCardBrand(
+                              e.brand && e.brand.charAt(0).toUpperCase() + e.brand.slice(1)
+                            )
+                            setError(e.error?.message || null)
+                            setCardComplete(e.complete)
+                          }}
+                        />
+                      </div>
+                    ) : (
+                      <SkeletonCardDetails />
+                    )}
                   </div>
                 )}
 
