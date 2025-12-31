@@ -56,5 +56,22 @@ module.exports = defineConfig({
         ],
       },
     }] : []),
+    // SendGrid Email Notifications
+    {
+      resolve: "@medusajs/medusa/notification",
+      options: {
+        providers: [
+          {
+            resolve: "@medusajs/medusa/notification-sendgrid",
+            id: "sendgrid",
+            options: {
+              channels: ["email"],
+              api_key: process.env.SENDGRID_API_KEY,
+              from: process.env.SENDGRID_FROM || "orders@tableclay.com",
+            },
+          },
+        ],
+      },
+    },
   ],
 })
