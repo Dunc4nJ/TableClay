@@ -53,6 +53,19 @@ index 24b0db4..cbf3e69 100644
      };
    }
  });
+diff --git a/node_modules/@medusajs/dashboard/dist/chunk-BYOPZAGX.mjs b/node_modules/@medusajs/dashboard/dist/chunk-BYOPZAGX.mjs
+index cebcbc2..b76dfaa 100644
+--- a/node_modules/@medusajs/dashboard/dist/chunk-BYOPZAGX.mjs
++++ b/node_modules/@medusajs/dashboard/dist/chunk-BYOPZAGX.mjs
+@@ -3,7 +3,7 @@ import { ArrowDownTray } from "@medusajs/icons";
+ import { Text, clx } from "@medusajs/ui";
+ import { useRef, useState } from "react";
+ import { jsx, jsxs } from "react/jsx-runtime";
+-var DEFAULT_MAX_FILE_SIZE = 1024 * 1024;
++var DEFAULT_MAX_FILE_SIZE = 25 * 1024 * 1024;
+ var FileUpload = ({
+   label,
+   hint,
 diff --git a/node_modules/@medusajs/dashboard/dist/chunk-WATKBUHQ.mjs b/node_modules/@medusajs/dashboard/dist/chunk-WATKBUHQ.mjs
 index ee8277c..d14768c 100644
 --- a/node_modules/@medusajs/dashboard/dist/chunk-WATKBUHQ.mjs
