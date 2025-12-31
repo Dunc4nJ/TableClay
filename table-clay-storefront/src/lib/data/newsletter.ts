@@ -2,6 +2,8 @@
 
 const BACKEND_URL =
   process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9000"
+const PUBLISHABLE_KEY =
+  process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || ""
 
 type NewsletterSubscribeResponse = {
   success: boolean
@@ -33,6 +35,7 @@ export async function subscribeToNewsletter(
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "x-publishable-api-key": PUBLISHABLE_KEY,
       },
       body: JSON.stringify(params),
     })
@@ -69,6 +72,7 @@ export async function unsubscribeFromNewsletter(
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "x-publishable-api-key": PUBLISHABLE_KEY,
         },
         body: JSON.stringify({ email }),
       }
