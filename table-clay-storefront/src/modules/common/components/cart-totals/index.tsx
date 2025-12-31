@@ -72,11 +72,11 @@ const CartTotals: React.FC<CartTotalsProps> = ({ totals }) => {
         </div>
         {tipAmount > 0 && (
           <div className="flex items-center justify-between">
-            <span className="flex gap-x-1 items-center text-amber-700">
+            <span className="flex gap-x-1 items-center text-tc-terracotta">
               Tip
             </span>
             <span
-              className="text-amber-700"
+              className="text-tc-terracotta"
               data-testid="cart-tip"
               data-value={tipAmount}
             >

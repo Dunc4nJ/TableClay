@@ -111,7 +111,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
                 className={clx(
                   "border rounded-lg transition-colors overflow-hidden",
                   {
-                    "border-amber-700 ring-1 ring-amber-700": isSelected,
+                    "border-tc-terracotta ring-1 ring-tc-terracotta": isSelected,
                     "border-gray-300": !isSelected,
                   }
                 )}
@@ -122,7 +122,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
                   className={clx(
                     "flex items-center justify-between w-full p-4 cursor-pointer",
                     {
-                      "bg-amber-50": isSelected,
+                      "bg-tc-cream": isSelected,
                       "hover:bg-gray-50": !isSelected,
                     }
                   )}
@@ -143,7 +143,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
 
                 {/* Stripe Card Form (expanded when selected) */}
                 {isStripe && isSelected && (
-                  <div className="px-4 pb-4 bg-amber-50">
+                  <div className="px-4 pb-4 bg-tc-cream">
                     <StripeCardContainer
                       paymentProviderId={paymentMethod.id}
                       selectedPaymentOptionId={selectedPaymentMethod}
@@ -157,7 +157,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
 
                 {/* Other payment methods (non-stripe) */}
                 {!isStripe && isSelected && (
-                  <div className="px-4 pb-4 bg-amber-50">
+                  <div className="px-4 pb-4 bg-tc-cream">
                     <p className="text-sm text-gray-600">
                       You will be redirected to {paymentInfoMap[paymentMethod.id]?.title || paymentMethod.id} to complete your purchase.
                     </p>

@@ -21,6 +21,16 @@ module.exports = {
         padding: "padding-top padding-right padding-bottom padding-left",
       },
       colors: {
+        // Table Clay checkout accent colors - warm terracotta tones
+        // Used for checkout buttons, selection states, and accents
+        tc: {
+          brown: '#8B4513',         // Primary brown
+          terracotta: '#CD853F',    // Button hover / accent
+          cream: '#F5F0E8',         // Warm background
+          dark: '#2C1810',          // Dark text
+          muted: '#5C4033',         // Secondary text
+          accent: '#D4A574',        // Highlights
+        },
         // Table Clay brand colors - soft sky blue, handmade feel
         // Primary brand color matches the badge logo
         brand: {

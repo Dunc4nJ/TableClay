@@ -117,7 +117,7 @@ const TipSelector: React.FC<TipSelectorProps> = ({ cart, onTipChange }) => {
               onTipChange?.(0)
             }
           }}
-          className="w-4 h-4 text-amber-700 bg-white border-gray-300 rounded focus:ring-amber-600"
+          className="w-4 h-4 text-tc-terracotta bg-white border-gray-300 rounded focus:ring-tc-terracotta"
         />
         <span className="text-sm text-gray-700">
           Show your support for the team at Table Clay
@@ -126,8 +126,8 @@ const TipSelector: React.FC<TipSelectorProps> = ({ cart, onTipChange }) => {
 
       {showTip && (
         <>
-          {/* Percentage Options */}
-          <div className="grid grid-cols-4 gap-2 mt-4">
+          {/* Percentage Options - 2x2 on mobile, 4 on desktop */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-4">
             {TIP_PERCENTAGES.map((tip) => (
               <button
                 key={tip.label}
@@ -136,7 +136,7 @@ const TipSelector: React.FC<TipSelectorProps> = ({ cart, onTipChange }) => {
                 className={clx(
                   "py-3 px-2 rounded border text-center transition-colors",
                   selectedPercentage === tip.value
-                    ? "border-amber-700 bg-amber-50 ring-1 ring-amber-700"
+                    ? "border-tc-terracotta bg-tc-cream ring-1 ring-tc-terracotta"
                     : "border-gray-300 bg-white hover:border-gray-400"
                 )}
               >
@@ -152,50 +152,52 @@ const TipSelector: React.FC<TipSelectorProps> = ({ cart, onTipChange }) => {
             ))}
           </div>
 
-          {/* Custom Tip */}
-          <div className="flex items-center gap-2 mt-4">
-            <span className="text-sm text-gray-600">Custom tip</span>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
-                $
-              </span>
-              <input
-                type="text"
-                inputMode="decimal"
-                value={customTip}
-                onChange={(e) => handleCustomTipChange(e.target.value)}
-                placeholder="0.00"
-                className="w-24 pl-7 pr-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-amber-600 focus:border-amber-600"
-              />
+          {/* Custom Tip - stacks on mobile */}
+          <div className="mt-4">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-sm text-gray-600 w-full sm:w-auto">Custom tip</span>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+                  $
+                </span>
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  value={customTip}
+                  onChange={(e) => handleCustomTipChange(e.target.value)}
+                  placeholder="0.00"
+                  className="w-24 pl-7 pr-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-tc-terracotta focus:border-tc-terracotta"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={decrementCustomTip}
+                className="w-10 h-10 flex items-center justify-center border border-gray-300 rounded bg-white hover:bg-gray-50 text-gray-600 touch-manipulation"
+              >
+                −
+              </button>
+              <button
+                type="button"
+                onClick={incrementCustomTip}
+                className="w-10 h-10 flex items-center justify-center border border-gray-300 rounded bg-white hover:bg-gray-50 text-gray-600 touch-manipulation"
+              >
+                +
+              </button>
+              <button
+                type="button"
+                onClick={handleCustomTipApply}
+                disabled={!customTip || parseFloat(customTip) <= 0}
+                className="px-4 py-2 border border-gray-300 rounded text-sm bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
+              >
+                Add tip
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={decrementCustomTip}
-              className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded bg-white hover:bg-gray-50 text-gray-600"
-            >
-              −
-            </button>
-            <button
-              type="button"
-              onClick={incrementCustomTip}
-              className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded bg-white hover:bg-gray-50 text-gray-600"
-            >
-              +
-            </button>
-            <button
-              type="button"
-              onClick={handleCustomTipApply}
-              disabled={!customTip || parseFloat(customTip) <= 0}
-              className="px-4 py-2 border border-gray-300 rounded text-sm bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Add tip
-            </button>
           </div>
 
           {/* Loading State */}
           {isPending && (
             <div className="mt-4 flex items-center gap-2 text-gray-500">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-amber-700"></div>
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-tc-terracotta"></div>
               <span className="text-sm">Applying tip...</span>
             </div>
           )}
@@ -209,8 +211,8 @@ const TipSelector: React.FC<TipSelectorProps> = ({ cart, onTipChange }) => {
 
           {/* Applied Tip Display */}
           {appliedTip > 0 && !isPending && !error && (
-            <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded">
-              <p className="text-sm text-amber-800">
+            <div className="mt-4 p-3 bg-tc-cream border border-tc-accent rounded">
+              <p className="text-sm text-tc-dark">
                 Tip added: {formatPrice(appliedTip)}
               </p>
             </div>

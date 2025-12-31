@@ -157,7 +157,7 @@ const ShippingMethodSelector: React.FC<ShippingMethodSelectorProps> = ({
               className={clx(
                 "flex items-center justify-between text-sm cursor-pointer py-4 border rounded-lg px-4 hover:border-gray-400 transition-colors",
                 {
-                  "border-amber-700 bg-amber-50 ring-1 ring-amber-700":
+                  "border-tc-terracotta bg-tc-cream ring-1 ring-tc-terracotta":
                     showPickupOptions === PICKUP_OPTION_ON,
                   "border-gray-300": showPickupOptions !== PICKUP_OPTION_ON,
                 }
@@ -197,7 +197,7 @@ const ShippingMethodSelector: React.FC<ShippingMethodSelectorProps> = ({
                   className={clx(
                     "flex items-center justify-between text-sm cursor-pointer py-4 border rounded-lg px-4 transition-colors",
                     {
-                      "border-amber-700 bg-amber-50 ring-1 ring-amber-700":
+                      "border-tc-terracotta bg-tc-cream ring-1 ring-tc-terracotta":
                         option.id === shippingMethodId,
                       "border-gray-300 hover:border-gray-400":
                         option.id !== shippingMethodId && !isDisabled,
@@ -254,7 +254,7 @@ const ShippingMethodSelector: React.FC<ShippingMethodSelectorProps> = ({
                   className={clx(
                     "flex items-center justify-between text-sm cursor-pointer py-4 border rounded-lg px-4 transition-colors",
                     {
-                      "border-amber-700 bg-amber-50 ring-1 ring-amber-700":
+                      "border-tc-terracotta bg-tc-cream ring-1 ring-tc-terracotta":
                         option.id === shippingMethodId,
                       "border-gray-300 hover:border-gray-400":
                         option.id !== shippingMethodId &&

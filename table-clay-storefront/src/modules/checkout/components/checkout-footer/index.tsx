@@ -2,7 +2,6 @@
 
 import { HttpTypes } from "@medusajs/types"
 import { Button } from "@medusajs/ui"
-import { useRouter, useSearchParams } from "next/navigation"
 import { useState } from "react"
 import { placeOrder } from "@lib/data/cart"
 import ErrorMessage from "@modules/checkout/components/error-message"
@@ -27,12 +26,8 @@ const LockIcon = () => (
 )
 
 const CheckoutFooter: React.FC<CheckoutFooterProps> = ({ cart }) => {
-  const router = useRouter()
-  const searchParams = useSearchParams()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-
-  const isPaymentReady = searchParams.get("step") === "review"
 
   // Check if all required info is present
   const hasEmail = !!cart.email
@@ -75,7 +70,7 @@ const CheckoutFooter: React.FC<CheckoutFooterProps> = ({ cart }) => {
       {/* Pay Now Button */}
       <Button
         size="large"
-        className="w-full py-4 bg-amber-700 hover:bg-amber-800 text-white font-semibold text-lg"
+        className="w-full py-4 bg-tc-terracotta hover:bg-tc-brown text-white font-semibold text-lg transition-colors"
         onClick={handlePlaceOrder}
         isLoading={isLoading}
         disabled={!canPlaceOrder || isLoading}
