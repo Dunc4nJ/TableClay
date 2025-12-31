@@ -65,6 +65,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
             target_type: "shipping_methods",
             allocation: "each",
             value: 100,
+            max_quantity: 1, // One-time use per order
           },
         })
 
