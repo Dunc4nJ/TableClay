@@ -1,4 +1,4 @@
-import { retrieveCart } from "@lib/data/cart"
+import { initiatePaymentSession, retrieveCart } from "@lib/data/cart"
 import { retrieveCustomer } from "@lib/data/customer"
 import PaymentWrapper from "@modules/checkout/components/payment-wrapper"
 import CheckoutForm from "@modules/checkout/templates/checkout-form"
@@ -11,10 +11,29 @@ export const metadata: Metadata = {
 }
 
 export default async function Checkout() {
-  const cart = await retrieveCart()
+  let cart = await retrieveCart()
 
   if (!cart) {
     return notFound()
+  }
+
+  // Initialize Stripe payment session early for Express Checkout
+  // This ensures client_secret is available when Express Checkout renders
+  const hasPaymentSession = cart.payment_collection?.payment_sessions?.some(
+    (s) => s.status === "pending" && s.provider_id === "pp_stripe_stripe"
+  )
+
+  if (!hasPaymentSession) {
+    try {
+      await initiatePaymentSession(cart, {
+        provider_id: "pp_stripe_stripe",
+      })
+      // Re-fetch cart with updated payment session
+      cart = (await retrieveCart()) || cart
+    } catch (error) {
+      // Non-blocking - Express Checkout is optional enhancement
+      console.error("[Checkout] Failed to initiate payment session:", error)
+    }
   }
 
   const customer = await retrieveCustomer()

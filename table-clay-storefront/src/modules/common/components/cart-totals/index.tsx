@@ -12,6 +12,7 @@ type CartTotalsProps = {
     item_subtotal?: number | null
     shipping_subtotal?: number | null
     discount_subtotal?: number | null
+    metadata?: Record<string, unknown> | null
   }
 }
 
@@ -23,7 +24,14 @@ const CartTotals: React.FC<CartTotalsProps> = ({ totals }) => {
     item_subtotal,
     shipping_subtotal,
     discount_subtotal,
+    metadata,
   } = totals
+
+  // Get tip amount from cart metadata
+  const tipAmount = (metadata?.tip_amount as number) || 0
+
+  // Calculate total including tip
+  const totalWithTip = (total ?? 0) + tipAmount
 
   return (
     <div>
@@ -62,6 +70,20 @@ const CartTotals: React.FC<CartTotalsProps> = ({ totals }) => {
             {convertToLocale({ amount: tax_total ?? 0, currency_code })}
           </span>
         </div>
+        {tipAmount > 0 && (
+          <div className="flex items-center justify-between">
+            <span className="flex gap-x-1 items-center text-amber-700">
+              Tip
+            </span>
+            <span
+              className="text-amber-700"
+              data-testid="cart-tip"
+              data-value={tipAmount}
+            >
+              {convertToLocale({ amount: tipAmount, currency_code })}
+            </span>
+          </div>
+        )}
       </div>
       <div className="h-px w-full border-b border-gray-200 my-4" />
       <div className="flex items-center justify-between text-ui-fg-base mb-2 txt-medium ">
@@ -69,9 +91,9 @@ const CartTotals: React.FC<CartTotalsProps> = ({ totals }) => {
         <span
           className="txt-xlarge-plus"
           data-testid="cart-total"
-          data-value={total || 0}
+          data-value={totalWithTip}
         >
-          {convertToLocale({ amount: total ?? 0, currency_code })}
+          {convertToLocale({ amount: totalWithTip, currency_code })}
         </span>
       </div>
       <div className="h-px w-full border-b border-gray-200 mt-4" />

@@ -1,12 +1,12 @@
 import { listCartShippingMethods } from "@lib/data/fulfillment"
 import { listCartPaymentMethods } from "@lib/data/payment"
 import { HttpTypes } from "@medusajs/types"
-import Addresses from "@modules/checkout/components/addresses"
 import CheckoutSection from "@modules/checkout/components/checkout-section"
 import CheckoutFooter from "@modules/checkout/components/checkout-footer"
 import ExpressCheckout from "@modules/checkout/components/express-checkout"
-import Payment from "@modules/checkout/components/payment"
-import Shipping from "@modules/checkout/components/shipping"
+import ContactDeliveryForm from "@modules/checkout/components/contact-delivery-form"
+import ShippingMethodSelector from "@modules/checkout/components/shipping-method-selector"
+import PaymentForm from "@modules/checkout/components/payment-form"
 import TipSelector from "@modules/checkout/components/tip-selector"
 
 export default async function CheckoutForm({
@@ -32,7 +32,7 @@ export default async function CheckoutForm({
       {/* Express Checkout at TOP */}
       <ExpressCheckout cart={cart} />
 
-      {/* OR Divider - only shown when express checkout might be visible */}
+      {/* OR Divider */}
       <div className="relative flex items-center py-6">
         <div className="flex-grow border-t border-gray-300"></div>
         <span className="flex-shrink mx-4 text-sm text-gray-500 uppercase tracking-wide">
@@ -43,17 +43,20 @@ export default async function CheckoutForm({
 
       {/* Contact & Delivery Section */}
       <CheckoutSection title="Contact & Delivery">
-        <Addresses cart={cart} customer={customer} />
+        <ContactDeliveryForm cart={cart} customer={customer} />
       </CheckoutSection>
 
       {/* Shipping Method Section */}
       <CheckoutSection title="Shipping method">
-        <Shipping cart={cart} availableShippingMethods={shippingMethods} />
+        <ShippingMethodSelector
+          cart={cart}
+          availableShippingMethods={shippingMethods}
+        />
       </CheckoutSection>
 
       {/* Payment Section */}
       <CheckoutSection title="Payment">
-        <Payment cart={cart} availablePaymentMethods={paymentMethods} />
+        <PaymentForm cart={cart} availablePaymentMethods={paymentMethods} />
       </CheckoutSection>
 
       {/* Add Tip Section */}
