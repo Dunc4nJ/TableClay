@@ -15,7 +15,7 @@ export class Migration20251231160000 extends Migration {
         "discount_code_sent" BOOLEAN NOT NULL DEFAULT false,
         "discount_code_used" BOOLEAN NOT NULL DEFAULT false,
         "discount_code_used_at" TIMESTAMPTZ NULL,
-        "tags" JSONB NOT NULL DEFAULT '[]',
+        "tags" JSONB NOT NULL DEFAULT '{}',
         "metadata" JSONB NULL,
         "created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
         "updated_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
