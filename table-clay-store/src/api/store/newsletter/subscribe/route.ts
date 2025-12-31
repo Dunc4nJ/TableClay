@@ -63,6 +63,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
           application_method: {
             type: "percentage",
             target_type: "shipping_methods",
+            allocation: "each",
             value: 100,
           },
         })
