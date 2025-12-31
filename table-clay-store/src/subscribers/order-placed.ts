@@ -3,6 +3,8 @@ import type {
   SubscriberConfig,
 } from "@medusajs/framework"
 import { Modules } from "@medusajs/framework/utils"
+import { NEWSLETTER_MODULE } from "../modules/newsletter"
+import type NewsletterModuleService from "../modules/newsletter/service"
 
 type OrderItem = {
   title: string
@@ -30,7 +32,7 @@ export default async function orderPlacedHandler({
   const notificationModuleService = container.resolve(Modules.NOTIFICATION)
   const query = container.resolve("query")
 
-  // Fetch order details
+  // Fetch order details including promotions for discount tracking
   const { data: [order] } = await query.graph({
     entity: "order",
     fields: [
@@ -46,6 +48,7 @@ export default async function orderPlacedHandler({
       "currency_code",
       "items.*",
       "shipping_address.*",
+      "summary.pending_difference",
     ],
     filters: {
       id: data.id,
@@ -324,6 +327,63 @@ Questions? Contact us at orders@tableclay.com
     console.error(`Failed to send order confirmation email to ${order.email}:`, error)
     // Re-throw to let Medusa handle retry logic
     throw error
+  }
+
+  // Track newsletter discount code usage
+  // Only track if this order has a discount applied
+  if (order.discount_total && order.discount_total > 0) {
+    try {
+      const newsletterService: NewsletterModuleService = container.resolve(NEWSLETTER_MODULE)
+
+      // Query order with shipping method adjustments to find applied promotion codes
+      const { data: [orderWithAdjustments] } = await query.graph({
+        entity: "order",
+        fields: [
+          "id",
+          "shipping_methods.adjustments.code",
+          "items.adjustments.code",
+        ],
+        filters: {
+          id: data.id,
+        },
+      })
+
+      // Collect all promotion codes from adjustments
+      const appliedCodes = new Set<string>()
+
+      // Check shipping method adjustments (where FREESHIP codes apply)
+      const shippingMethods = (orderWithAdjustments?.shipping_methods || []) as Array<{
+        adjustments?: Array<{ code?: string }>
+      }>
+      for (const method of shippingMethods) {
+        for (const adj of method.adjustments || []) {
+          if (adj.code && adj.code.startsWith("FREESHIP-")) {
+            appliedCodes.add(adj.code)
+          }
+        }
+      }
+
+      // Also check item adjustments (in case code was applied to items)
+      const orderItems = (orderWithAdjustments?.items || []) as Array<{
+        adjustments?: Array<{ code?: string }>
+      }>
+      for (const item of orderItems) {
+        for (const adj of item.adjustments || []) {
+          if (adj.code && adj.code.startsWith("FREESHIP-")) {
+            appliedCodes.add(adj.code)
+          }
+        }
+      }
+
+      // Mark each applied FREESHIP code as used
+      for (const code of appliedCodes) {
+        await newsletterService.markDiscountCodeUsed(code)
+        console.log(`Marked newsletter discount code ${code} as used for order #${order.display_id}`)
+      }
+    } catch (discountError) {
+      // Don't fail the order if discount tracking fails - just log it
+      console.warn("Failed to track newsletter discount code usage:", discountError)
+    }
   }
 }
 
