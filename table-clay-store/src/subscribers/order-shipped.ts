@@ -35,6 +35,8 @@ export default async function orderShippedHandler({
   event: { data },
   container,
 }: SubscriberArgs<{ id: string; no_notification?: boolean }>) {
+  console.log(`[order-shipped] Event received! Fulfillment ID: ${data.id}`)
+
   // Don't send if notification is suppressed
   if (data.no_notification) {
     console.log(`Shipping notification suppressed for fulfillment ${data.id}`)
