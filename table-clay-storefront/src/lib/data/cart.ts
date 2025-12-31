@@ -471,3 +471,85 @@ export async function listCartOptions() {
     cache: "force-cache",
   })
 }
+
+/**
+ * Add a tip amount to the cart
+ * @param cartId - The ID of the cart
+ * @param tipAmount - The tip amount in cents (minor currency units)
+ */
+export async function addTipToCart(cartId: string, tipAmount: number) {
+  const headers = {
+    ...(await getAuthHeaders()),
+  }
+
+  const response = await sdk.client.fetch<{
+    success: boolean
+    cart?: { id: string; metadata: Record<string, unknown> }
+    error?: string
+  }>(`/store/cart/${cartId}/tip`, {
+    method: "POST",
+    body: { tip_amount: tipAmount },
+    headers,
+  })
+
+  if (!response.success) {
+    throw new Error(response.error || "Failed to add tip")
+  }
+
+  const cartCacheTag = await getCacheTag("carts")
+  revalidateTag(cartCacheTag)
+
+  return response
+}
+
+/**
+ * Get the current tip amount from cart
+ * @param cartId - The ID of the cart
+ */
+export async function getTipFromCart(cartId: string) {
+  const headers = {
+    ...(await getAuthHeaders()),
+  }
+
+  const response = await sdk.client.fetch<{
+    success: boolean
+    tip_amount: number
+    error?: string
+  }>(`/store/cart/${cartId}/tip`, {
+    method: "GET",
+    headers,
+  })
+
+  if (!response.success) {
+    return 0
+  }
+
+  return response.tip_amount
+}
+
+/**
+ * Remove tip from cart
+ * @param cartId - The ID of the cart
+ */
+export async function removeTipFromCart(cartId: string) {
+  const headers = {
+    ...(await getAuthHeaders()),
+  }
+
+  const response = await sdk.client.fetch<{
+    success: boolean
+    error?: string
+  }>(`/store/cart/${cartId}/tip`, {
+    method: "DELETE",
+    headers,
+  })
+
+  if (!response.success) {
+    throw new Error(response.error || "Failed to remove tip")
+  }
+
+  const cartCacheTag = await getCacheTag("carts")
+  revalidateTag(cartCacheTag)
+
+  return response
+}
