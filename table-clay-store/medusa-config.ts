@@ -51,6 +51,12 @@ module.exports = defineConfig({
               secret_access_key: process.env.S3_SECRET_ACCESS_KEY,
               region: process.env.S3_REGION,
               bucket: process.env.S3_BUCKET,
+              // Extended timeout for large product image uploads (5 minutes)
+              // Railway allows up to 15 min, but 5 min should be sufficient
+              additional_client_config: {
+                requestTimeout: 300000, // 5 minutes in ms
+                maxRetries: 3,
+              },
             },
           },
         ],
