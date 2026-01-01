@@ -11,8 +11,9 @@ export const metadata: Metadata = {
 }
 
 // Fields required for checkout - must include payment_collection for Stripe
+// NOTE: +payment_collection.payment_sessions.data is CRITICAL for client_secret
 const CHECKOUT_CART_FIELDS =
-  "*items, *region, *items.product, *items.variant, *items.thumbnail, *items.metadata, +items.total, *promotions, +shipping_methods.name, *payment_collection, *payment_collection.payment_sessions"
+  "*items, *region, *items.product, *items.variant, *items.thumbnail, *items.metadata, +items.total, *promotions, +shipping_methods.name, *payment_collection, *payment_collection.payment_sessions, +payment_collection.payment_sessions.data"
 
 export default async function Checkout() {
   let cart = await retrieveCart(undefined, CHECKOUT_CART_FIELDS)
