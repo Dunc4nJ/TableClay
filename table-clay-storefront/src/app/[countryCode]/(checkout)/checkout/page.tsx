@@ -10,8 +10,12 @@ export const metadata: Metadata = {
   title: "Checkout",
 }
 
+// Fields required for checkout - must include payment_collection for Stripe
+const CHECKOUT_CART_FIELDS =
+  "*items, *region, *items.product, *items.variant, *items.thumbnail, *items.metadata, +items.total, *promotions, +shipping_methods.name, *payment_collection, *payment_collection.payment_sessions"
+
 export default async function Checkout() {
-  let cart = await retrieveCart()
+  let cart = await retrieveCart(undefined, CHECKOUT_CART_FIELDS)
 
   if (!cart) {
     return notFound()
@@ -28,8 +32,8 @@ export default async function Checkout() {
       await initiatePaymentSession(cart, {
         provider_id: "pp_stripe_stripe",
       })
-      // Re-fetch cart with updated payment session
-      cart = (await retrieveCart()) || cart
+      // Re-fetch cart with updated payment session (include payment_collection!)
+      cart = (await retrieveCart(undefined, CHECKOUT_CART_FIELDS)) || cart
     } catch (error) {
       // Non-blocking - Express Checkout is optional enhancement
       console.error("[Checkout] Failed to initiate payment session:", error)
