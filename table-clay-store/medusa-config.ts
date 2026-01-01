@@ -24,13 +24,13 @@ module.exports = defineConfig({
       },
     },
     // Stripe Payment Provider
-    // Note: Use @medusajs/medusa/payment-stripe for Medusa v2 monorepo path
+    // Use direct @medusajs/payment-stripe dependency for proper container resolution
     {
       resolve: "@medusajs/medusa/payment",
       options: {
         providers: [
           {
-            resolve: "@medusajs/medusa/payment-stripe",
+            resolve: "@medusajs/payment-stripe",
             id: "stripe",
             options: {
               apiKey: process.env.STRIPE_API_KEY,
