@@ -24,14 +24,25 @@ module.exports = defineConfig({
       },
     },
     // Stripe Payment Provider
-    // NOTE: Do NOT include 'id' field - it creates pp_stripe_stripe instead of pp_stripe
-    // The provider's static identifier "stripe" is sufficient for single-account setups
+    // Registers as pp_stripe (no id = uses identifier only)
+    // Also registers pp_stripe_stripe (with id) to clean up old payment sessions
+    // TODO: Remove the second provider after stale sessions are cleared
     {
       resolve: "@medusajs/medusa/payment",
       options: {
         providers: [
+          // Primary: pp_stripe (correct for new sessions)
           {
             resolve: "@medusajs/medusa/payment-stripe",
+            options: {
+              apiKey: process.env.STRIPE_API_KEY,
+              webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
+            },
+          },
+          // Legacy: pp_stripe_stripe (for deleting old sessions)
+          {
+            resolve: "@medusajs/medusa/payment-stripe",
+            id: "stripe",
             options: {
               apiKey: process.env.STRIPE_API_KEY,
               webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
