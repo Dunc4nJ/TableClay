@@ -6,6 +6,7 @@ import CheckoutFooter from "@modules/checkout/components/checkout-footer"
 import ExpressCheckout from "@modules/checkout/components/express-checkout"
 import ContactDeliveryForm from "@modules/checkout/components/contact-delivery-form"
 import ShippingMethodSelector from "@modules/checkout/components/shipping-method-selector"
+import PaymentWrapper from "@modules/checkout/components/payment-wrapper"
 import PaymentForm from "@modules/checkout/components/payment-form"
 import TipSelector from "@modules/checkout/components/tip-selector"
 
@@ -56,7 +57,9 @@ export default async function CheckoutForm({
 
       {/* Payment Section */}
       <CheckoutSection title="Payment">
-        <PaymentForm cart={cart} availablePaymentMethods={paymentMethods} />
+        <PaymentWrapper cart={cart}>
+          <PaymentForm cart={cart} availablePaymentMethods={paymentMethods} />
+        </PaymentWrapper>
       </CheckoutSection>
 
       {/* Add Tip Section */}
