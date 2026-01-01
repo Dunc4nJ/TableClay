@@ -1,4 +1,5 @@
 import { loadEnv, defineConfig } from '@medusajs/framework/utils'
+import { NodeHttpHandler } from '@smithy/node-http-handler'
 
 loadEnv(process.env.NODE_ENV || 'development', process.cwd())
 
@@ -53,10 +54,13 @@ module.exports = defineConfig({
               region: process.env.S3_REGION,
               bucket: process.env.S3_BUCKET,
               // Extended timeout for large product image uploads (5 minutes)
-              // Railway allows up to 15 min, but 5 min should be sufficient
+              // AWS SDK v3 requires requestHandler for timeout config
               additional_client_config: {
-                requestTimeout: 300000, // 5 minutes in ms
-                maxRetries: 3,
+                maxAttempts: 3,
+                requestHandler: new NodeHttpHandler({
+                  requestTimeout: 300000, // 5 minutes in ms
+                  connectionTimeout: 10000, // 10 seconds to establish connection
+                }),
               },
             },
           },
