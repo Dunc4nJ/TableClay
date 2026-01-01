@@ -24,14 +24,14 @@ module.exports = defineConfig({
       },
     },
     // Stripe Payment Provider
-    // Use direct @medusajs/payment-stripe dependency for proper container resolution
+    // NOTE: Do NOT include 'id' field - it creates pp_stripe_stripe instead of pp_stripe
+    // The provider's static identifier "stripe" is sufficient for single-account setups
     {
       resolve: "@medusajs/medusa/payment",
       options: {
         providers: [
           {
-            resolve: "@medusajs/payment-stripe",
-            id: "stripe",
+            resolve: "@medusajs/medusa/payment-stripe",
             options: {
               apiKey: process.env.STRIPE_API_KEY,
               webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
