@@ -113,9 +113,10 @@ const Shipping: React.FC<ShippingProps> = ({
   const handleSubmit = async () => {
     // Auto-initiate Stripe payment session for Express Checkout
     // This ensures client_secret is available when Express Checkout renders
+    // Provider ID is "pp_stripe" based on medusa-config.ts id: "stripe"
     try {
       await initiatePaymentSession(cart, {
-        provider_id: "pp_stripe_stripe",
+        provider_id: "pp_stripe",
       })
       console.log("[Shipping] Payment session initiated for Express Checkout")
     } catch (err) {

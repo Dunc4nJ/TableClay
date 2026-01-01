@@ -23,14 +23,15 @@ export default async function Checkout() {
 
   // Initialize Stripe payment session early for Express Checkout
   // This ensures client_secret is available when Express Checkout renders
+  // NOTE: Provider ID is "pp_stripe" (not "pp_stripe_stripe") based on medusa-config.ts id: "stripe"
   const hasPaymentSession = cart.payment_collection?.payment_sessions?.some(
-    (s) => s.status === "pending" && s.provider_id === "pp_stripe_stripe"
+    (s) => s.status === "pending" && s.provider_id === "pp_stripe"
   )
 
   if (!hasPaymentSession) {
     try {
       await initiatePaymentSession(cart, {
-        provider_id: "pp_stripe_stripe",
+        provider_id: "pp_stripe",
       })
       // Re-fetch cart with updated payment session (include payment_collection!)
       cart = (await retrieveCart(undefined, CHECKOUT_CART_FIELDS)) || cart
