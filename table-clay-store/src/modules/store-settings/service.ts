@@ -13,6 +13,7 @@ export type StoreSettingRecord = {
 
 // Predefined setting keys
 export const SETTING_KEYS = {
+  BUNDLE_HEADLINE: "bundle_headline",
   BUNDLE_PROMO_TEXT: "bundle_promo_text",
   BUNDLE_PROMO_ENABLED: "bundle_promo_enabled",
 } as const
@@ -74,13 +75,16 @@ class StoreSettingsModuleService extends MedusaService({
    * Get bundle promo settings specifically
    */
   async getBundlePromoSettings(): Promise<{
+    headline: string | null
     promo_text: string | null
     enabled: boolean
   }> {
+    const headline = await this.getSetting(SETTING_KEYS.BUNDLE_HEADLINE)
     const promoText = await this.getSetting(SETTING_KEYS.BUNDLE_PROMO_TEXT)
     const enabledStr = await this.getSetting(SETTING_KEYS.BUNDLE_PROMO_ENABLED)
 
     return {
+      headline: headline,
       promo_text: promoText,
       enabled: enabledStr === "true",
     }
@@ -90,9 +94,13 @@ class StoreSettingsModuleService extends MedusaService({
    * Update bundle promo settings
    */
   async updateBundlePromoSettings(data: {
+    headline?: string | null
     promo_text?: string | null
     enabled?: boolean
   }): Promise<void> {
+    if (data.headline !== undefined) {
+      await this.setSetting(SETTING_KEYS.BUNDLE_HEADLINE, data.headline)
+    }
     if (data.promo_text !== undefined) {
       await this.setSetting(SETTING_KEYS.BUNDLE_PROMO_TEXT, data.promo_text)
     }

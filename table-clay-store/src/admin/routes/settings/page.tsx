@@ -17,6 +17,7 @@ type SettingsResponse = {
   success: boolean
   settings: Record<string, string | null>
   bundle_promo: {
+    headline: string | null
     promo_text: string | null
     enabled: boolean
   }
@@ -33,6 +34,7 @@ const fetchSettings = async (): Promise<SettingsResponse> => {
 }
 
 const updateSettings = async (data: {
+  headline?: string | null
   promo_text?: string | null
   enabled?: boolean
 }) => {
@@ -52,6 +54,7 @@ const SettingsPage = () => {
   const queryClient = useQueryClient()
 
   // Form state
+  const [headline, setHeadline] = useState("")
   const [promoText, setPromoText] = useState("")
   const [promoEnabled, setPromoEnabled] = useState(false)
   const [hasChanges, setHasChanges] = useState(false)
@@ -64,6 +67,7 @@ const SettingsPage = () => {
   // Populate form when data loads
   useEffect(() => {
     if (data?.bundle_promo) {
+      setHeadline(data.bundle_promo.headline || "")
       setPromoText(data.bundle_promo.promo_text || "")
       setPromoEnabled(data.bundle_promo.enabled)
       setHasChanges(false)
@@ -81,6 +85,11 @@ const SettingsPage = () => {
     },
   })
 
+  const handleHeadlineChange = (value: string) => {
+    setHeadline(value)
+    setHasChanges(true)
+  }
+
   const handlePromoTextChange = (value: string) => {
     setPromoText(value)
     setHasChanges(true)
@@ -93,6 +102,7 @@ const SettingsPage = () => {
 
   const handleSave = () => {
     updateMutation.mutate({
+      headline: headline || null,
       promo_text: promoText || null,
       enabled: promoEnabled,
     })
@@ -100,6 +110,7 @@ const SettingsPage = () => {
 
   const handleReset = () => {
     if (data?.bundle_promo) {
+      setHeadline(data.bundle_promo.headline || "")
       setPromoText(data.bundle_promo.promo_text || "")
       setPromoEnabled(data.bundle_promo.enabled)
       setHasChanges(false)
@@ -180,6 +191,21 @@ const SettingsPage = () => {
               />
             </div>
 
+            {/* Headline Input */}
+            <div className="space-y-2">
+              <Label htmlFor="headline">Section Headline</Label>
+              <Input
+                id="headline"
+                placeholder="e.g., BUNDLE & SAVE"
+                value={headline}
+                onChange={(e) => handleHeadlineChange(e.target.value)}
+              />
+              <Text className="text-sm text-ui-fg-subtle">
+                The main title shown above bundle options. Leave empty to use
+                the default &quot;BUNDLE & SAVE&quot;.
+              </Text>
+            </div>
+
             {/* Promo Text Input */}
             <div className="space-y-2">
               <Label htmlFor="promoText">Promo Message</Label>
@@ -196,13 +222,22 @@ const SettingsPage = () => {
             </div>
 
             {/* Preview */}
-            {promoEnabled && promoText && (
+            {promoEnabled && (headline || promoText) && (
               <div className="space-y-2">
                 <Label>Preview</Label>
-                <div className="p-4 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-lg">
-                  <Text className="text-center text-amber-800 font-medium">
-                    {promoText}
-                  </Text>
+                <div className="p-4 border border-gray-300 rounded-lg bg-white">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="flex-1 h-px bg-gray-300" />
+                    <Text className="text-lg font-semibold tracking-wide text-gray-900">
+                      {headline || "BUNDLE & SAVE"}
+                    </Text>
+                    <div className="flex-1 h-px bg-gray-300" />
+                  </div>
+                  {promoText && (
+                    <Text className="text-center text-sm text-gray-700">
+                      {promoText}
+                    </Text>
+                  )}
                 </div>
               </div>
             )}

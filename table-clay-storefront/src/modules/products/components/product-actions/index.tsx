@@ -2,6 +2,7 @@
 
 import { addToCart } from "@lib/data/cart"
 import { Bundle } from "@lib/data/bundles"
+import type { BundlePromoSettings } from "@lib/data/settings"
 import { useIntersection } from "@lib/hooks/use-in-view"
 import { HttpTypes } from "@medusajs/types"
 import { Button } from "@medusajs/ui"
@@ -20,6 +21,7 @@ type ProductActionsProps = {
   region: HttpTypes.StoreRegion
   disabled?: boolean
   bundles?: Bundle[]
+  bundleSettings?: BundlePromoSettings
 }
 
 const optionsAsKeymap = (
@@ -35,6 +37,7 @@ export default function ProductActions({
   product,
   disabled,
   bundles = [],
+  bundleSettings,
 }: ProductActionsProps) {
   const router = useRouter()
   const pathname = usePathname()
@@ -180,7 +183,8 @@ export default function ProductActions({
               bundles={bundles}
               selectedBundleId={selectedBundle?.id || null}
               onSelect={handleBundleSelect}
-              promoText="🎉✨ NEW YEAR SALE | $100 Off + Free Shipping"
+              headline={bundleSettings?.headline || undefined}
+              promoText={bundleSettings?.enabled && bundleSettings?.promo_text ? bundleSettings.promo_text : undefined}
               disabled={!!disabled || isAdding}
             />
 

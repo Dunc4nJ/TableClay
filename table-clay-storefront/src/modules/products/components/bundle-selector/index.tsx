@@ -8,6 +8,8 @@ type BundleSelectorProps = {
   bundles: Bundle[]
   selectedBundleId: string | null
   onSelect: (bundle: Bundle) => void
+  /** Configurable headline text (default: "BUNDLE & SAVE") */
+  headline?: string
   promoText?: string
   disabled?: boolean
   /** If true, show the items included in each bundle */
@@ -85,6 +87,7 @@ export default function BundleSelector({
   bundles,
   selectedBundleId,
   onSelect,
+  headline = "BUNDLE & SAVE",
   promoText,
   disabled = false,
   showItems = true,
@@ -99,7 +102,7 @@ export default function BundleSelector({
       <div className="flex items-center gap-3 mb-2">
         <div className="flex-1 h-px bg-gray-300" />
         <h3 className="text-lg font-semibold tracking-wide text-gray-900">
-          BUNDLE & SAVE
+          {headline}
         </h3>
         <div className="flex-1 h-px bg-gray-300" />
       </div>

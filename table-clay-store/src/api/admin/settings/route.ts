@@ -30,6 +30,7 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
 }
 
 type UpdateBundlePromoBody = {
+  headline?: string | null
   promo_text?: string | null
   enabled?: boolean
 }

@@ -1,5 +1,6 @@
 import { listProducts } from "@lib/data/products"
 import { getBundlesForProduct, type Bundle } from "@lib/data/bundles"
+import { getStoreSettings, type BundlePromoSettings } from "@lib/data/settings"
 import { HttpTypes } from "@medusajs/types"
 import ProductActions from "@modules/products/components/product-actions"
 
@@ -16,19 +17,26 @@ export default async function ProductActionsWrapper({
   region: HttpTypes.StoreRegion
   bundles?: Bundle[]
 }) {
-  // If bundles are provided, only fetch product
-  // Otherwise, fetch product and bundles in parallel
-  const product = await listProducts({
-    queryParams: { id: [id] },
-    regionId: region.id,
-  }).then(({ response }) => response.products[0])
-
-  // Use provided bundles or fetch them
-  const bundles = providedBundles ?? (await getBundlesForProduct(id))
+  // Fetch product, bundles (if not provided), and settings in parallel
+  const [product, fetchedBundles, settings] = await Promise.all([
+    listProducts({
+      queryParams: { id: [id] },
+      regionId: region.id,
+    }).then(({ response }) => response.products[0]),
+    providedBundles ? Promise.resolve(providedBundles) : getBundlesForProduct(id),
+    getStoreSettings(),
+  ])
 
   if (!product) {
     return null
   }
 
-  return <ProductActions product={product} region={region} bundles={bundles} />
+  return (
+    <ProductActions
+      product={product}
+      region={region}
+      bundles={fetchedBundles}
+      bundleSettings={settings}
+    />
+  )
 }
