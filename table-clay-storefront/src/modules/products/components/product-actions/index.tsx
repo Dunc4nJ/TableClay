@@ -1,11 +1,13 @@
 "use client"
 
 import { addToCart } from "@lib/data/cart"
+import { Bundle } from "@lib/data/bundles"
 import { useIntersection } from "@lib/hooks/use-in-view"
 import { HttpTypes } from "@medusajs/types"
 import { Button } from "@medusajs/ui"
 import Divider from "@modules/common/components/divider"
 import OptionSelect from "@modules/products/components/product-actions/option-select"
+import BundleSelector from "@modules/products/components/bundle-selector"
 import { isEqual } from "lodash"
 import { useParams, usePathname, useSearchParams } from "next/navigation"
 import { useEffect, useMemo, useRef, useState } from "react"
@@ -17,6 +19,7 @@ type ProductActionsProps = {
   product: HttpTypes.StoreProduct
   region: HttpTypes.StoreRegion
   disabled?: boolean
+  bundles?: Bundle[]
 }
 
 const optionsAsKeymap = (
@@ -31,6 +34,7 @@ const optionsAsKeymap = (
 export default function ProductActions({
   product,
   disabled,
+  bundles = [],
 }: ProductActionsProps) {
   const router = useRouter()
   const pathname = usePathname()
@@ -38,7 +42,13 @@ export default function ProductActions({
 
   const [options, setOptions] = useState<Record<string, string | undefined>>({})
   const [isAdding, setIsAdding] = useState(false)
+  const [selectedBundle, setSelectedBundle] = useState<Bundle | null>(
+    bundles.length > 0 ? bundles[0] : null
+  )
   const countryCode = useParams().countryCode as string
+
+  // Determine if we should show bundles (when available)
+  const hasBundles = bundles.length > 0
 
   // If there is only 1 variant, preselect the options
   useEffect(() => {
@@ -120,68 +130,121 @@ export default function ProductActions({
 
   const inView = useIntersection(actionsRef, "0px")
 
-  // add the selected variant to the cart
+  // Add the selected variant or bundle to cart
   const handleAddToCart = async () => {
-    if (!selectedVariant?.id) return null
-
     setIsAdding(true)
 
-    await addToCart({
-      variantId: selectedVariant.id,
-      quantity: 1,
-      countryCode,
-    })
+    try {
+      if (hasBundles && selectedBundle) {
+        // Bundle flow: add all bundle items to cart
+        for (const item of selectedBundle.items) {
+          if (item.variant_id) {
+            await addToCart({
+              variantId: item.variant_id,
+              quantity: item.quantity,
+              countryCode,
+            })
+          }
+        }
+        // Note: Bundle discount is already reflected in the bundle pricing
+        // displayed to the customer. Future: Add promotion workflow.
+      } else {
+        // Standard variant flow
+        if (!selectedVariant?.id) return null
+
+        await addToCart({
+          variantId: selectedVariant.id,
+          quantity: 1,
+          countryCode,
+        })
+      }
+    } catch (error) {
+      console.error("Error adding to cart:", error)
+    }
 
     setIsAdding(false)
+  }
+
+  // Handle bundle selection
+  const handleBundleSelect = (bundle: Bundle) => {
+    setSelectedBundle(bundle)
   }
 
   return (
     <>
       <div className="flex flex-col gap-y-2" ref={actionsRef}>
-        <div>
-          {(product.variants?.length ?? 0) > 1 && (
-            <div className="flex flex-col gap-y-4">
-              {(product.options || []).map((option) => {
-                return (
-                  <div key={option.id}>
-                    <OptionSelect
-                      option={option}
-                      current={options[option.id]}
-                      updateOption={setOptionValue}
-                      title={option.title ?? ""}
-                      data-testid="product-options"
-                      disabled={!!disabled || isAdding}
-                    />
-                  </div>
-                )
-              })}
-              <Divider />
+        {/* Bundle Selector - shown when bundles exist */}
+        {hasBundles ? (
+          <div className="flex flex-col gap-y-4">
+            <BundleSelector
+              bundles={bundles}
+              selectedBundleId={selectedBundle?.id || null}
+              onSelect={handleBundleSelect}
+              promoText="🎉✨ NEW YEAR SALE | $100 Off + Free Shipping"
+              disabled={!!disabled || isAdding}
+            />
+
+            <Button
+              onClick={handleAddToCart}
+              disabled={!selectedBundle || !!disabled || isAdding}
+              variant="primary"
+              className="w-full h-10"
+              isLoading={isAdding}
+              data-testid="add-bundle-button"
+            >
+              {!selectedBundle ? "Select a bundle" : "Add to cart"}
+            </Button>
+          </div>
+        ) : (
+          /* Standard Variant Selector */
+          <>
+            <div>
+              {(product.variants?.length ?? 0) > 1 && (
+                <div className="flex flex-col gap-y-4">
+                  {(product.options || []).map((option) => {
+                    return (
+                      <div key={option.id}>
+                        <OptionSelect
+                          option={option}
+                          current={options[option.id]}
+                          updateOption={setOptionValue}
+                          title={option.title ?? ""}
+                          data-testid="product-options"
+                          disabled={!!disabled || isAdding}
+                        />
+                      </div>
+                    )
+                  })}
+                  <Divider />
+                </div>
+              )}
             </div>
-          )}
-        </div>
 
-        <ProductPrice product={product} variant={selectedVariant} />
+            <ProductPrice product={product} variant={selectedVariant} />
 
-        <Button
-          onClick={handleAddToCart}
-          disabled={
-            !inStock ||
-            !selectedVariant ||
-            !!disabled ||
-            isAdding ||
-            !isValidVariant
-          }
-          variant="primary"
-          className="w-full h-10"
-          isLoading={isAdding}
-          data-testid="add-product-button"
-        >
-          {!selectedVariant && !options
-            ? "Select variant"
-            : !inStock || !isValidVariant
-            ? "Out of stock"
-            : "Add to cart"}
-        </Button>
+            <Button
+              onClick={handleAddToCart}
+              disabled={
+                !inStock ||
+                !selectedVariant ||
+                !!disabled ||
+                isAdding ||
+                !isValidVariant
+              }
+              variant="primary"
+              className="w-full h-10"
+              isLoading={isAdding}
+              data-testid="add-product-button"
+            >
+              {!selectedVariant && !options
+                ? "Select variant"
+                : !inStock || !isValidVariant
+                ? "Out of stock"
+                : "Add to cart"}
+            </Button>
+          </>
+        )}
+
         <MobileActions
           product={product}
           variant={selectedVariant}
