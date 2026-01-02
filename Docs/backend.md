@@ -1,27 +1,8 @@
-# Table Clay Backend Deployment
+# Table Clay Backend Documentation
 
-## Executive Sign-Off
+## Overview
 
-| Item | Status |
-|------|--------|
-| **Backend Deployment** | APPROVED |
-| **Sign-off Date** | December 22, 2025 |
-| **Verified By** | Claude Code |
-
-### Verification Checklist
-
-- [x] Health endpoint responding (`/health` → OK)
-- [x] Redis Event Bus connected (no in-memory warnings)
-- [x] Database migrations complete
-- [x] Admin dashboard accessible (`/app` → 200 OK)
-- [x] Admin user created and login working
-- [x] Store API responding with publishable key
-- [x] Regions seeded (United States)
-- [x] Products seeded (CloudLine Mug demo)
-- [x] Shipping configured ($8 flat rate)
-- [x] Stripe payment provider enabled
-- [x] Stripe webhook configured
-- [x] CORS configured for production domains
+The Table Clay backend is a **Medusa.js v2.12.3** e-commerce engine deployed to **Railway** with PostgreSQL and Redis databases. It includes several custom modules for product bundles, reviews, FAQs, newsletter subscriptions, and store settings.
 
 ---
 
@@ -36,95 +17,376 @@
 
 ---
 
-## Overview
-
-The Table Clay backend is a **Medusa.js v2.12.3** e-commerce engine deployed to **Railway** with PostgreSQL and Redis databases.
-
----
-
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                      Railway                            │
-├─────────────────────────────────────────────────────────┤
-│                                                         │
-│  ┌──────────────────┐                                   │
-│  │  Medusa Backend  │◄──── Dockerfile-based deployment  │
-│  │  Port 8080       │                                   │
-│  └────────┬─────────┘                                   │
-│           │                                             │
-│     ┌─────┴─────┐                                       │
-│     ▼           ▼                                       │
-│  ┌──────┐   ┌───────┐                                   │
-│  │Postgres│ │ Redis │                                   │
-│  └──────┘   └───────┘                                   │
-│                                                         │
-└─────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│                         Railway                                  │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  ┌────────────────────────────────────────────────────┐        │
+│  │              Medusa Backend (Port 8080)            │        │
+│  │                                                    │        │
+│  │  ┌─────────────────────────────────────────────┐  │        │
+│  │  │           Core Medusa Modules               │  │        │
+│  │  │  • Payment (Stripe)                         │  │        │
+│  │  │  • Event Bus (Redis)                        │  │        │
+│  │  │  • File Storage (S3)                        │  │        │
+│  │  │  • Notifications (SendGrid)                 │  │        │
+│  │  └─────────────────────────────────────────────┘  │        │
+│  │                                                    │        │
+│  │  ┌─────────────────────────────────────────────┐  │        │
+│  │  │         Custom Table Clay Modules           │  │        │
+│  │  │  • Bundle Module (product bundles)          │  │        │
+│  │  │  • Content Module (reviews, FAQs)           │  │        │
+│  │  │  • Newsletter Module (subscribers)          │  │        │
+│  │  │  • Store Settings Module (configuration)    │  │        │
+│  │  └─────────────────────────────────────────────┘  │        │
+│  └────────────────────────────────────────────────────┘        │
+│                          │                                      │
+│           ┌──────────────┴──────────────┐                      │
+│           ▼                             ▼                       │
+│     ┌──────────┐                 ┌──────────┐                  │
+│     │ Postgres │                 │  Redis   │                  │
+│     │ Database │                 │  Cache   │                  │
+│     └──────────┘                 └──────────┘                  │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Modules Enabled
+## Custom Modules
 
-| Module | Status | Notes |
-|--------|--------|-------|
-| Event Bus (Redis) | ACTIVE | `@medusajs/medusa/event-bus-redis` |
-| Payment (Stripe) | ACTIVE | `@medusajs/medusa/payment-stripe` |
-| Locking | In-Memory | Default, not critical |
+### 1. Bundle Module (`bundleModuleService`)
 
-### Current medusa-config.ts
+**Purpose:** Multi-product bundles with fixed pricing and bundle discounts
+
+**Models:**
+- `Bundle` - name, description, pricing_type, fixed_original_price, fixed_sale_price, badge, is_active
+- `BundleItem` - bundle_id, product_id, variant_id, quantity, product_title, variant_title
+
+**Key Features:**
+- Bundles can contain items from ANY product (not limited to single product)
+- Fixed pricing model with original/sale prices
+- Badge support (bestseller, popular, new, limited, sale)
+- Bundles appear on all product pages where their items exist
+
+---
+
+### 2. Content Module (`contentModuleService`)
+
+**Purpose:** Admin-curated product reviews and FAQs
+
+**Models:**
+- `Review` - product_id, customer_name, rating, title, content, is_verified_buyer, is_active, display_date
+- `ReviewImage` - review_id, url, alt_text
+- `ProductReviewStats` - product_id, average_rating, total_count, rating distribution
+- `FAQ` - product_id (nullable for global), question, answer, sort_order, is_active
+
+**Key Features:**
+- Admin manually creates/edits reviews (curated, not customer-submitted)
+- FAQs can be global (product_id = null) or product-specific
+- Review stats are set by admin (not calculated from reviews)
+
+---
+
+### 3. Newsletter Module (`newsletterModuleService`)
+
+**Purpose:** Email newsletter subscriptions with discount code rewards
+
+**Models:**
+- `Subscriber` - email, first_name, source, discount_code, discount_code_sent, status
+
+**Key Features:**
+- Generates unique free shipping discount code per subscriber
+- Creates Medusa Promotion for each discount code
+- Emits `newsletter.subscribed` event for welcome email
+- Tracks subscription source (popup, footer, checkout)
+
+---
+
+### 4. Store Settings Module (`storeSettingsModuleService`)
+
+**Purpose:** Global configuration for storefront features
+
+**Models:**
+- `StoreSetting` - key, value (JSON), updated_at
+
+**Key Features:**
+- Bundle promo settings (headline, subtext, badge text)
+- Flexible key-value storage for any setting type
+
+---
+
+## API Endpoints
+
+### Store API (Publishable Key Auth)
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/store/bundles?product_id=xxx` | List bundles containing a product |
+| POST | `/store/cart/add-bundle` | Add bundle to cart |
+| DELETE | `/store/cart/add-bundle` | Remove bundle from cart |
+| GET | `/store/reviews?product_id=xxx` | Get reviews for a product |
+| GET | `/store/faqs?product_id=xxx` | Get FAQs for a product |
+| POST | `/store/newsletter/subscribe` | Subscribe to newsletter |
+| GET | `/store/newsletter/unsubscribe` | Unsubscribe from newsletter |
+| GET | `/store/settings` | Get bundle promo settings |
+| GET | `/store/cart/:id/tip` | Get tip amount |
+| POST | `/store/cart/:id/tip` | Add tip to cart |
+| DELETE | `/store/cart/:id/tip` | Remove tip from cart |
+
+### Admin API (JWT Auth)
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/admin/bundles` | List all bundles |
+| POST | `/admin/bundles` | Create bundle |
+| GET | `/admin/bundles/:id` | Get bundle details |
+| PUT | `/admin/bundles/:id` | Update bundle |
+| DELETE | `/admin/bundles/:id` | Delete bundle |
+| POST | `/admin/bundles/:id/items` | Add item to bundle |
+| PUT | `/admin/bundles/:id/items/:itemId` | Update bundle item |
+| DELETE | `/admin/bundles/:id/items/:itemId` | Remove item from bundle |
+| GET | `/admin/reviews` | List all reviews |
+| POST | `/admin/reviews` | Create review |
+| GET | `/admin/reviews/:id` | Get review details |
+| PUT | `/admin/reviews/:id` | Update review |
+| DELETE | `/admin/reviews/:id` | Delete review |
+| GET | `/admin/reviews/stats` | Get review statistics |
+| GET | `/admin/reviews/product-stats` | Get per-product stats |
+| GET | `/admin/faqs` | List all FAQs |
+| POST | `/admin/faqs` | Create FAQ |
+| GET | `/admin/faqs/:id` | Get FAQ details |
+| PUT | `/admin/faqs/:id` | Update FAQ |
+| DELETE | `/admin/faqs/:id` | Delete FAQ |
+| GET | `/admin/newsletter` | List subscribers |
+| GET | `/admin/newsletter/stats` | Get newsletter stats |
+| GET | `/admin/newsletter/export` | Export subscribers CSV |
+| GET | `/admin/settings` | Get all settings |
+| PUT | `/admin/settings/:key` | Update setting |
+
+---
+
+## Admin Dashboard Extensions
+
+Custom admin UI pages under `/app`:
+
+| Route | Description |
+|-------|-------------|
+| `/app/bundles` | Bundle management list |
+| `/app/bundles/new` | Create new bundle |
+| `/app/bundles/:id` | Edit bundle |
+| `/app/reviews` | Review management list |
+| `/app/reviews/new` | Create new review |
+| `/app/reviews/:id` | Edit review |
+| `/app/faqs` | FAQ management list |
+| `/app/newsletter` | Newsletter subscriber list |
+| `/app/settings` | Store settings (bundle promo) |
+
+---
+
+## Configuration (medusa-config.ts)
 
 ```typescript
-import { loadEnv, defineConfig } from '@medusajs/framework/utils'
+modules: [
+  // Redis Event Bus (production)
+  { resolve: "@medusajs/medusa/event-bus-redis" },
 
-loadEnv(process.env.NODE_ENV || 'development', process.cwd())
+  // Stripe Payment Provider
+  { resolve: "@medusajs/medusa/payment" },
 
-module.exports = defineConfig({
-  projectConfig: {
-    databaseUrl: process.env.DATABASE_URL,
-    redisUrl: process.env.REDIS_URL,
-    http: {
-      storeCors: process.env.STORE_CORS!,
-      adminCors: process.env.ADMIN_CORS!,
-      authCors: process.env.AUTH_CORS!,
-      jwtSecret: process.env.JWT_SECRET || "supersecret",
-      cookieSecret: process.env.COOKIE_SECRET || "supersecret",
-    }
-  },
-  modules: [
-    // Redis Event Bus for production
-    {
-      resolve: "@medusajs/medusa/event-bus-redis",
-      options: {
-        redisUrl: process.env.REDIS_URL,
-      },
-    },
-    // Stripe Payment Provider
-    {
-      resolve: "@medusajs/medusa/payment",
-      options: {
-        providers: [
-          {
-            resolve: "@medusajs/medusa/payment-stripe",
-            id: "stripe",
-            options: {
-              apiKey: process.env.STRIPE_API_KEY,
-              webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
-            },
-          },
-        ],
-      },
-    },
-  ],
-})
+  // S3 File Storage (conditional)
+  { resolve: "@medusajs/medusa/file" },
+
+  // SendGrid Email Notifications
+  { resolve: "@medusajs/medusa/notification" },
+
+  // Custom Modules
+  { resolve: "./src/modules/newsletter" },
+  { resolve: "./src/modules/bundle" },
+  { resolve: "./src/modules/content" },
+  { resolve: "./src/modules/store-settings" },
+]
 ```
+
+---
+
+## Environment Variables
+
+| Variable | Description |
+|----------|-------------|
+| `DATABASE_URL` | PostgreSQL connection string |
+| `REDIS_URL` | Redis connection string |
+| `STORE_CORS` | Allowed storefront origins |
+| `ADMIN_CORS` | Allowed admin dashboard origins |
+| `AUTH_CORS` | Allowed authentication origins |
+| `JWT_SECRET` | JWT signing secret |
+| `COOKIE_SECRET` | Cookie encryption secret |
+| `STRIPE_API_KEY` | Stripe secret key |
+| `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret |
+| `S3_ACCESS_KEY_ID` | AWS S3 access key |
+| `S3_SECRET_ACCESS_KEY` | AWS S3 secret key |
+| `S3_BUCKET` | S3 bucket name |
+| `S3_REGION` | AWS region |
+| `S3_FILE_URL` | S3 file URL base |
+| `SENDGRID_API_KEY` | SendGrid API key |
+| `SENDGRID_FROM` | SendGrid sender email |
+
+---
+
+## Key API Usage Examples
+
+### Adding a Bundle to Cart
+
+```typescript
+// POST /store/cart/add-bundle
+{
+  "cart_id": "cart_xxx",
+  "bundle_id": "bundle_yyy"
+}
+
+// Response
+{
+  "success": true,
+  "bundle_name": "Starter Set",
+  "bundle_instance_id": "bundle_yyy_1704067200000",
+  "items_added": 3,
+  "bundle_pricing": {
+    "original_price": 12000,  // cents
+    "sale_price": 9999,
+    "savings": 2001,
+    "savings_percent": 16
+  }
+}
+```
+
+### Subscribing to Newsletter
+
+```typescript
+// POST /store/newsletter/subscribe
+{
+  "email": "customer@example.com",
+  "first_name": "John",
+  "source": "popup"
+}
+
+// Response
+{
+  "success": true,
+  "message": "Welcome! Check your email for your free shipping code.",
+  "subscriber": {
+    "id": "sub_xxx",
+    "email": "customer@example.com",
+    "discount_code": "FREESHIP-ABC123",
+    "is_new": true
+  }
+}
+```
+
+### Getting Product Reviews
+
+```typescript
+// GET /store/reviews?product_id=prod_xxx
+
+// Response
+{
+  "reviews": [
+    {
+      "id": "rev_xxx",
+      "customer_name": "Sarah M.",
+      "is_verified_buyer": true,
+      "rating": 5,
+      "title": "Beautiful craftsmanship",
+      "content": "Absolutely love this piece...",
+      "helpful_count": 12,
+      "display_date": "2024-12-15",
+      "images": []
+    }
+  ],
+  "stats": {
+    "average_rating": 4.8,
+    "total_count": 47,
+    "rating_5_count": 35,
+    "rating_4_count": 10,
+    "rating_3_count": 2,
+    "rating_2_count": 0,
+    "rating_1_count": 0
+  }
+}
+```
+
+---
+
+## Deployment
+
+### Standard Deployment (via GitHub)
+
+1. Make changes to `table-clay-store/`
+2. Run `./scripts/validate.sh all` (required before push)
+3. Commit and push to `develop` branch
+4. Railway auto-deploys from GitHub
+
+### Manual Commands
+
+```bash
+# Check deployment status
+mcp__Railway__list-deployments
+
+# View deploy logs
+mcp__Railway__get-logs --logType deploy
+
+# View build logs
+mcp__Railway__get-logs --logType build
+
+# SSH into Railway container
+railway ssh -- <command>
+
+# Create admin user
+railway ssh -- yarn medusa user -e email@example.com -p password
+
+# Run database migrations
+railway ssh -- yarn medusa db:migrate
+```
+
+---
+
+## Admin Dashboard Currency Fix
+
+The admin dashboard uses `patch-package` to fix price display issues (Medusa stores amounts in cents but the dashboard was displaying them as dollars).
+
+**Patch file:** `patches/@medusajs+dashboard+2.12.3.patch`
+
+**Files patched:**
+- `dist/chunk-X6BAAGCL.mjs` - `getLocaleAmount()`, `getStylizedAmount()`
+- `dist/chunk-WATKBUHQ.mjs` - `formatCurrency()`
+
+The patch divides amounts by `10^decimalDigits` before formatting, correctly converting 3499 cents to $34.99.
+
+---
+
+## Database Tables (Custom)
+
+### Bundle Tables
+- `bundle` - Main bundle records
+- `bundle_item` - Items within bundles
+
+### Content Tables
+- `review` - Product reviews
+- `review_image` - Review images
+- `product_review_stats` - Per-product review statistics
+- `faq` - FAQs (global and product-specific)
+
+### Newsletter Tables
+- `subscriber` - Newsletter subscribers
+
+### Settings Tables
+- `store_setting` - Key-value configuration
 
 ---
 
 ## Seeded Data
-
-The production database has been seeded with:
 
 | Data | Value |
 |------|-------|
@@ -134,182 +396,9 @@ The production database has been seeded with:
 | Tax Region | US |
 | Stock Location | Table Clay Studio (Portland) |
 | Shipping | Standard Shipping - $8.00 flat (5-7 days) |
-| Category | Mugs |
-| Demo Product | CloudLine Mug & Saucer Set - $34.99 |
-| Inventory | 100 units per variant |
 
 ---
 
-## Environment Variables (Railway)
-
-| Variable | Status |
-|----------|--------|
-| `DATABASE_URL` | Set (auto-injected) |
-| `REDIS_URL` | Set (auto-injected) |
-| `STORE_CORS` | Set |
-| `ADMIN_CORS` | Set |
-| `AUTH_CORS` | Set |
-| `JWT_SECRET` | Set |
-| `COOKIE_SECRET` | Set |
-| `STRIPE_API_KEY` | Set (test mode) |
-| `STRIPE_WEBHOOK_SECRET` | Set |
-
----
-
-## Issues Fixed During Deployment
-
-| Issue | Cause | Fix |
-|-------|-------|-----|
-| Yarn checksum errors | Railway's `yarn install --check-cache` failed | Used Dockerfile with `yarn install --immutable` |
-| `updateFulfillmentProviders` error | Invalid API call in seed.ts | Removed the call - not needed in Medusa v2 |
-| Missing `@medusajs/framework/utils` | Multi-stage Dockerfile stripped dev dependencies | Switched to single-stage Dockerfile |
-| `relation "notification_provider" does not exist` | Migrations not running | Added `yarn medusa db:migrate` to CMD |
-| Admin dashboard 404 | Build outputs to `.medusa/server/public/admin/` but server expects `./public/admin/` | Added `cp -r` step in Dockerfile |
-| Redis not connecting | `redisUrl` not in config | Added `redisUrl: process.env.REDIS_URL` |
-| Local Event Bus warning | Event bus module not configured | Added `@medusajs/medusa/event-bus-redis` module |
-| Stripe not working | Payment module commented out | Enabled Stripe payment provider module |
-| Admin login failing | User not created in production DB | Created via `railway ssh -- yarn medusa user` |
-| Store API empty | Database not seeded | Ran `railway ssh -- yarn seed` |
-| **Admin dashboard prices 100x too high** | Dashboard formatting functions didn't convert cents→dollars | Patched `.mjs` files via patch-package (see below) |
-
----
-
-## Admin Dashboard Currency Fix (December 2024)
-
-### Problem
-The admin dashboard displayed prices 100x too high:
-- Order #12 showed **$4,642.92** instead of **$46.43**
-- Product prices showed **$3,499.00** instead of **$34.99**
-
-### Root Cause
-Medusa stores all monetary amounts in **smallest currency unit** (cents for USD, yen for JPY). The admin dashboard's formatting functions (`getLocaleAmount`, `getStylizedAmount`, `formatCurrency`) were displaying these cent values as if they were dollars.
-
-### Key Discovery: .mjs vs .ts Files
-**Critical Learning:** The `@medusajs/dashboard` npm package ships **pre-compiled ESM modules** in `dist/`. During build, Vite uses these `.mjs` files, **NOT** the TypeScript sources in `src/`.
-
-```
-node_modules/@medusajs/dashboard/
-├── src/                    ← TypeScript sources (NOT USED during build)
-│   └── lib/
-│       ├── format-currency.ts
-│       └── money-amount-helpers.ts
-└── dist/                   ← Pre-compiled ESM modules (USED by Vite)
-    ├── chunk-X6BAAGCL.mjs  ← Contains getLocaleAmount, getStylizedAmount
-    ├── chunk-WATKBUHQ.mjs  ← Contains formatCurrency
-    └── app.js              ← Bundled version (backup)
-```
-
-### Solution: patch-package on Correct Files
-We use `patch-package` to modify the correct `.mjs` files:
-
-**Patch file:** `patches/@medusajs+dashboard+2.12.3.patch`
-
-**Files patched:**
-- `dist/chunk-X6BAAGCL.mjs` - `getLocaleAmount()`, `getStylizedAmount()`
-- `dist/chunk-WATKBUHQ.mjs` - `formatCurrency()`
-
-**Fix logic:** Divide amount by `10^decimalDigits` before formatting:
-```javascript
-// Before (broken)
-return formatter.format(amount);  // 3499 → "$3,499.00"
-
-// After (fixed)
-const decimalDigits = currencies[currency.toUpperCase()]?.decimal_digits ?? 2;
-const divisor = Math.pow(10, decimalDigits);
-const amountInMainUnit = amount / divisor;
-return formatter.format(amountInMainUnit);  // 3499 → "$34.99"
-```
-
-This correctly handles:
-- **USD (2 decimals):** 3499 cents ÷ 100 = $34.99
-- **JPY (0 decimals):** 3499 yen ÷ 1 = ¥3,499
-
-### Approaches That Did NOT Work
-
-| Approach | Why It Failed |
-|----------|---------------|
-| Patching `src/*.ts` files | Vite uses pre-compiled `.mjs` files, not TypeScript sources |
-| Patching `dist/app.js` | Vite uses chunk files, not the bundled app.js |
-| Vite transform plugin | Plugin added correctly but transforms weren't called on these files |
-| Dockerfile sed commands | Fragile, depends on minified variable names |
-
-### How to Fix Similar Dashboard Issues
-
-1. **Identify the function** in `src/lib/*.ts` that needs fixing
-2. **Find the compiled chunk** in `dist/chunk-*.mjs` that contains the function
-3. **Edit the chunk file** directly with the fix
-4. **Run `npx patch-package @medusajs/dashboard`** to create/update the patch
-5. **Commit the patch** to `patches/` directory
-6. **Deploy** - patch-package runs automatically during `yarn install`
-
-### Verifying the Fix
-
-Check these locations in the admin dashboard:
-- **Orders list** → Order Total column
-- **Order detail** → Item Subtotal, Shipping, Tax, Total
-- **Product variant** → Prices panel (right sidebar)
-
----
-
-## Deployment Workflow
-
-### Standard Deployment (Code Changes)
-1. Make changes to `table-clay-store/`
-2. Commit and push to `develop` branch
-3. Railway auto-deploys from GitHub
-4. Monitor via Railway MCP: `mcp__Railway__list-deployments`
-5. Check logs: `mcp__Railway__get-logs`
-
-### Running Commands on Production
-```bash
-# SSH into Railway container
-railway ssh -- <command>
-
-# Examples:
-railway ssh -- yarn medusa user -e email@example.com -p password
-railway ssh -- yarn seed
-railway ssh -- yarn medusa db:migrate
-```
-
----
-
-## API Endpoints
-
-| Endpoint | Description | Auth Required |
-|----------|-------------|---------------|
-| `/health` | Health check | No |
-| `/store/*` | Storefront API | Publishable Key |
-| `/admin/*` | Admin API | JWT Token |
-| `/app` | Admin dashboard UI | Login |
-| `/hooks/payment/stripe` | Stripe webhooks | Webhook Secret |
-
----
-
-## Monitoring with Railway MCP
-
-```bash
-# Check deployment status
-mcp__Railway__list-deployments
-
-# View logs
-mcp__Railway__get-logs --logType deploy
-
-# List environment variables
-mcp__Railway__list-variables
-```
-
----
-
-## Ready for Frontend
-
-The backend is fully configured and ready for the storefront deployment:
-
-- **Publishable API Key:** `pk_a96d80b2210dda0c4d9eee3651311348ecf8c6329713ec7f021972390bdbb4b5`
-- **Backend URL:** `https://tableclay-production.up.railway.app`
-- **CORS:** Configured for `tableclay.com` and `table-clay-storefront.vercel.app`
-
----
-
-*Last updated: December 30, 2024*
+*Last updated: January 2, 2026*
 *Medusa Version: 2.12.3*
 *Status: PRODUCTION READY*
