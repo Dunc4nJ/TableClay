@@ -536,4 +536,12 @@ NEXT_PUBLIC_DEFAULT_REGION=us
 
 ---
 
-*Last updated: December 30, 2024*
+## Recent Changes
+
+| Date | Change |
+|------|--------|
+| Dec 30, 2024 | Initial documentation created |
+
+---
+
+*Last updated: January 2, 2026*

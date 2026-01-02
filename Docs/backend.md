@@ -80,12 +80,13 @@ The Table Clay backend is a **Medusa.js v2.12.3** e-commerce engine deployed to 
 
 **Models:**
 - `Review` - product_id, customer_name, rating, title, content, is_verified_buyer, is_active, display_date
-- `ReviewImage` - review_id, url, alt_text
+- `ReviewImage` - review_id, url, alt_text, sort_order
 - `ProductReviewStats` - product_id, average_rating, total_count, rating distribution
 - `FAQ` - product_id (nullable for global), question, answer, sort_order, is_active
 
 **Key Features:**
 - Admin manually creates/edits reviews (curated, not customer-submitted)
+- Reviews support up to 5 images with alt text and drag-drop reordering
 - FAQs can be global (product_id = null) or product-specific
 - Review stats are set by admin (not calculated from reviews)
 
@@ -179,11 +180,26 @@ Custom admin UI pages under `/app`:
 | `/app/bundles/new` | Create new bundle |
 | `/app/bundles/:id` | Edit bundle |
 | `/app/reviews` | Review management list |
-| `/app/reviews/new` | Create new review |
-| `/app/reviews/:id` | Edit review |
+| `/app/reviews/new` | Create new review (with image upload) |
+| `/app/reviews/:id` | Edit review (with image management) |
 | `/app/faqs` | FAQ management list |
+| `/app/faqs/new` | Create new FAQ |
+| `/app/faqs/:id` | Edit FAQ |
 | `/app/newsletter` | Newsletter subscriber list |
 | `/app/settings` | Store settings (bundle promo) |
+
+### Reusable Admin Components
+
+| Component | Location | Purpose |
+|-----------|----------|---------|
+| `ImageUploader` | `src/admin/components/image-uploader/` | Drag-drop image upload with reordering, alt text, S3 integration |
+
+**ImageUploader Features:**
+- Drag-drop file upload to `/admin/uploads` (S3)
+- Image preview thumbnails
+- Editable alt text per image
+- Drag-drop reordering
+- Configurable max images limit (default: 5)
 
 ---
 
@@ -402,3 +418,13 @@ The patch divides amounts by `10^decimalDigits` before formatting, correctly con
 *Last updated: January 2, 2026*
 *Medusa Version: 2.12.3*
 *Status: PRODUCTION READY*
+
+---
+
+## Recent Changes
+
+| Date | Change |
+|------|--------|
+| Jan 2, 2026 | Added FAQ admin pages (new/edit routes) |
+| Jan 2, 2026 | Added review image upload with alt text support |
+| Jan 2, 2026 | Created reusable ImageUploader admin component |

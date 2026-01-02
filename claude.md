@@ -640,6 +640,50 @@ See `Docs/add-testing.md` for complete testing documentation.
 
 ---
 
+## Documentation Maintenance (REQUIRED)
+
+**IMPORTANT FOR AGENTS:** When making changes to the backend or frontend, you MUST update the corresponding documentation files:
+
+### When to Update `Docs/backend.md`
+Update backend.md whenever you:
+- Add new API endpoints (Store or Admin)
+- Create or modify custom modules
+- Add new admin dashboard routes/pages
+- Create reusable admin components
+- Change database schema or models
+- Update environment variables
+- Modify deployment configuration
+
+### When to Update `Docs/frontend.md`
+Update frontend.md whenever you:
+- Add new storefront pages or routes
+- Create or modify UI components
+- Change styling/design system
+- Update data fetching patterns
+- Add new environment variables
+- Modify product/collection display logic
+
+### Documentation Update Workflow
+```
+1. Complete your code changes
+2. Test and verify the feature works
+3. Update the relevant documentation file(s)
+4. Add entry to "Recent Changes" section with date
+5. Commit documentation with your code changes
+```
+
+### Recent Changes Section
+Both `backend.md` and `frontend.md` have a "Recent Changes" table at the bottom. Always add your changes there:
+
+```markdown
+| Date | Change |
+|------|--------|
+| Jan 2, 2026 | Added feature X |
+| Jan 2, 2026 | Fixed issue Y |
+```
+
+---
+
 ## Notes for Development
 
 - The `packages/` directory contains Medusa core source - reference only, don't modify
