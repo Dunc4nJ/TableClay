@@ -8,6 +8,9 @@ import type BundleModuleService from "../../../modules/bundle/service"
  * GET /store/bundles
  * List bundles for a product (used by BundleSelector component)
  * Query params: product_id (required)
+ *
+ * Bundles can now contain items from ANY product.
+ * This endpoint returns bundles that include at least one item from the given product.
  */
 export async function GET(req: MedusaRequest, res: MedusaResponse) {
   try {
@@ -24,21 +27,17 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
     const productService: IProductModuleService =
       req.scope.resolve(Modules.PRODUCT)
 
-    // Get active bundles for this product
-    const bundles = await bundleService.listBundlesByProduct(
+    // Get bundles that contain items from this product
+    const bundlesWithItems = await bundleService.listBundlesByProductId(
       product_id as string
     )
 
     // Enrich bundles with pricing and variant details
     const enrichedBundles = await Promise.all(
-      bundles.map(async (bundle) => {
-        // Get bundle items
-        const items = await bundleService.getItemsForBundle(bundle.id)
-
-        // Fetch variant details for each item
-        let componentTotalCents = 0
+      bundlesWithItems.map(async (bundle) => {
+        // Fetch fresh variant/product details for each item
         const enrichedItems = await Promise.all(
-          items.map(async (item) => {
+          bundle.items.map(async (item) => {
             try {
               // Get variant with product info
               const variants = await productService.listProductVariants(
@@ -57,15 +56,15 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
               )
               const variant = variants[0]
 
-              // Get variant price for component total calculation
-              // Note: For percentage pricing, we need to calculate from component prices
-              // For now, we'll skip price fetching here as it requires pricing context
-
               return {
                 id: item.id,
+                product_id: item.product_id,
                 variant_id: item.variant_id,
                 quantity: item.quantity,
                 sort_order: item.sort_order,
+                // Use fresh data from product service, fall back to cached titles
+                product_title: variant?.product?.title ?? item.product_title,
+                variant_title: variant?.title ?? item.variant_title,
                 variant: variant
                   ? {
                       id: variant.id,
@@ -86,22 +85,23 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
                 `Could not fetch variant ${item.variant_id}:`,
                 err instanceof Error ? err.message : err
               )
+              // Fall back to cached titles from bundle_item
               return {
                 id: item.id,
+                product_id: item.product_id,
                 variant_id: item.variant_id,
                 quantity: item.quantity,
                 sort_order: item.sort_order,
+                product_title: item.product_title,
+                variant_title: item.variant_title,
                 variant: null,
               }
             }
           })
         )
 
-        // Calculate pricing
-        const pricing = bundleService.calculateBundlePricing(
-          bundle,
-          componentTotalCents > 0 ? componentTotalCents : undefined
-        )
+        // Calculate pricing (fixed pricing only for now)
+        const pricing = bundleService.calculateBundlePricing(bundle)
 
         // Get badge display text
         const badgeText = bundleService.getBadgeDisplayText(bundle.badge)

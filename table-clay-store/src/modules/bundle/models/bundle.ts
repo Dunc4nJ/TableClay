@@ -2,18 +2,16 @@ import { model } from "@medusajs/framework/utils"
 
 /**
  * Bundle Model
- * Represents a product bundle tier (e.g., 'Single - Starter Set', 'Duo - Creative Set')
- * Bundles replace the variant selector when configured for a product
+ * Represents a product bundle (e.g., 'Starter Set', 'Creative Set')
+ * Bundles can contain items from ANY product and appear on all product pages
+ * where their component items exist.
  */
 export const Bundle = model.define("bundle", {
   id: model.id({ prefix: "bun" }).primaryKey(),
 
-  // Link to Medusa product
-  product_id: model.text(),
-
   // Display info
-  name: model.text(), // e.g., 'Duo - "Creative Set"'
-  description: model.text().nullable(), // e.g., '2 wheels + Free Shipping + Tool Kit'
+  name: model.text(), // e.g., 'Starter Set'
+  description: model.text().nullable(), // e.g., '4 plates + 4 bowls + Free Shipping'
 
   // Pricing - Admin chooses ONE approach per bundle
   pricing_type: model.enum(["fixed", "percentage"]).default("fixed"),

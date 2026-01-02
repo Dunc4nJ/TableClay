@@ -2,8 +2,11 @@ import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import { BUNDLE_MODULE } from "../../../modules/bundle"
 import type BundleModuleService from "../../../modules/bundle/service"
 
+/**
+ * Create bundle request body
+ * Note: product_id is no longer at the bundle level - it's on each item
+ */
 type CreateBundleRequestBody = {
-  product_id: string
   name: string
   description?: string
   pricing_type?: "fixed" | "percentage"
@@ -15,47 +18,46 @@ type CreateBundleRequestBody = {
   sort_order?: number
   metadata?: Record<string, unknown>
   items?: Array<{
+    product_id: string
     variant_id: string
     quantity?: number
     sort_order?: number
+    product_title?: string
+    variant_title?: string
   }>
 }
 
 /**
  * GET /admin/bundles
- * List bundles with optional filters
- * Query params: product_id, is_active
+ * List all bundles with their items
+ * Query params: is_active (optional filter)
  */
 export async function GET(req: MedusaRequest, res: MedusaResponse) {
   try {
-    const { product_id, is_active } = req.query
+    const { is_active } = req.query
 
     const bundleService: BundleModuleService = req.scope.resolve(BUNDLE_MODULE)
 
-    const filters: Record<string, unknown> = {}
-    if (product_id) {
-      filters.product_id = product_id
-    }
+    // Get all bundles with items
+    const bundlesWithItems = await bundleService.listAllBundles()
+
+    // Filter by is_active if specified
+    let filteredBundles = bundlesWithItems
     if (is_active !== undefined) {
-      filters.is_active = is_active === "true"
+      const isActiveFilter = is_active === "true"
+      filteredBundles = bundlesWithItems.filter(
+        (b) => b.is_active === isActiveFilter
+      )
     }
 
-    const bundles = await bundleService.listBundles(filters, {
-      order: { sort_order: "ASC", created_at: "DESC" },
+    // Add calculated pricing to each bundle
+    const enrichedBundles = filteredBundles.map((bundle) => {
+      const pricing = bundleService.calculateBundlePricing(bundle)
+      return {
+        ...bundle,
+        calculated_pricing: pricing,
+      }
     })
-
-    // Enrich with items
-    const enrichedBundles = await Promise.all(
-      bundles.map(async (bundle) => {
-        const items = await bundleService.getItemsForBundle(bundle.id)
-        const pricing = bundleService.calculateBundlePricing(bundle)
-        return {
-          ...bundle,
-          items,
-          calculated_pricing: pricing,
-        }
-      })
-    )
 
     return res.json({
       success: true,
@@ -73,25 +75,36 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
 
 /**
  * POST /admin/bundles
- * Create a new bundle with optional items
+ * Create a new bundle with items from any products
  */
 export async function POST(req: MedusaRequest, res: MedusaResponse) {
   try {
     const data = req.body as CreateBundleRequestBody
 
     // Validate required fields
-    if (!data.product_id) {
-      return res.status(400).json({
-        success: false,
-        error: "product_id is required",
-      })
-    }
-
     if (!data.name) {
       return res.status(400).json({
         success: false,
         error: "name is required",
       })
+    }
+
+    // Validate that items are provided and have required fields
+    if (!data.items || data.items.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: "At least one item is required",
+      })
+    }
+
+    // Validate each item has product_id and variant_id
+    for (const item of data.items) {
+      if (!item.product_id || !item.variant_id) {
+        return res.status(400).json({
+          success: false,
+          error: "Each item must have product_id and variant_id",
+        })
+      }
     }
 
     // Validate pricing based on pricing_type

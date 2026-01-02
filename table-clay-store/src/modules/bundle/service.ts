@@ -7,7 +7,6 @@ type BadgeType = "bestseller" | "popular" | "new" | "limited" | "sale" | "none"
 
 export type BundleRecord = {
   id: string
-  product_id: string
   name: string
   description?: string | null
   pricing_type: PricingType
@@ -25,9 +24,12 @@ export type BundleRecord = {
 export type BundleItemRecord = {
   id: string
   bundle_id: string
+  product_id: string
   variant_id: string
   quantity: number
   sort_order: number
+  product_title?: string | null
+  variant_title?: string | null
   created_at: Date
   updated_at: Date
 }
@@ -39,8 +41,11 @@ export type BundlePricing = {
   savings_percent: number
 }
 
+export type BundleWithItems = BundleRecord & {
+  items: BundleItemRecord[]
+}
+
 type CreateBundleInput = {
-  product_id: string
   name: string
   description?: string
   pricing_type?: PricingType
@@ -52,9 +57,12 @@ type CreateBundleInput = {
   sort_order?: number
   metadata?: Record<string, unknown>
   items?: Array<{
+    product_id: string
     variant_id: string
     quantity?: number
     sort_order?: number
+    product_title?: string
+    variant_title?: string
   }>
 }
 
@@ -62,9 +70,12 @@ type UpdateBundleInput = Partial<Omit<CreateBundleInput, "items">>
 
 type CreateBundleItemInput = {
   bundle_id: string
+  product_id: string
   variant_id: string
   quantity?: number
   sort_order?: number
+  product_title?: string
+  variant_title?: string
 }
 
 /**
@@ -77,6 +88,7 @@ class BundleModuleService extends MedusaService({
 }) {
   /**
    * Create a new bundle with optional items
+   * Items can now include product_id and display titles
    */
   async createBundle(data: CreateBundleInput): Promise<BundleRecord> {
     const { items, ...bundleData } = data
@@ -90,9 +102,12 @@ class BundleModuleService extends MedusaService({
       await this.createBundleItems(
         items.map((item, index) => ({
           bundle_id: bundle.id,
+          product_id: item.product_id,
           variant_id: item.variant_id,
           quantity: item.quantity ?? 1,
           sort_order: item.sort_order ?? index,
+          product_title: item.product_title ?? null,
+          variant_title: item.variant_title ?? null,
         }))
       )
     }
@@ -115,18 +130,114 @@ class BundleModuleService extends MedusaService({
   }
 
   /**
-   * List bundles for a specific product (store API)
+   * List bundles that contain any of the given product IDs
+   * Used by store API to find bundles for a product page
    */
-  async listBundlesByProduct(productId: string): Promise<BundleRecord[]> {
-    return await this.listBundles(
+  async listBundlesByProductId(productId: string): Promise<BundleWithItems[]> {
+    // Find all bundle items that belong to this product
+    const bundleItems = await this.listBundleItems({
+      product_id: productId,
+    })
+
+    if (bundleItems.length === 0) {
+      return []
+    }
+
+    // Get unique bundle IDs
+    const bundleIds = [...new Set(bundleItems.map((item) => item.bundle_id))]
+
+    // Fetch the bundles
+    const bundles = await this.listBundles(
       {
-        product_id: productId,
+        id: bundleIds,
         is_active: true,
       },
       {
         order: { sort_order: "ASC" },
       }
     )
+
+    // Fetch all items for these bundles
+    const allItems = await this.listBundleItems(
+      { bundle_id: bundleIds },
+      { order: { sort_order: "ASC" } }
+    )
+
+    // Combine bundles with their items
+    return bundles.map((bundle) => ({
+      ...bundle,
+      items: allItems.filter((item) => item.bundle_id === bundle.id),
+    }))
+  }
+
+  /**
+   * List bundles that contain any of the given variant IDs
+   * Used by store API to find bundles for a specific variant
+   */
+  async listBundlesByVariantIds(variantIds: string[]): Promise<BundleWithItems[]> {
+    if (variantIds.length === 0) {
+      return []
+    }
+
+    // Find all bundle items that contain any of these variants
+    const bundleItems = await this.listBundleItems({
+      variant_id: variantIds,
+    })
+
+    if (bundleItems.length === 0) {
+      return []
+    }
+
+    // Get unique bundle IDs
+    const bundleIds = [...new Set(bundleItems.map((item) => item.bundle_id))]
+
+    // Fetch the bundles
+    const bundles = await this.listBundles(
+      {
+        id: bundleIds,
+        is_active: true,
+      },
+      {
+        order: { sort_order: "ASC" },
+      }
+    )
+
+    // Fetch all items for these bundles
+    const allItems = await this.listBundleItems(
+      { bundle_id: bundleIds },
+      { order: { sort_order: "ASC" } }
+    )
+
+    // Combine bundles with their items
+    return bundles.map((bundle) => ({
+      ...bundle,
+      items: allItems.filter((item) => item.bundle_id === bundle.id),
+    }))
+  }
+
+  /**
+   * List all bundles (for admin)
+   */
+  async listAllBundles(): Promise<BundleWithItems[]> {
+    const bundles = await this.listBundles(
+      {},
+      { order: { sort_order: "ASC" } }
+    )
+
+    if (bundles.length === 0) {
+      return []
+    }
+
+    const bundleIds = bundles.map((b) => b.id)
+    const allItems = await this.listBundleItems(
+      { bundle_id: bundleIds },
+      { order: { sort_order: "ASC" } }
+    )
+
+    return bundles.map((bundle) => ({
+      ...bundle,
+      items: allItems.filter((item) => item.bundle_id === bundle.id),
+    }))
   }
 
   /**
@@ -196,7 +307,15 @@ class BundleModuleService extends MedusaService({
    * Add an item to a bundle
    */
   async addBundleItem(data: CreateBundleItemInput): Promise<BundleItemRecord> {
-    const created = await this.createBundleItems(data)
+    const created = await this.createBundleItems({
+      bundle_id: data.bundle_id,
+      product_id: data.product_id,
+      variant_id: data.variant_id,
+      quantity: data.quantity ?? 1,
+      sort_order: data.sort_order ?? 0,
+      product_title: data.product_title ?? null,
+      variant_title: data.variant_title ?? null,
+    })
     return Array.isArray(created) ? created[0] : created
   }
 
@@ -205,13 +324,59 @@ class BundleModuleService extends MedusaService({
    */
   async updateBundleItem(
     itemId: string,
-    data: { quantity?: number; sort_order?: number }
+    data: {
+      quantity?: number
+      sort_order?: number
+      product_title?: string
+      variant_title?: string
+    }
   ): Promise<BundleItemRecord> {
     const updated = await this.updateBundleItems({
       selector: { id: itemId },
       data,
     })
     return Array.isArray(updated) ? updated[0] : updated
+  }
+
+  /**
+   * Replace all items in a bundle
+   * Deletes existing items and creates new ones
+   */
+  async replaceBundleItems(
+    bundleId: string,
+    items: Array<{
+      product_id: string
+      variant_id: string
+      quantity?: number
+      sort_order?: number
+      product_title?: string
+      variant_title?: string
+    }>
+  ): Promise<BundleItemRecord[]> {
+    // Delete existing items
+    const existingItems = await this.listBundleItems({ bundle_id: bundleId })
+    if (existingItems.length > 0) {
+      await this.deleteBundleItems(existingItems.map((i) => i.id))
+    }
+
+    // Create new items
+    if (items.length === 0) {
+      return []
+    }
+
+    const created = await this.createBundleItems(
+      items.map((item, index) => ({
+        bundle_id: bundleId,
+        product_id: item.product_id,
+        variant_id: item.variant_id,
+        quantity: item.quantity ?? 1,
+        sort_order: item.sort_order ?? index,
+        product_title: item.product_title ?? null,
+        variant_title: item.variant_title ?? null,
+      }))
+    )
+
+    return Array.isArray(created) ? created : [created]
   }
 
   /**
