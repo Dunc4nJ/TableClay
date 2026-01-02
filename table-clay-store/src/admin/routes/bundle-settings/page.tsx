@@ -261,7 +261,7 @@ const SettingsPage = () => {
 }
 
 export const config = defineRouteConfig({
-  label: "Store Settings",
+  label: "Bundle Settings",
   icon: CogSixTooth,
 })
 
