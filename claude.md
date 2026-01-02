@@ -288,6 +288,14 @@ export PATH="/opt/homebrew/opt/postgresql@15/bin:$PATH"
 psql table-clay-store        # Access database
 ```
 
+### Validation (Run Before Push)
+```bash
+./scripts/validate.sh all    # Full validation (REQUIRED before git push)
+./scripts/validate.sh quick  # Quick TypeScript check only
+./scripts/validate.sh backend  # Backend only
+./scripts/validate.sh frontend # Frontend only
+```
+
 ---
 
 ## Production Deployment
@@ -328,10 +336,76 @@ railway status                    # Check deployment status
 ```
 
 **Pre-deployment Checklist:**
-- [ ] Test changes locally with `yarn dev`
-- [ ] Ensure `yarn build` succeeds
-- [ ] Check for TypeScript errors
+- [ ] Run `./scripts/validate.sh all` (see below)
 - [ ] Verify database migrations if schema changed
+- [ ] Test critical user flows locally
+
+---
+
+## Pre-Push Validation (REQUIRED)
+
+**IMPORTANT FOR AGENTS:** Before pushing any changes to git and triggering a deploy, you MUST run the validation script:
+
+```bash
+# Run from project root - validates both backend and frontend
+./scripts/validate.sh all
+```
+
+### Validation Options
+
+| Command | Time | What it checks |
+|---------|------|----------------|
+| `./scripts/validate.sh quick` | 5-10s | TypeScript compilation only |
+| `./scripts/validate.sh backend` | 30-60s | Backend TS + unit tests + build |
+| `./scripts/validate.sh frontend` | 1-2min | Frontend TS + build |
+| `./scripts/validate.sh all` | 2-3min | Full validation (recommended) |
+
+### Validation Workflow
+
+```
+1. Make code changes
+2. Run: ./scripts/validate.sh all
+3. If PASS → git add, commit, push
+4. If FAIL → fix errors, repeat from step 2
+```
+
+### What the Script Checks
+
+1. **TypeScript Compilation** (`npx tsc --noEmit`)
+   - Catches type errors, missing imports, interface mismatches
+
+2. **Unit Tests** (`TEST_TYPE=unit yarn test:unit`)
+   - Validates business logic, service methods, utilities
+
+3. **Production Build** (`yarn build`)
+   - Catches SSR issues, missing dependencies, build-time errors
+
+### Quick Validation During Development
+
+For rapid iteration while coding (before full validation):
+
+```bash
+# Backend only - TypeScript check
+cd table-clay-store && npx tsc --noEmit
+
+# Frontend only - TypeScript check
+cd table-clay-storefront && npx tsc --noEmit
+
+# Test specific API endpoint locally
+curl http://localhost:9000/store/products | jq
+```
+
+### Visual Validation (Optional)
+
+For UI changes, agents can use Chrome automation to verify visually:
+
+```bash
+# Start local servers first
+cd table-clay-store && yarn dev &
+cd table-clay-storefront && yarn dev &
+
+# Then use Chrome MCP tools to screenshot/verify UI
+```
 
 ### Frontend Deployment (Vercel)
 
@@ -576,5 +650,5 @@ See `Docs/add-testing.md` for complete testing documentation.
 
 ---
 
-*Last updated: December 2024*
+*Last updated: January 2025*
 *Medusa Version: 2.12.3*

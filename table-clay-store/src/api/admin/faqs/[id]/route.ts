@@ -69,7 +69,7 @@ export async function PUT(req: MedusaRequest, res: MedusaResponse) {
     if (metadata !== undefined) updateData.metadata = metadata
 
     // Update the FAQ
-    await contentService.updateFAQs({
+    await contentService.updateFaqs({
       selector: { id },
       data: updateData,
     })
@@ -100,7 +100,7 @@ export async function DELETE(req: MedusaRequest, res: MedusaResponse) {
     const { id } = req.params
     const contentService: ContentModuleService = req.scope.resolve(CONTENT_MODULE)
 
-    await contentService.deleteFAQs(id)
+    await contentService.deleteFaqs(id)
 
     return res.json({
       success: true,

@@ -44,3 +44,6 @@ Docs/environment-variables.md
 # Large assets (use cloud storage instead)
 digital-assets/
 *.zipenvironment-variables.md
+
+# bv (beads viewer) local config and caches
+.bv/

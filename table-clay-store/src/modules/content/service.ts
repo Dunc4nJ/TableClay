@@ -83,7 +83,7 @@ class ContentModuleService extends MedusaService({
   Review,
   ReviewImage,
   ProductReviewStats,
-  FAQ,
+  Faq: FAQ,  // Use 'Faq' key to generate correct method names (listFaqs not listFAQS)
 }) {
   // ===== REVIEWS =====
 
@@ -248,8 +248,8 @@ class ContentModuleService extends MedusaService({
    */
   async getProductFAQs(productId: string): Promise<FAQRecord[]> {
     const [globalFaqs, productFaqs] = await Promise.all([
-      this.listFAQs({ product_id: null, is_active: true }, { order: { sort_order: "ASC" } }),
-      this.listFAQs({ product_id: productId, is_active: true }, { order: { sort_order: "ASC" } }),
+      this.listFaqs({ product_id: null, is_active: true }, { order: { sort_order: "ASC" } }),
+      this.listFaqs({ product_id: productId, is_active: true }, { order: { sort_order: "ASC" } }),
     ])
 
     // Global FAQs first, then product-specific
@@ -260,7 +260,7 @@ class ContentModuleService extends MedusaService({
    * Get global FAQs only (for pages without a specific product)
    */
   async listGlobalFAQs(): Promise<FAQRecord[]> {
-    return this.listFAQs(
+    return this.listFaqs(
       { product_id: null, is_active: true },
       { order: { sort_order: "ASC" } }
     )
@@ -273,14 +273,14 @@ class ContentModuleService extends MedusaService({
     product_id?: string | null
     is_active?: boolean
   }): Promise<FAQRecord[]> {
-    return this.listFAQs(filters || {}, { order: { sort_order: "ASC" } })
+    return this.listFaqs(filters || {}, { order: { sort_order: "ASC" } })
   }
 
   /**
    * Admin: Create FAQ
    */
   async createFAQ(data: CreateFAQInput): Promise<FAQRecord> {
-    return this.createFAQs(data)
+    return this.createFaqs(data)
   }
 
   /**
@@ -293,7 +293,7 @@ class ContentModuleService extends MedusaService({
     active: number
     inactive: number
   }> {
-    const all = await this.listFAQs({})
+    const all = await this.listFaqs({})
     const global = all.filter((f) => f.product_id === null)
     const productSpecific = all.filter((f) => f.product_id !== null)
     const active = all.filter((f) => f.is_active)

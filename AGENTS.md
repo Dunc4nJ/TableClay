@@ -1,103 +1,66 @@
-# Agent Instructions
+# User-Scoped Claude Code Instructions
 
-This project uses **bd** (beads) for issue tracking. Run `bd onboard` to get started.
+## Beads Issue Tracking (Global)
 
-## Quick Reference
+All projects should use Beads (`bd`) for AI-optimized issue tracking when a `.beads/` directory exists.
 
-```bash
-bd ready              # Find available work
-bd show <id>          # View issue details
-bd update <id> --status in_progress  # Claim work
-bd close <id>         # Complete work
-bd sync               # Sync with git
-```
-
-## Landing the Plane (Session Completion)
-
-**When ending a work session**, you MUST complete ALL steps below. Work is NOT complete until `git push` succeeds.
-
-**MANDATORY WORKFLOW:**
-
-1. **File issues for remaining work** - Create issues for anything that needs follow-up
-2. **Run quality gates** (if code changed) - Tests, linters, builds
-3. **Update issue status** - Close finished work, update in-progress items
-4. **PUSH TO REMOTE** - This is MANDATORY:
-   ```bash
-   git pull --rebase
-   bd sync
-   git push
-   git status  # MUST show "up to date with origin"
-   ```
-5. **Clean up** - Clear stashes, prune remote branches
-6. **Verify** - All changes committed AND pushed
-7. **Hand off** - Provide context for next session
-
-**CRITICAL RULES:**
-- Work is NOT complete until `git push` succeeds
-- NEVER stop before pushing - that leaves work stranded locally
-- NEVER say "ready to push when you are" - YOU must push
-- If push fails, resolve and retry until it succeeds
-
-
-<!-- bv-agent-instructions-v1 -->
-
----
-
-## Beads Workflow Integration
-
-This project uses [beads_viewer](https://github.com/Dicklesworthstone/beads_viewer) for issue tracking. Issues are stored in `.beads/` and tracked in git.
+### Startup Check
+At session start, check if `.beads/` exists in the project:
+- If yes: Run `bd ready --json` to see available work
+- If no: This project doesn't use Beads yet (user can initialize with `bd init` if desired)
 
 ### Essential Commands
+| Command | Purpose |
+|---------|---------|
+| `bd ready` | Show unblocked tasks ready for work |
+| `bd create "Title" -p 1` | Create priority-1 issue |
+| `bd update <id> --status in_progress` | Claim a task |
+| `bd close <id> --reason "Done"` | Complete a task |
+| `bd dep add <child> <parent>` | Link dependencies |
+| `bd sync` | Export and push changes |
+| `bd show <id>` | View issue details |
+| `bd list` | List all issues |
 
-```bash
-# View issues (launches TUI - avoid in automated sessions)
-bv
+### Workflow Rules
+1. **Before starting work**: Run `bd ready` to find unblocked tasks
+2. **Claim work**: `bd update <id> --status in_progress`
+3. **During work**: If you discover bugs/issues, create them with `bd create` and link with `bd dep add <new-id> <current-id> --type discovered-from`
+4. **After completing**: `bd close <id> --reason "Done"` and `bd sync`
+5. **Never lose work**: Always file discovered issues before moving on
+6. **Landing the plane**: When finishing a session, run `bd sync` to ensure all changes are pushed
 
-# CLI commands for agents (use these instead)
-bd ready              # Show issues ready to work (no blockers)
-bd list --status=open # All open issues
-bd show <id>          # Full issue details with dependencies
-bd create --title="..." --type=task --priority=2
-bd update <id> --status=in_progress
-bd close <id> --reason="Completed"
-bd close <id1> <id2>  # Close multiple issues at once
-bd sync               # Commit and push changes
-```
+### Pre-existing Bugs and Errors
+When you encounter bugs or errors that are **unrelated to the current task** or are **pre-existing in the codebase**:
+1. **Create a bead** for the issue using `bd create "BUG: <description>" -p 2 --type bug`
+2. **Do NOT attempt to fix** if it would distract from the current task
+3. **Document** what you observed in the bead description
+4. **Continue** with the original task
 
-### Workflow Pattern
+This ensures issues are captured for another developer to resolve without derailing current work.
 
-1. **Start**: Run `bd ready` to find actionable work
-2. **Claim**: Use `bd update <id> --status=in_progress`
-3. **Work**: Implement the task
-4. **Complete**: Use `bd close <id>`
-5. **Sync**: Always run `bd sync` at session end
+### CRITICAL: Verification Before Closing
+**NEVER close a bead until the fix/feature is VERIFIED to be working correctly.**
 
-### Key Concepts
+- Do NOT close beads just because code was written and pushed
+- Do NOT close beads based on "should work" assumptions
+- Wait for deployment to complete and TEST the actual behavior
+- Ask the user to verify if you cannot test yourself
+- Only close after confirmation that the change works as expected
 
-- **Dependencies**: Issues can block other issues. `bd ready` shows only unblocked work.
-- **Priority**: P0=critical, P1=high, P2=medium, P3=low, P4=backlog (use numbers, not words)
-- **Types**: task, bug, feature, epic, question, docs
-- **Blocking**: `bd dep add <issue> <depends-on>` to add dependencies
+If you need to track that code is written but unverified, add a comment to the bead or update its description with "Pending verification" instead of closing it.
 
-### Session Protocol
+### Priority Scale
+- 0 = Critical (security, data loss, build failures)
+- 1 = High (major features, significant bugs)
+- 2 = Medium (enhancements, minor issues)
+- 3 = Low (refinement, optimization)
+- 4 = Backlog (future possibilities)
 
-**Before ending any session, run this checklist:**
+### Issue Types
+`bug`, `feature`, `task`, `epic`, `chore`
 
-```bash
-git status              # Check what changed
-git add <files>         # Stage code changes
-bd sync                 # Commit beads changes
-git commit -m "..."     # Commit code
-bd sync                 # Commit any new beads changes
-git push                # Push to remote
-```
-
-### Best Practices
-
-- Check `bd ready` at session start to find available work
-- Update status as you work (in_progress → closed)
-- Create new issues with `bd create` when you discover tasks
-- Use descriptive titles and set appropriate priority/type
-- Always `bd sync` before ending session
-
-<!-- end-bv-agent-instructions -->
+### Beads Viewer
+If you need to visualize the issue graph or get insights, the `bv` TUI is available:
+- `bv` - Launch viewer
+- `bv --robot-triage` - Get full project snapshot (for AI)
+- `bv --robot-plan` - Get execution plan
