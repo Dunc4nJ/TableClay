@@ -425,6 +425,7 @@ The patch divides amounts by `10^decimalDigits` before formatting, correctly con
 
 | Date | Change |
 |------|--------|
+| Jan 2, 2026 | Added configurable bundle headline setting to Store Settings |
 | Jan 2, 2026 | Added FAQ admin pages (new/edit routes) |
 | Jan 2, 2026 | Added review image upload with alt text support |
 | Jan 2, 2026 | Created reusable ImageUploader admin component |
