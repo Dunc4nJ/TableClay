@@ -2,6 +2,9 @@ import { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { listProducts } from "@lib/data/products"
 import { getRegion, listRegions } from "@lib/data/regions"
+import { getBundlesForProduct } from "@lib/data/bundles"
+import { getProductReviews } from "@lib/data/reviews"
+import { getProductFAQs } from "@lib/data/faqs"
 import ProductTemplate from "@modules/products/templates"
 import { HttpTypes } from "@medusajs/types"
 
@@ -60,13 +63,13 @@ function getImagesForVariant(
     return product.images
   }
 
-  const variant = product.variants!.find((v) => v.id === selectedVariantId)
-  if (!variant || !variant.images.length) {
+  const variant = product.variants.find((v) => v.id === selectedVariantId)
+  if (!variant || !variant.images || variant.images.length === 0) {
     return product.images
   }
 
   const imageIdsMap = new Map(variant.images.map((i) => [i.id, true]))
-  return product.images!.filter((i) => imageIdsMap.has(i.id))
+  return product.images?.filter((i) => imageIdsMap.has(i.id)) ?? []
 }
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
@@ -114,18 +117,29 @@ export default async function ProductPage(props: Props) {
     queryParams: { handle: params.handle },
   }).then(({ response }) => response.products[0])
 
-  const images = getImagesForVariant(pricedProduct, selectedVariantId)
-
   if (!pricedProduct) {
     notFound()
   }
+
+  const images = getImagesForVariant(pricedProduct, selectedVariantId) || []
+
+  // Fetch bundles, reviews, and FAQs in parallel
+  const [bundles, reviewData, faqs] = await Promise.all([
+    getBundlesForProduct(pricedProduct.id),
+    getProductReviews(pricedProduct.id),
+    getProductFAQs(pricedProduct.id),
+  ])
 
   return (
     <ProductTemplate
       product={pricedProduct}
       region={region}
       countryCode={params.countryCode}
-      images={images}
+      images={images as HttpTypes.StoreProductImage[]}
+      bundles={bundles}
+      reviews={reviewData.reviews}
+      reviewStats={reviewData.stats}
+      faqs={faqs}
     />
   )
 }

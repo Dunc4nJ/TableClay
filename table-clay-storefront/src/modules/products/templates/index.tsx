@@ -1,22 +1,65 @@
-import React, { Suspense } from "react"
+"use client"
+
+import React, { Suspense, useRef } from "react"
+import { HttpTypes } from "@medusajs/types"
+import { notFound } from "next/navigation"
 
 import ImageGallery from "@modules/products/components/image-gallery"
-import ProductActions from "@modules/products/components/product-actions"
-import ProductOnboardingCta from "@modules/products/components/product-onboarding-cta"
-import ProductTabs from "@modules/products/components/product-tabs"
-import RelatedProducts from "@modules/products/components/related-products"
 import ProductInfo from "@modules/products/templates/product-info"
-import SkeletonRelatedProducts from "@modules/skeletons/templates/skeleton-related-products"
-import { notFound } from "next/navigation"
-import { HttpTypes } from "@medusajs/types"
-
 import ProductActionsWrapper from "./product-actions-wrapper"
+import ProductActions from "@modules/products/components/product-actions"
+import RelatedProducts from "@modules/products/components/related-products"
+import SkeletonRelatedProducts from "@modules/skeletons/templates/skeleton-related-products"
+
+// New components
+import TrustBadges from "@modules/products/components/trust-badges"
+import PaymentIcons from "@modules/products/components/payment-icons"
+import BenefitsSection from "@modules/products/components/benefits-section"
+import FAQAccordion from "@modules/products/components/faq-accordion"
+import ReviewsSection from "@modules/products/components/reviews-section"
+import StickyCartBar from "@modules/products/components/sticky-cart-bar"
+import StarRating from "@modules/products/components/reviews-section/star-rating"
+
+// Types
+import type { Bundle } from "@lib/data/bundles"
+import type { Review, ProductReviewStats } from "@lib/data/reviews"
+import type { FAQ } from "@lib/data/faqs"
 
 type ProductTemplateProps = {
   product: HttpTypes.StoreProduct
   region: HttpTypes.StoreRegion
   countryCode: string
   images: HttpTypes.StoreProductImage[]
+  bundles?: Bundle[]
+  reviews?: Review[]
+  reviewStats?: ProductReviewStats | null
+  faqs?: FAQ[]
+}
+
+/**
+ * ReviewSummaryBadge - Small rating badge for above the fold
+ */
+const ReviewSummaryBadge = ({
+  stats,
+  onClick,
+}: {
+  stats: ProductReviewStats
+  onClick?: () => void
+}) => {
+  return (
+    <button
+      onClick={onClick}
+      className="inline-flex items-center gap-2 text-sm text-ui-fg-subtle hover:text-ui-fg-base transition-colors"
+    >
+      <span className="font-semibold text-amber-500">
+        {stats.average_rating.toFixed(1)}
+      </span>
+      <StarRating rating={Math.round(stats.average_rating)} size="sm" />
+      <span className="underline">
+        {stats.total_count.toLocaleString()} Reviews
+      </span>
+    </button>
+  )
 }
 
 const ProductTemplate: React.FC<ProductTemplateProps> = ({
@@ -24,39 +67,120 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
   region,
   countryCode,
   images,
+  bundles = [],
+  reviews = [],
+  reviewStats,
+  faqs = [],
 }) => {
+  const reviewsSectionRef = useRef<HTMLDivElement>(null)
+  const addToCartRef = useRef<HTMLDivElement>(null)
+
   if (!product || !product.id) {
     return notFound()
   }
 
+  const scrollToReviews = () => {
+    reviewsSectionRef.current?.scrollIntoView({ behavior: "smooth" })
+  }
+
   return (
     <>
+      {/* Above the Fold - Two Column Layout */}
       <div
-        className="content-container  flex flex-col small:flex-row small:items-start py-6 relative"
+        className="content-container py-6"
         data-testid="product-container"
       >
-        <div className="flex flex-col small:sticky small:top-48 small:py-0 small:max-w-[300px] w-full py-8 gap-y-6">
-          <ProductInfo product={product} />
-          <ProductTabs product={product} />
-        </div>
-        <div className="block w-full relative">
-          <ImageGallery images={images} />
-        </div>
-        <div className="flex flex-col small:sticky small:top-48 small:py-0 small:max-w-[300px] w-full py-8 gap-y-12">
-          <ProductOnboardingCta />
-          <Suspense
-            fallback={
-              <ProductActions
-                disabled={true}
-                product={product}
-                region={region}
-              />
-            }
-          >
-            <ProductActionsWrapper id={product.id} region={region} />
-          </Suspense>
+        <div className="flex flex-col lg:flex-row lg:items-start gap-8">
+          {/* Left Column: Image Gallery */}
+          <div className="w-full lg:w-1/2 lg:sticky lg:top-24">
+            <ImageGallery images={images} />
+          </div>
+
+          {/* Right Column: Product Info & Actions */}
+          <div className="w-full lg:w-1/2 flex flex-col gap-y-6">
+            {/* Review Summary Badge */}
+            {reviewStats && reviewStats.total_count > 0 && (
+              <ReviewSummaryBadge stats={reviewStats} onClick={scrollToReviews} />
+            )}
+
+            {/* Product Title & Subtitle */}
+            <ProductInfo product={product} />
+
+            {/* Product Actions (Bundles/Variants + Add to Cart) */}
+            <div ref={addToCartRef}>
+              <Suspense
+                fallback={
+                  <ProductActions
+                    disabled={true}
+                    product={product}
+                    region={region}
+                    bundles={bundles}
+                  />
+                }
+              >
+                <ProductActionsWrapper
+                  id={product.id}
+                  region={region}
+                  bundles={bundles}
+                />
+              </Suspense>
+            </div>
+
+            {/* Payment Icons */}
+            <PaymentIcons size="sm" className="mt-2" />
+
+            {/* Trust Badges */}
+            <TrustBadges layout="vertical" size="md" className="mt-2" />
+          </div>
         </div>
       </div>
+
+      {/* Below the Fold - Full Width Sections */}
+
+      {/* Benefits Section */}
+      <BenefitsSection />
+
+      {/* FAQ Section */}
+      {faqs.length > 0 && (
+        <div className="border-t border-gray-100">
+          <FAQAccordion faqs={faqs} />
+        </div>
+      )}
+
+      {/* Reviews Section */}
+      {reviewStats && (
+        <div ref={reviewsSectionRef} className="border-t border-gray-100 bg-rose-50/30">
+          <div className="content-container py-12">
+            {/* Stats Header */}
+            <div className="text-center mb-8">
+              <h2 className="text-2xl font-semibold text-ui-fg-base mb-4">
+                Discover the Table Clay Difference
+              </h2>
+              <div className="flex items-center justify-center gap-2 mb-3">
+                <span className="text-3xl font-bold text-amber-500">
+                  {reviewStats.average_rating.toFixed(1)}
+                </span>
+                <StarRating rating={Math.round(reviewStats.average_rating)} size="lg" />
+              </div>
+              <p className="text-ui-fg-subtle text-sm max-w-xl mx-auto">
+                Join over {reviewStats.total_count.toLocaleString()}+ happy creators
+                and families who have discovered the joy of creating together.
+              </p>
+            </div>
+
+            {/* Review Cards */}
+            {reviews.length > 0 && (
+              <div className="max-w-3xl mx-auto">
+                {reviews.map((review) => (
+                  <ReviewCard key={review.id} review={review} />
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Related Products */}
       <div
         className="content-container my-16 small:my-32"
         data-testid="related-products-container"
@@ -65,7 +189,201 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
           <RelatedProducts product={product} countryCode={countryCode} />
         </Suspense>
       </div>
+
+      {/* Sticky Cart Bar */}
+      <StickyCartBarWrapper
+        product={product}
+        region={region}
+        bundles={bundles}
+        triggerRef={addToCartRef}
+      />
     </>
+  )
+}
+
+/**
+ * ReviewCard - Individual review display (inline version)
+ */
+import Image from "next/image"
+
+const ReviewCard = ({ review }: { review: Review }) => {
+  return (
+    <article className="bg-white border-b border-gray-100 py-6">
+      {/* Header: Name, Date, Verified Badge */}
+      <div className="flex items-start justify-between mb-3">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="font-medium text-ui-fg-base">
+              {review.customer_name}
+            </span>
+            {review.is_verified_buyer && (
+              <span className="inline-flex items-center gap-1 text-xs text-green-600">
+                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                  <path
+                    fillRule="evenodd"
+                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                Verified Buyer
+              </span>
+            )}
+          </div>
+          <StarRating rating={review.rating} size="sm" className="mt-1" />
+        </div>
+        <span className="text-xs text-ui-fg-muted">
+          {formatReviewDate(review.display_date)}
+        </span>
+      </div>
+
+      {/* Title */}
+      {review.title && (
+        <p className="font-semibold text-ui-fg-base mb-2">{review.title}</p>
+      )}
+
+      {/* Content */}
+      <p className="text-ui-fg-subtle text-sm leading-relaxed mb-4">
+        {review.content}
+      </p>
+
+      {/* Images */}
+      {review.images && review.images.length > 0 && (
+        <div className="flex gap-2 mb-4 flex-wrap">
+          {review.images.map((image) => (
+            <div
+              key={image.id}
+              className="relative w-20 h-20 rounded-md overflow-hidden border border-gray-200"
+            >
+              <Image
+                src={image.url}
+                alt={image.alt_text || `Review image by ${review.customer_name}`}
+                fill
+                className="object-cover"
+                sizes="80px"
+              />
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Helpful Count */}
+      {review.helpful_count > 0 && (
+        <div className="flex items-center gap-4 text-xs text-ui-fg-muted">
+          <span>Was this helpful?</span>
+          <span className="flex items-center gap-1">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"
+              />
+            </svg>
+            {review.helpful_count}
+          </span>
+        </div>
+      )}
+    </article>
+  )
+}
+
+function formatReviewDate(dateString: string): string {
+  try {
+    const date = new Date(dateString)
+    return date.toLocaleDateString("en-US", {
+      month: "long",
+      year: "numeric",
+    })
+  } catch {
+    return ""
+  }
+}
+
+/**
+ * StickyCartBarWrapper - Client wrapper for sticky cart functionality
+ */
+import { useState, useEffect, useMemo, RefObject } from "react"
+import { useParams } from "next/navigation"
+import { addToCart } from "@lib/data/cart"
+
+const StickyCartBarWrapper = ({
+  product,
+  region,
+  bundles,
+  triggerRef,
+}: {
+  product: HttpTypes.StoreProduct
+  region: HttpTypes.StoreRegion
+  bundles: Bundle[]
+  triggerRef: RefObject<HTMLDivElement | null>
+}) => {
+  const [isAdding, setIsAdding] = useState(false)
+  const countryCode = useParams().countryCode as string
+
+  // Get the first variant or bundle price for display
+  const price = useMemo(() => {
+    if (bundles.length > 0) {
+      const bundle = bundles[0]
+      return `$${(bundle.sale_price / 100).toFixed(2)}`
+    }
+    const variant = product.variants?.[0]
+    if (variant?.calculated_price?.calculated_amount) {
+      return `$${(variant.calculated_price.calculated_amount / 100).toFixed(2)}`
+    }
+    return ""
+  }, [bundles, product.variants])
+
+  const originalPrice = useMemo(() => {
+    if (bundles.length > 0) {
+      const bundle = bundles[0]
+      if (bundle.original_price > bundle.sale_price) {
+        return `$${(bundle.original_price / 100).toFixed(2)}`
+      }
+    }
+    return undefined
+  }, [bundles])
+
+  const handleAddToCart = async () => {
+    setIsAdding(true)
+    try {
+      if (bundles.length > 0) {
+        // Add first bundle items
+        const bundle = bundles[0]
+        for (const item of bundle.items) {
+          if (item.variant_id) {
+            await addToCart({
+              variantId: item.variant_id,
+              quantity: item.quantity,
+              countryCode,
+            })
+          }
+        }
+      } else {
+        // Add first variant
+        const variant = product.variants?.[0]
+        if (variant?.id) {
+          await addToCart({
+            variantId: variant.id,
+            quantity: 1,
+            countryCode,
+          })
+        }
+      }
+    } catch (error) {
+      console.error("Error adding to cart:", error)
+    }
+    setIsAdding(false)
+  }
+
+  return (
+    <StickyCartBar
+      product={product}
+      price={price}
+      originalPrice={originalPrice}
+      onAddToCart={handleAddToCart}
+      isLoading={isAdding}
+      triggerRef={triggerRef}
+    />
   )
 }
 
