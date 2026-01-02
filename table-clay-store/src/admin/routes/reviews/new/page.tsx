@@ -14,6 +14,7 @@ import {
 import { useQuery, useMutation } from "@tanstack/react-query"
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
+import ImageUploader, { ImageItem } from "../../../components/image-uploader"
 
 type Product = {
   id: string
@@ -30,6 +31,7 @@ type CreateReviewData = {
   content: string
   display_date: string
   is_active: boolean
+  images: ImageItem[]
 }
 
 const fetchProducts = async (): Promise<{ products: Product[] }> => {
@@ -41,11 +43,23 @@ const fetchProducts = async (): Promise<{ products: Product[] }> => {
 }
 
 const createReview = async (data: CreateReviewData) => {
+  // Extract images and convert to API format
+  const { images, ...reviewData } = data
+  const payload = {
+    ...reviewData,
+    image_urls: images
+      .filter((img) => !img.isUploading)
+      .map((img) => ({
+        url: img.url,
+        alt_text: img.alt_text,
+      })),
+  }
+
   const response = await fetch("/admin/reviews", {
     method: "POST",
     credentials: "include",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
+    body: JSON.stringify(payload),
   })
   if (!response.ok) {
     const error = await response.json()
@@ -98,6 +112,7 @@ const NewReviewPage = () => {
     content: "",
     display_date: new Date().toISOString().split("T")[0],
     is_active: true,
+    images: [],
   })
   const [error, setError] = useState<string | null>(null)
 
@@ -268,6 +283,16 @@ const NewReviewPage = () => {
           <Text className="text-ui-fg-subtle text-sm">
             The date shown to customers for this review
           </Text>
+        </div>
+
+        {/* Review Images */}
+        <div className="space-y-2">
+          <Label>Review Images (optional)</Label>
+          <ImageUploader
+            images={formData.images}
+            onChange={(images) => setFormData({ ...formData, images })}
+            maxImages={5}
+          />
         </div>
 
         {/* Active Status */}

@@ -14,11 +14,19 @@ import {
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { useState, useEffect } from "react"
 import { useNavigate, useParams } from "react-router-dom"
+import ImageUploader, { ImageItem } from "../../../components/image-uploader"
 
 type Product = {
   id: string
   title: string
   thumbnail: string | null
+}
+
+type ReviewImage = {
+  id: string
+  url: string
+  alt_text: string | null
+  sort_order: number
 }
 
 type Review = {
@@ -33,6 +41,7 @@ type Review = {
   helpful_count: number
   is_active: boolean
   sort_order: number
+  images?: ReviewImage[]
 }
 
 type UpdateReviewData = {
@@ -44,6 +53,7 @@ type UpdateReviewData = {
   content?: string
   display_date?: string
   is_active?: boolean
+  images?: ImageItem[]
 }
 
 const fetchProducts = async (): Promise<{ products: Product[] }> => {
@@ -69,11 +79,25 @@ const updateReview = async ({
   id: string
   data: UpdateReviewData
 }) => {
+  // Extract images and convert to API format
+  const { images, ...reviewData } = data
+  const payload = {
+    ...reviewData,
+    ...(images !== undefined && {
+      image_urls: images
+        .filter((img) => !img.isUploading)
+        .map((img) => ({
+          url: img.url,
+          alt_text: img.alt_text,
+        })),
+    }),
+  }
+
   const response = await fetch(`/admin/reviews/${id}`, {
     method: "PUT",
     credentials: "include",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
+    body: JSON.stringify(payload),
   })
   if (!response.ok) {
     const error = await response.json()
@@ -148,6 +172,11 @@ const EditReviewPage = () => {
         content: review.content,
         display_date: review.display_date.split("T")[0],
         is_active: review.is_active,
+        images: review.images?.map((img) => ({
+          id: img.id,
+          url: img.url,
+          alt_text: img.alt_text || "",
+        })) || [],
       })
       setInitialized(true)
     }
@@ -326,6 +355,16 @@ const EditReviewPage = () => {
           <Text className="text-ui-fg-subtle text-sm">
             The date shown to customers for this review
           </Text>
+        </div>
+
+        {/* Review Images */}
+        <div className="space-y-2">
+          <Label>Review Images</Label>
+          <ImageUploader
+            images={formData.images || []}
+            onChange={(images) => setFormData({ ...formData, images })}
+            maxImages={5}
+          />
         </div>
 
         {/* Active Status */}

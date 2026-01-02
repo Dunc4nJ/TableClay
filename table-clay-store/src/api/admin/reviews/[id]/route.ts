@@ -65,7 +65,7 @@ export async function PUT(req: MedusaRequest, res: MedusaResponse) {
       helpful_count?: number
       is_active?: boolean
       sort_order?: number
-      image_urls?: string[]
+      image_urls?: Array<string | { url: string; alt_text?: string }>
       metadata?: Record<string, unknown>
     }
 

@@ -130,37 +130,44 @@ class ContentModuleService extends MedusaService({
 
   /**
    * Admin: Create a review with images
+   * Accepts either string URLs (backwards compatible) or objects with url and alt_text
    */
   async createReviewWithImages(
     data: CreateReviewInput,
-    imageUrls: string[]
+    images: Array<string | { url: string; alt_text?: string }>
   ): Promise<ReviewRecord> {
     const review = await this.createReviews(data)
 
     // Create images
-    for (let i = 0; i < imageUrls.length; i++) {
+    for (let i = 0; i < images.length; i++) {
+      const img = images[i]
+      const url = typeof img === "string" ? img : img.url
+      const alt_text = typeof img === "string" ? null : (img.alt_text || null)
+
       await this.createReviewImages({
         review_id: review.id,
-        url: imageUrls[i],
+        url,
+        alt_text,
         sort_order: i,
       })
     }
 
     // Return review with images
-    const images = await this.listReviewImages(
+    const reviewImages = await this.listReviewImages(
       { review_id: review.id },
       { order: { sort_order: "ASC" } }
     )
 
-    return { ...review, images }
+    return { ...review, images: reviewImages }
   }
 
   /**
    * Admin: Replace all review images
+   * Accepts either string URLs (backwards compatible) or objects with url and alt_text
    */
   async replaceReviewImages(
     reviewId: string,
-    imageUrls: string[]
+    images: Array<string | { url: string; alt_text?: string }>
   ): Promise<ReviewImageRecord[]> {
     // Delete existing images
     const existing = await this.listReviewImages({ review_id: reviewId })
@@ -169,10 +176,15 @@ class ContentModuleService extends MedusaService({
     }
 
     // Create new images
-    for (let i = 0; i < imageUrls.length; i++) {
+    for (let i = 0; i < images.length; i++) {
+      const img = images[i]
+      const url = typeof img === "string" ? img : img.url
+      const alt_text = typeof img === "string" ? null : (img.alt_text || null)
+
       await this.createReviewImages({
         review_id: reviewId,
-        url: imageUrls[i],
+        url,
+        alt_text,
         sort_order: i,
       })
     }
