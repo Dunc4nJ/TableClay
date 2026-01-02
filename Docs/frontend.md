@@ -540,6 +540,7 @@ NEXT_PUBLIC_DEFAULT_REGION=us
 
 | Date | Change |
 |------|--------|
+| Jan 2, 2026 | Fixed bundle items display to show product names instead of variant names |
 | Dec 30, 2024 | Initial documentation created |
 
 ---
