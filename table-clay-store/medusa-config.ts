@@ -96,5 +96,9 @@ module.exports = defineConfig({
     {
       resolve: "./src/modules/content",
     },
+    // Custom Store Settings Module for global configuration
+    {
+      resolve: "./src/modules/store-settings",
+    },
   ],
 })

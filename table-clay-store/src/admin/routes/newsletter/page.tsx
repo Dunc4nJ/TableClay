@@ -210,9 +210,15 @@ const NewsletterPage = () => {
           <Table.Body>
             {filteredSubscribers.length === 0 ? (
               <Table.Row>
-                <Table.Cell colSpan={7} className="text-center py-8">
+                <Table.Cell className="text-center py-8">
                   <Text className="text-ui-fg-muted">No subscribers found</Text>
                 </Table.Cell>
+                <Table.Cell />
+                <Table.Cell />
+                <Table.Cell />
+                <Table.Cell />
+                <Table.Cell />
+                <Table.Cell />
               </Table.Row>
             ) : (
               filteredSubscribers.map((subscriber) => (
