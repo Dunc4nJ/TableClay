@@ -1,4 +1,5 @@
 import { defineRouteConfig } from "@medusajs/admin-sdk"
+import { PlusMini, XMarkMini } from "@medusajs/icons"
 import {
   Container,
   Heading,
@@ -9,21 +10,24 @@ import {
   Select,
   Switch,
   Textarea,
+  Badge,
 } from "@medusajs/ui"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useState, useEffect } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 
-type BundleItem = {
+type BundleItemData = {
   id: string
+  product_id: string
   variant_id: string
   quantity: number
   sort_order: number
+  product_title?: string | null
+  variant_title?: string | null
 }
 
 type Bundle = {
   id: string
-  product_id: string
   name: string
   description: string | null
   pricing_type: "fixed" | "percentage"
@@ -33,12 +37,13 @@ type Bundle = {
   badge: string
   is_active: boolean
   sort_order: number
-  items: BundleItem[]
+  items: BundleItemData[]
 }
 
 type ProductOption = {
   id: string
   title: string
+  thumbnail: string | null
   variants: Array<{
     id: string
     title: string
@@ -48,6 +53,14 @@ type ProductOption = {
       currency_code: string
     }>
   }>
+}
+
+type LocalBundleItem = {
+  product_id: string
+  product_title: string
+  variant_id: string
+  variant_title: string
+  quantity: number
 }
 
 const fetchBundle = async (id: string): Promise<{ bundle: Bundle }> => {
@@ -86,59 +99,6 @@ const updateBundle = async ({
   return response.json()
 }
 
-const addBundleItem = async ({
-  bundleId,
-  variant_id,
-  quantity,
-}: {
-  bundleId: string
-  variant_id: string
-  quantity: number
-}) => {
-  const response = await fetch(`/admin/bundles/${bundleId}/items`, {
-    method: "POST",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ variant_id, quantity }),
-  })
-  if (!response.ok) throw new Error("Failed to add item")
-  return response.json()
-}
-
-const updateBundleItem = async ({
-  bundleId,
-  itemId,
-  quantity,
-}: {
-  bundleId: string
-  itemId: string
-  quantity: number
-}) => {
-  const response = await fetch(`/admin/bundles/${bundleId}/items/${itemId}`, {
-    method: "PUT",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ quantity }),
-  })
-  if (!response.ok) throw new Error("Failed to update item")
-  return response.json()
-}
-
-const removeBundleItem = async ({
-  bundleId,
-  itemId,
-}: {
-  bundleId: string
-  itemId: string
-}) => {
-  const response = await fetch(`/admin/bundles/${bundleId}/items/${itemId}`, {
-    method: "DELETE",
-    credentials: "include",
-  })
-  if (!response.ok) throw new Error("Failed to remove item")
-  return response.json()
-}
-
 const BundleEditPage = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
@@ -154,6 +114,11 @@ const BundleEditPage = () => {
   const [badge, setBadge] = useState("none")
   const [isActive, setIsActive] = useState(true)
   const [sortOrder, setSortOrder] = useState("0")
+  const [items, setItems] = useState<LocalBundleItem[]>([])
+
+  // Product picker state
+  const [selectedProductId, setSelectedProductId] = useState("")
+  const [searchTerm, setSearchTerm] = useState("")
 
   // Fetch bundle
   const { data: bundleData, isLoading: bundleLoading } = useQuery({
@@ -187,12 +152,25 @@ const BundleEditPage = () => {
       setBadge(b.badge)
       setIsActive(b.is_active)
       setSortOrder(b.sort_order.toString())
+
+      // Convert existing items to local format
+      setItems(
+        b.items.map((item) => ({
+          product_id: item.product_id,
+          product_title: item.product_title || "Unknown Product",
+          variant_id: item.variant_id,
+          variant_title: item.variant_title || "Unknown Variant",
+          quantity: item.quantity,
+        }))
+      )
     }
   }, [bundleData])
 
-  const selectedProduct = productsData?.products?.find(
-    (p) => p.id === bundleData?.bundle?.product_id
-  )
+  // Filter products by search term
+  const filteredProducts =
+    productsData?.products?.filter((p) =>
+      p.title.toLowerCase().includes(searchTerm.toLowerCase())
+    ) ?? []
 
   const updateMutation = useMutation({
     mutationFn: updateBundle,
@@ -206,29 +184,18 @@ const BundleEditPage = () => {
     },
   })
 
-  const addItemMutation = useMutation({
-    mutationFn: addBundleItem,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["bundle", id] })
-    },
-  })
-
-  const updateItemMutation = useMutation({
-    mutationFn: updateBundleItem,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["bundle", id] })
-    },
-  })
-
-  const removeItemMutation = useMutation({
-    mutationFn: removeBundleItem,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["bundle", id] })
-    },
-  })
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+
+    if (!name) {
+      alert("Please enter a bundle name")
+      return
+    }
+
+    if (items.length === 0) {
+      alert("Please add at least one item to the bundle")
+      return
+    }
 
     const data: Record<string, unknown> = {
       name,
@@ -237,10 +204,18 @@ const BundleEditPage = () => {
       badge,
       is_active: isActive,
       sort_order: parseInt(sortOrder) || 0,
+      items: items.map((item) => ({
+        product_id: item.product_id,
+        variant_id: item.variant_id,
+        quantity: item.quantity,
+        product_title: item.product_title,
+        variant_title: item.variant_title,
+      })),
     }
 
     if (pricingType === "fixed") {
-      data.fixed_original_price = Math.round(parseFloat(originalPrice) * 100) || 0
+      data.fixed_original_price =
+        Math.round(parseFloat(originalPrice) * 100) || 0
       data.fixed_sale_price = Math.round(parseFloat(salePrice) * 100) || 0
     } else {
       data.discount_percentage = parseInt(discountPercent) || 0
@@ -248,6 +223,54 @@ const BundleEditPage = () => {
 
     updateMutation.mutate({ id: id!, data })
   }
+
+  const addVariantToBundle = (
+    product: ProductOption,
+    variant: ProductOption["variants"][0]
+  ) => {
+    if (items.find((i) => i.variant_id === variant.id)) {
+      alert("This variant is already in the bundle")
+      return
+    }
+
+    setItems([
+      ...items,
+      {
+        product_id: product.id,
+        product_title: product.title,
+        variant_id: variant.id,
+        variant_title: variant.title,
+        quantity: 1,
+      },
+    ])
+  }
+
+  const removeItem = (variantId: string) => {
+    setItems(items.filter((i) => i.variant_id !== variantId))
+  }
+
+  const updateItemQuantity = (variantId: string, quantity: number) => {
+    setItems(
+      items.map((i) =>
+        i.variant_id === variantId ? { ...i, quantity: Math.max(1, quantity) } : i
+      )
+    )
+  }
+
+  // Group items by product for display
+  const itemsByProduct = items.reduce(
+    (acc, item) => {
+      if (!acc[item.product_id]) {
+        acc[item.product_id] = {
+          product_title: item.product_title,
+          items: [],
+        }
+      }
+      acc[item.product_id].items.push(item)
+      return acc
+    },
+    {} as Record<string, { product_title: string; items: LocalBundleItem[] }>
+  )
 
   if (bundleLoading) {
     return (
@@ -285,255 +308,290 @@ const BundleEditPage = () => {
         </Button>
       </div>
 
-      <form onSubmit={handleSubmit} className="px-6 py-4 space-y-6">
-        {/* Product (read-only) */}
-        <div className="space-y-2">
-          <Label>Product</Label>
-          <Text className="p-2 bg-ui-bg-subtle rounded">
-            {selectedProduct?.title || bundle.product_id}
-          </Text>
-        </div>
+      <form onSubmit={handleSubmit} className="divide-y">
+        {/* Basic Info */}
+        <div className="px-6 py-4 space-y-4">
+          <Heading level="h2">Bundle Details</Heading>
 
-        {/* Bundle Name */}
-        <div className="space-y-2">
-          <Label htmlFor="name">Bundle Name</Label>
-          <Input
-            id="name"
-            placeholder='e.g., Duo - "Creative Set"'
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
-        </div>
-
-        {/* Description */}
-        <div className="space-y-2">
-          <Label htmlFor="description">Description</Label>
-          <Textarea
-            id="description"
-            placeholder="e.g., 2 wheels + Free Shipping + Tool Kit"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
-        </div>
-
-        {/* Pricing Type */}
-        <div className="space-y-2">
-          <Label>Pricing Type</Label>
-          <Select
-            value={pricingType}
-            onValueChange={(v) => setPricingType(v as "fixed" | "percentage")}
-          >
-            <Select.Trigger>
-              <Select.Value />
-            </Select.Trigger>
-            <Select.Content>
-              <Select.Item value="fixed">Fixed Price</Select.Item>
-              <Select.Item value="percentage">Percentage Discount</Select.Item>
-            </Select.Content>
-          </Select>
-        </div>
-
-        {/* Pricing Fields */}
-        {pricingType === "fixed" ? (
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="originalPrice">Original Price ($)</Label>
+              <Label htmlFor="name">Bundle Name *</Label>
               <Input
-                id="originalPrice"
-                type="number"
-                step="0.01"
-                min="0"
-                placeholder="319.90"
-                value={originalPrice}
-                onChange={(e) => setOriginalPrice(e.target.value)}
+                id="name"
+                placeholder='e.g., "Starter Set"'
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="salePrice">Sale Price ($)</Label>
+              <Label htmlFor="sortOrder">Sort Order</Label>
               <Input
-                id="salePrice"
+                id="sortOrder"
                 type="number"
-                step="0.01"
                 min="0"
-                placeholder="197.93"
-                value={salePrice}
-                onChange={(e) => setSalePrice(e.target.value)}
+                value={sortOrder}
+                onChange={(e) => setSortOrder(e.target.value)}
               />
             </div>
           </div>
-        ) : (
+
           <div className="space-y-2">
-            <Label htmlFor="discountPercent">Discount Percentage (%)</Label>
-            <Input
-              id="discountPercent"
-              type="number"
-              min="0"
-              max="100"
-              placeholder="20"
-              value={discountPercent}
-              onChange={(e) => setDiscountPercent(e.target.value)}
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              placeholder="e.g., 4 plates + 4 bowls + Free Shipping"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
             />
           </div>
-        )}
 
-        {/* Badge */}
-        <div className="space-y-2">
-          <Label>Badge</Label>
-          <Select value={badge} onValueChange={setBadge}>
-            <Select.Trigger>
-              <Select.Value />
-            </Select.Trigger>
-            <Select.Content>
-              <Select.Item value="none">None</Select.Item>
-              <Select.Item value="bestseller">Bestseller</Select.Item>
-              <Select.Item value="popular">Popular</Select.Item>
-              <Select.Item value="new">New</Select.Item>
-              <Select.Item value="limited">Limited</Select.Item>
-              <Select.Item value="sale">Sale</Select.Item>
-            </Select.Content>
-          </Select>
-        </div>
-
-        {/* Sort Order & Active */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="sortOrder">Sort Order</Label>
-            <Input
-              id="sortOrder"
-              type="number"
-              min="0"
-              value={sortOrder}
-              onChange={(e) => setSortOrder(e.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>Active</Label>
-            <div className="pt-2">
-              <Switch checked={isActive} onCheckedChange={setIsActive} />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Badge</Label>
+              <Select value={badge} onValueChange={setBadge}>
+                <Select.Trigger>
+                  <Select.Value />
+                </Select.Trigger>
+                <Select.Content>
+                  <Select.Item value="none">None</Select.Item>
+                  <Select.Item value="bestseller">Bestseller</Select.Item>
+                  <Select.Item value="popular">Popular</Select.Item>
+                  <Select.Item value="new">New</Select.Item>
+                  <Select.Item value="limited">Limited</Select.Item>
+                  <Select.Item value="sale">Sale</Select.Item>
+                </Select.Content>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Status</Label>
+              <div className="flex items-center gap-2 pt-2">
+                <Switch checked={isActive} onCheckedChange={setIsActive} />
+                <Text className="text-sm">{isActive ? "Active" : "Inactive"}</Text>
+              </div>
             </div>
           </div>
+        </div>
+
+        {/* Pricing */}
+        <div className="px-6 py-4 space-y-4">
+          <Heading level="h2">Pricing</Heading>
+
+          <div className="space-y-2">
+            <Label>Pricing Type</Label>
+            <Select
+              value={pricingType}
+              onValueChange={(v) => setPricingType(v as "fixed" | "percentage")}
+            >
+              <Select.Trigger className="w-[200px]">
+                <Select.Value />
+              </Select.Trigger>
+              <Select.Content>
+                <Select.Item value="fixed">Fixed Price</Select.Item>
+                <Select.Item value="percentage">Percentage Discount</Select.Item>
+              </Select.Content>
+            </Select>
+          </div>
+
+          {pricingType === "fixed" ? (
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="originalPrice">Original Price ($)</Label>
+                <Input
+                  id="originalPrice"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder="319.90"
+                  value={originalPrice}
+                  onChange={(e) => setOriginalPrice(e.target.value)}
+                />
+                <Text className="text-xs text-ui-fg-subtle">
+                  Strikethrough price shown to customers
+                </Text>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="salePrice">Sale Price ($)</Label>
+                <Input
+                  id="salePrice"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder="249.00"
+                  value={salePrice}
+                  onChange={(e) => setSalePrice(e.target.value)}
+                />
+                <Text className="text-xs text-ui-fg-subtle">
+                  Actual price customer pays
+                </Text>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-2 max-w-xs">
+              <Label htmlFor="discountPercent">Discount Percentage (%)</Label>
+              <Input
+                id="discountPercent"
+                type="number"
+                min="0"
+                max="100"
+                placeholder="20"
+                value={discountPercent}
+                onChange={(e) => setDiscountPercent(e.target.value)}
+              />
+            </div>
+          )}
         </div>
 
         {/* Bundle Items */}
-        <div className="space-y-4">
+        <div className="px-6 py-4 space-y-4">
           <div className="flex items-center justify-between">
-            <Label>Bundle Items</Label>
-            <Text className="text-ui-fg-subtle text-sm">
-              {bundle.items?.length ?? 0} item
-              {bundle.items?.length !== 1 ? "s" : ""}
-            </Text>
+            <Heading level="h2">Bundle Items</Heading>
+            <Badge color={items.length > 0 ? "green" : "grey"}>
+              {items.length} item{items.length !== 1 ? "s" : ""}
+            </Badge>
           </div>
 
           {/* Current Items */}
-          {bundle.items?.length > 0 && (
-            <div className="space-y-2">
-              <Text className="text-sm text-ui-fg-subtle">Current items:</Text>
-              {bundle.items.map((item) => {
-                const variant = selectedProduct?.variants?.find(
-                  (v) => v.id === item.variant_id
-                )
-                return (
-                  <div
-                    key={item.id}
-                    className="flex items-center justify-between p-3 bg-ui-bg-field rounded-lg border border-ui-border-base"
-                  >
-                    <div>
-                      <Text className="font-medium">
-                        {variant?.title || item.variant_id}
-                      </Text>
-                      {variant?.sku && (
-                        <Text className="text-sm text-ui-fg-subtle">
-                          SKU: {variant.sku}
-                        </Text>
-                      )}
+          {Object.keys(itemsByProduct).length > 0 && (
+            <div className="space-y-3">
+              <Text className="text-sm text-ui-fg-subtle font-medium">
+                Items in this bundle:
+              </Text>
+              {Object.entries(itemsByProduct).map(([productId, group]) => (
+                <div
+                  key={productId}
+                  className="bg-ui-bg-subtle rounded-lg p-3 space-y-2"
+                >
+                  <Text className="font-medium">{group.product_title}</Text>
+                  {group.items.map((item) => (
+                    <div
+                      key={item.variant_id}
+                      className="flex items-center justify-between pl-4"
+                    >
+                      <Text className="text-sm">{item.variant_title}</Text>
+                      <div className="flex items-center gap-2">
+                        <Input
+                          type="number"
+                          min="1"
+                          className="w-16"
+                          value={item.quantity}
+                          onChange={(e) =>
+                            updateItemQuantity(
+                              item.variant_id,
+                              parseInt(e.target.value) || 1
+                            )
+                          }
+                        />
+                        <Button
+                          type="button"
+                          variant="transparent"
+                          size="small"
+                          onClick={() => removeItem(item.variant_id)}
+                        >
+                          <XMarkMini />
+                        </Button>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        type="number"
-                        min="1"
-                        className="w-20"
-                        value={item.quantity}
-                        onChange={(e) =>
-                          updateItemMutation.mutate({
-                            bundleId: id!,
-                            itemId: item.id,
-                            quantity: parseInt(e.target.value) || 1,
-                          })
-                        }
-                      />
-                      <Button
-                        type="button"
-                        variant="danger"
-                        size="small"
-                        onClick={() =>
-                          removeItemMutation.mutate({
-                            bundleId: id!,
-                            itemId: item.id,
-                          })
-                        }
-                      >
-                        Remove
-                      </Button>
-                    </div>
-                  </div>
-                )
-              })}
+                  ))}
+                </div>
+              ))}
             </div>
           )}
 
-          {/* Add New Items */}
-          {selectedProduct && (
+          {/* Product Picker */}
+          <div className="border border-ui-border-base rounded-lg p-4 space-y-4">
+            <Text className="text-sm font-medium">Add items from products:</Text>
+
+            {/* Product Search */}
             <div className="space-y-2">
-              <Text className="text-sm text-ui-fg-subtle">Add more items:</Text>
-              {selectedProduct.variants
-                ?.filter(
-                  (v) => !bundle.items?.find((i) => i.variant_id === v.id)
-                )
-                .map((variant) => {
-                  const price = variant.prices?.[0]
-                  return (
-                    <div
-                      key={variant.id}
-                      className="flex items-center justify-between p-3 bg-ui-bg-subtle rounded-lg"
-                    >
-                      <div>
-                        <Text className="font-medium">{variant.title}</Text>
-                        {variant.sku && (
-                          <Text className="text-sm text-ui-fg-subtle">
-                            SKU: {variant.sku}
-                          </Text>
-                        )}
-                        {price && (
-                          <Text className="text-sm text-ui-fg-subtle">
-                            ${(price.amount / 100).toFixed(2)}{" "}
-                            {price.currency_code.toUpperCase()}
-                          </Text>
-                        )}
-                      </div>
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        size="small"
-                        onClick={() =>
-                          addItemMutation.mutate({
-                            bundleId: id!,
-                            variant_id: variant.id,
-                            quantity: 1,
-                          })
-                        }
-                      >
-                        Add
-                      </Button>
-                    </div>
-                  )
-                })}
+              <Input
+                placeholder="Search products..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
             </div>
-          )}
+
+            {/* Product List */}
+            <div className="max-h-64 overflow-y-auto space-y-2">
+              {filteredProducts.length === 0 ? (
+                <Text className="text-ui-fg-muted text-sm">
+                  No products found
+                </Text>
+              ) : (
+                filteredProducts.map((product) => (
+                  <div
+                    key={product.id}
+                    className={`border rounded-lg p-3 cursor-pointer transition-colors ${
+                      selectedProductId === product.id
+                        ? "border-ui-border-interactive bg-ui-bg-subtle-pressed"
+                        : "border-ui-border-base hover:bg-ui-bg-subtle-hover"
+                    }`}
+                    onClick={() =>
+                      setSelectedProductId(
+                        selectedProductId === product.id ? "" : product.id
+                      )
+                    }
+                  >
+                    <div className="flex items-center justify-between">
+                      <Text className="font-medium">{product.title}</Text>
+                      <Text className="text-sm text-ui-fg-subtle">
+                        {product.variants?.length || 0} variants
+                      </Text>
+                    </div>
+
+                    {/* Show variants when product is selected */}
+                    {selectedProductId === product.id && product.variants && (
+                      <div className="mt-3 pt-3 border-t border-ui-border-base space-y-2">
+                        {product.variants.map((variant) => {
+                          const isAdded = items.find(
+                            (i) => i.variant_id === variant.id
+                          )
+                          const price = variant.prices?.[0]
+
+                          return (
+                            <div
+                              key={variant.id}
+                              className="flex items-center justify-between pl-2"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <div>
+                                <Text className="text-sm">{variant.title}</Text>
+                                {price && (
+                                  <Text className="text-xs text-ui-fg-subtle">
+                                    ${(price.amount / 100).toFixed(2)}
+                                  </Text>
+                                )}
+                              </div>
+                              {isAdded ? (
+                                <Badge color="green" size="small">
+                                  Added
+                                </Badge>
+                              ) : (
+                                <Button
+                                  type="button"
+                                  variant="secondary"
+                                  size="small"
+                                  onClick={() =>
+                                    addVariantToBundle(product, variant)
+                                  }
+                                >
+                                  <PlusMini /> Add
+                                </Button>
+                              )}
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Submit */}
-        <div className="flex justify-end gap-2 pt-4">
+        <div className="px-6 py-4 flex justify-end gap-2">
           <Button
             variant="secondary"
             type="button"

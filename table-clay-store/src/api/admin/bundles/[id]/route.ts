@@ -13,6 +13,15 @@ type UpdateBundleRequestBody = {
   is_active?: boolean
   sort_order?: number
   metadata?: Record<string, unknown>
+  // If items are provided, they replace all existing items
+  items?: Array<{
+    product_id: string
+    variant_id: string
+    quantity?: number
+    sort_order?: number
+    product_title?: string
+    variant_title?: string
+  }>
 }
 
 /**
@@ -54,7 +63,7 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
 
 /**
  * PUT /admin/bundles/:id
- * Update a bundle
+ * Update a bundle. If items are provided, they replace all existing items.
  */
 export async function PUT(req: MedusaRequest, res: MedusaResponse) {
   try {
@@ -95,7 +104,29 @@ export async function PUT(req: MedusaRequest, res: MedusaResponse) {
       }
     }
 
-    const bundle = await bundleService.updateBundle(id, data)
+    // Validate items if provided
+    if (data.items) {
+      for (const item of data.items) {
+        if (!item.product_id || !item.variant_id) {
+          return res.status(400).json({
+            success: false,
+            error: "Each item must have product_id and variant_id",
+          })
+        }
+      }
+    }
+
+    // Extract items from data for separate handling
+    const { items, ...bundleData } = data
+
+    // Update bundle fields
+    const bundle = await bundleService.updateBundle(id, bundleData)
+
+    // If items are provided, replace all existing items
+    if (items !== undefined) {
+      await bundleService.replaceBundleItems(id, items)
+    }
+
     const bundleWithItems = await bundleService.getBundleWithItems(bundle.id)
     const pricing = bundleService.calculateBundlePricing(bundle)
 

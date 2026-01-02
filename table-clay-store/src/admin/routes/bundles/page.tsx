@@ -16,7 +16,6 @@ import { useNavigate } from "react-router-dom"
 
 type Bundle = {
   id: string
-  product_id: string
   name: string
   description: string | null
   pricing_type: "fixed" | "percentage"
@@ -28,8 +27,11 @@ type Bundle = {
   sort_order: number
   items: Array<{
     id: string
+    product_id: string
     variant_id: string
     quantity: number
+    product_title?: string | null
+    variant_title?: string | null
   }>
   calculated_pricing?: {
     original_price: number

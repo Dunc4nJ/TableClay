@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import type { Bundle } from "@lib/data/bundles"
+import type { Bundle, BundleItem } from "@lib/data/bundles"
 import { clx } from "@medusajs/ui"
 
 type BundleSelectorProps = {
@@ -10,6 +10,8 @@ type BundleSelectorProps = {
   onSelect: (bundle: Bundle) => void
   promoText?: string
   disabled?: boolean
+  /** If true, show the items included in each bundle */
+  showItems?: boolean
 }
 
 /**
@@ -32,9 +34,48 @@ function BundleBadge({ text }: { text: string }) {
 }
 
 /**
+ * Component to display bundle items
+ */
+function BundleItemsList({ items }: { items: BundleItem[] }) {
+  // Group items by product
+  const itemsByProduct = items.reduce((acc, item) => {
+    const productId = item.product_id
+    const productTitle = item.product_title || "Unknown Product"
+    if (!acc[productId]) {
+      acc[productId] = {
+        title: productTitle,
+        items: [],
+      }
+    }
+    acc[productId].items.push(item)
+    return acc
+  }, {} as Record<string, { title: string; items: BundleItem[] }>)
+
+  return (
+    <div className="mt-2 pl-4 border-l-2 border-gray-200">
+      <div className="text-xs text-gray-500 mb-1">Includes:</div>
+      <ul className="space-y-0.5">
+        {Object.entries(itemsByProduct).map(([productId, group]) => (
+          <li key={productId} className="text-xs text-gray-600">
+            {group.items.map((item, idx) => (
+              <div key={item.id || idx} className="flex items-center gap-1">
+                <span className="text-gray-400">•</span>
+                <span>
+                  {item.quantity}x {item.variant_title || item.product_title}
+                </span>
+              </div>
+            ))}
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+/**
  * BundleSelector Component
  * Displays bundle tiers as radio buttons for product pages
- * Replaces the variant selector when bundles are available
+ * Supports multi-product bundles where items can come from any product
  */
 export default function BundleSelector({
   bundles,
@@ -42,6 +83,7 @@ export default function BundleSelector({
   onSelect,
   promoText,
   disabled = false,
+  showItems = true,
 }: BundleSelectorProps) {
   if (!bundles || bundles.length === 0) {
     return null
@@ -127,6 +169,11 @@ export default function BundleSelector({
                   <div className="mt-2 flex justify-end">
                     <BundleBadge text={bundle.badge_text} />
                   </div>
+                )}
+
+                {/* Bundle items list (shown when selected or always if showItems is true) */}
+                {showItems && isSelected && bundle.items && bundle.items.length > 0 && (
+                  <BundleItemsList items={bundle.items} />
                 )}
               </div>
             </button>

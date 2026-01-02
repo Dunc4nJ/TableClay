@@ -17,10 +17,13 @@ export type BundleItemVariant = {
 
 export type BundleItem = {
   id: string
+  product_id: string
   variant_id: string
   quantity: number
   sort_order: number
-  variant: BundleItemVariant | null
+  product_title?: string | null
+  variant_title?: string | null
+  variant?: BundleItemVariant | null
 }
 
 export type Bundle = {
@@ -97,6 +100,7 @@ type ApplyBundleResponse = {
 /**
  * Get bundle discount information for the cart
  * Returns discount calculation details for display
+ * @deprecated Use addBundleToCart instead for actually adding bundles
  */
 export async function applyBundleToCart(
   cartId: string,
@@ -120,6 +124,89 @@ export async function applyBundleToCart(
     return {
       success: false,
       error: error instanceof Error ? error.message : "Failed to apply bundle",
+    }
+  }
+}
+
+// Types for add bundle to cart response
+type AddBundleToCartResponse = {
+  success: boolean
+  bundle_name?: string
+  bundle_instance_id?: string
+  items_added?: number
+  bundle_pricing?: {
+    original_price: number
+    sale_price: number
+    savings: number
+    savings_percent: number
+  }
+  message?: string
+  error?: string
+}
+
+/**
+ * Add a bundle to the cart
+ * This adds all bundle items as line items with bundle metadata
+ */
+export async function addBundleToCart(
+  cartId: string,
+  bundleId: string
+): Promise<AddBundleToCartResponse> {
+  try {
+    const response = await sdk.client.fetch<AddBundleToCartResponse>(
+      "/store/cart/add-bundle",
+      {
+        method: "POST",
+        body: {
+          cart_id: cartId,
+          bundle_id: bundleId,
+        },
+      }
+    )
+
+    return response
+  } catch (error) {
+    console.error("Error adding bundle to cart:", error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to add bundle to cart",
+    }
+  }
+}
+
+// Types for remove bundle from cart response
+type RemoveBundleFromCartResponse = {
+  success: boolean
+  message?: string
+  items_removed?: number
+  error?: string
+}
+
+/**
+ * Remove a bundle from the cart by its instance ID
+ */
+export async function removeBundleFromCart(
+  cartId: string,
+  bundleInstanceId: string
+): Promise<RemoveBundleFromCartResponse> {
+  try {
+    const response = await sdk.client.fetch<RemoveBundleFromCartResponse>(
+      "/store/cart/add-bundle",
+      {
+        method: "DELETE",
+        body: {
+          cart_id: cartId,
+          bundle_instance_id: bundleInstanceId,
+        },
+      }
+    )
+
+    return response
+  } catch (error) {
+    console.error("Error removing bundle from cart:", error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to remove bundle from cart",
     }
   }
 }

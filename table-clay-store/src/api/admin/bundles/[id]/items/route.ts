@@ -3,9 +3,12 @@ import { BUNDLE_MODULE } from "../../../../../modules/bundle"
 import type BundleModuleService from "../../../../../modules/bundle/service"
 
 type AddItemRequestBody = {
+  product_id: string
   variant_id: string
   quantity?: number
   sort_order?: number
+  product_title?: string
+  variant_title?: string
 }
 
 /**
@@ -54,10 +57,10 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
     const { id } = req.params
     const data = req.body as AddItemRequestBody
 
-    if (!data.variant_id) {
+    if (!data.product_id || !data.variant_id) {
       return res.status(400).json({
         success: false,
-        error: "variant_id is required",
+        error: "product_id and variant_id are required",
       })
     }
 
@@ -75,9 +78,12 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
 
     const item = await bundleService.addBundleItem({
       bundle_id: id,
+      product_id: data.product_id,
       variant_id: data.variant_id,
       quantity: data.quantity,
       sort_order: data.sort_order,
+      product_title: data.product_title,
+      variant_title: data.variant_title,
     })
 
     return res.status(201).json({
