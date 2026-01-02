@@ -88,5 +88,13 @@ module.exports = defineConfig({
     {
       resolve: "./src/modules/newsletter",
     },
+    // Custom Bundle Module for product bundling
+    {
+      resolve: "./src/modules/bundle",
+    },
+    // Custom Content Module for reviews and FAQs
+    {
+      resolve: "./src/modules/content",
+    },
   ],
 })
