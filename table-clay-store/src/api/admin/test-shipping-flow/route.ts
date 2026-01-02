@@ -47,7 +47,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
     // Find an order to use for test data
     let orderData: {
       id: string
-      display_id: number
+      display_id: string | number | null | undefined
       email: string
       shipping_address?: ShippingAddress
       items: OrderItem[]
@@ -351,7 +351,7 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
         simple: 'POST /admin/test-shipping-flow with { "email": "your@email.com" }',
         with_order: 'POST /admin/test-shipping-flow with { "email": "your@email.com", "order_id": "order_xxx" }',
       },
-      available_orders: orders?.slice(0, 5).map((o: { id: string; display_id: number }) => ({
+      available_orders: orders?.slice(0, 5).map((o) => ({
         id: o.id,
         display_id: o.display_id,
       })) || [],
