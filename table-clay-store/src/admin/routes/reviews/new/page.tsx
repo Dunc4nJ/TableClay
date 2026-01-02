@@ -175,9 +175,13 @@ const NewReviewPage = () => {
             </Select.Trigger>
             <Select.Content>
               {productsLoading ? (
-                <Select.Item value="" disabled>
+                <div className="px-3 py-2 text-ui-fg-muted text-sm">
                   Loading products...
-                </Select.Item>
+                </div>
+              ) : products.length === 0 ? (
+                <div className="px-3 py-2 text-ui-fg-muted text-sm">
+                  No products found
+                </div>
               ) : (
                 products.map((product) => (
                   <Select.Item key={product.id} value={product.id}>
