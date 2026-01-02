@@ -387,13 +387,16 @@ class BundleModuleService extends MedusaService({
   }
 
   /**
-   * Soft delete a bundle
+   * Hard delete a bundle and its items
    */
   async deleteBundle(bundleId: string): Promise<void> {
-    await this.updateBundles({
-      selector: { id: bundleId },
-      data: { is_active: false },
-    })
+    // First delete all bundle items
+    const items = await this.listBundleItems({ bundle_id: bundleId })
+    if (items.length > 0) {
+      await this.deleteBundleItems(items.map((i) => i.id))
+    }
+    // Then delete the bundle itself
+    await this.deleteBundles(bundleId)
   }
 
   /**
