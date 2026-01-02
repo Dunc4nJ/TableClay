@@ -24,24 +24,13 @@ module.exports = defineConfig({
       },
     },
     // Stripe Payment Provider
-    // NOTE: Primary provider (pp_stripe) + legacy provider (pp_stripe_stripe)
-    // The second provider handles stale payment sessions from before the fix
+    // NOTE: Do NOT add 'id' field - it creates pp_stripe_<id> instead of pp_stripe
     {
       resolve: "@medusajs/medusa/payment",
       options: {
         providers: [
-          // Primary provider - registers as pp_stripe
           {
             resolve: "@medusajs/medusa/payment-stripe",
-            options: {
-              apiKey: process.env.STRIPE_API_KEY,
-              webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
-            },
-          },
-          // Legacy provider - registers as pp_stripe_stripe (handles old sessions)
-          {
-            resolve: "@medusajs/medusa/payment-stripe",
-            id: "stripe",
             options: {
               apiKey: process.env.STRIPE_API_KEY,
               webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
