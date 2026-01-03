@@ -46,24 +46,31 @@ export default async function RelatedProducts({
     return null
   }
 
-  return (
-    <div className="product-page-constraint">
-      <div className="flex flex-col items-center text-center mb-16">
-        <span className="text-base-regular text-gray-600 mb-6">
-          Related products
-        </span>
-        <p className="text-2xl-regular text-ui-fg-base max-w-lg">
-          You might also want to check out these products.
-        </p>
-      </div>
+  // Limit to 4 products for a cleaner look
+  const displayProducts = products.slice(0, 4)
 
-      <ul className="grid grid-cols-2 small:grid-cols-3 medium:grid-cols-4 gap-x-6 gap-y-8">
-        {products.map((product) => (
-          <li key={product.id}>
-            <Product region={region} product={product} />
-          </li>
-        ))}
-      </ul>
-    </div>
+  return (
+    <section className="bg-cream-50 py-12 lg:py-16">
+      <div className="content-container">
+        {/* Header */}
+        <div className="text-center mb-10">
+          <h2 className="text-2xl font-display font-semibold text-ui-fg-base mb-3">
+            Complete Your Collection
+          </h2>
+          <p className="text-ui-fg-subtle max-w-md mx-auto">
+            Handcrafted pieces that pair beautifully together
+          </p>
+        </div>
+
+        {/* Product grid - 4 columns on desktop, 2 on mobile */}
+        <ul className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+          {displayProducts.map((product) => (
+            <li key={product.id}>
+              <Product region={region} product={product} />
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
   )
 }

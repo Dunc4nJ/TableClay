@@ -204,17 +204,12 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
         )
       })()}
 
-      {/* Related Products - White background */}
-      <section className="bg-white border-t border-gray-100">
-        <div
-          className="content-container py-12 lg:py-16"
-          data-testid="related-products-container"
-        >
-          <Suspense fallback={<SkeletonRelatedProducts />}>
-            <RelatedProducts product={product} countryCode={countryCode} />
-          </Suspense>
-        </div>
-      </section>
+      {/* Related Products - Handles its own styling */}
+      <div data-testid="related-products-container">
+        <Suspense fallback={<SkeletonRelatedProducts />}>
+          <RelatedProducts product={product} countryCode={countryCode} />
+        </Suspense>
+      </div>
 
       {/* Sticky Cart Bar */}
       <StickyCartBarWrapper
