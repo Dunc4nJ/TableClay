@@ -121,6 +121,28 @@ export async function updateCart(data: HttpTypes.StoreUpdateCart) {
     .catch(medusaError)
 }
 
+/**
+ * Updates cart without triggering revalidation.
+ * Use this for background updates like debounced address saves where
+ * you want to manually control when the UI refreshes.
+ */
+export async function updateCartSilent(data: HttpTypes.StoreUpdateCart) {
+  const cartId = await getCartId()
+
+  if (!cartId) {
+    throw new Error("No existing cart found, please create one before updating")
+  }
+
+  const headers = {
+    ...(await getAuthHeaders()),
+  }
+
+  return sdk.store.cart
+    .update(cartId, data, {}, headers)
+    .then(({ cart }: { cart: HttpTypes.StoreCart }) => cart)
+    .catch(medusaError)
+}
+
 export async function addToCart({
   variantId,
   quantity,

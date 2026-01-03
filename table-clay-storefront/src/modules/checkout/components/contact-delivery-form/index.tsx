@@ -1,6 +1,6 @@
 "use client"
 
-import { setAddresses, updateCart } from "@lib/data/cart"
+import { setAddresses, updateCartSilent } from "@lib/data/cart"
 import compareAddresses from "@lib/util/compare-addresses"
 import { HttpTypes } from "@medusajs/types"
 import { useToggleState } from "@medusajs/ui"
@@ -13,6 +13,7 @@ import CountrySelect from "../country-select"
 import AddressSelect from "../address-select"
 import { Container } from "@medusajs/ui"
 import { mapKeys, debounce } from "lodash"
+import { useRouter } from "next/navigation"
 
 interface ContactDeliveryFormProps {
   cart: HttpTypes.StoreCart | null
@@ -23,6 +24,7 @@ const ContactDeliveryForm: React.FC<ContactDeliveryFormProps> = ({
   cart,
   customer,
 }) => {
+  const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const { state: sameAsBilling, toggle: toggleSameAsBilling } = useToggleState(
     cart?.shipping_address && cart?.billing_address
@@ -59,6 +61,7 @@ const ContactDeliveryForm: React.FC<ContactDeliveryFormProps> = ({
   }, [])
 
   // Debounced function to save shipping address to cart
+  // Uses updateCartSilent to avoid automatic revalidation, then manually refreshes
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const debouncedSaveAddress = useCallback(
     debounce(async (data: Record<string, any>) => {
@@ -79,7 +82,7 @@ const ContactDeliveryForm: React.FC<ContactDeliveryFormProps> = ({
 
       setIsSavingAddress(true)
       try {
-        await updateCart({
+        await updateCartSilent({
           email: data.email || undefined,
           shipping_address: {
             first_name: data["shipping_address.first_name"] || "",
@@ -94,13 +97,15 @@ const ContactDeliveryForm: React.FC<ContactDeliveryFormProps> = ({
             phone: data["shipping_address.phone"] || "",
           },
         })
+        // Trigger client-side refresh to fetch updated cart with shipping address
+        router.refresh()
       } catch (error) {
         console.error("[ContactDeliveryForm] Failed to auto-save address:", error)
       } finally {
         setIsSavingAddress(false)
       }
     }, 800),
-    [cart?.id, hasMinimumAddressFields]
+    [cart?.id, hasMinimumAddressFields, router]
   )
 
   // Auto-save address when form data changes
