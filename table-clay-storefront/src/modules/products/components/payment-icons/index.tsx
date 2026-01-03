@@ -202,17 +202,18 @@ const PaymentIcons = ({
   className = "",
 }: PaymentIconsProps) => {
   return (
-    <div
-      className={clx("flex flex-wrap items-center justify-start gap-1.5", className)}
-    >
-      {methods.map((method) => (
-        <div
-          key={method}
-          className="bg-white rounded border border-gray-200 p-1 flex items-center justify-center"
-        >
-          <PaymentIcon method={method} size={size} />
-        </div>
-      ))}
+    <div className={clx("flex flex-col gap-2", className)}>
+      {/* Payment icons row */}
+      <div className="flex flex-wrap items-center justify-start gap-2">
+        {methods.map((method) => (
+          <div
+            key={method}
+            className="bg-white rounded-md border border-gray-200 p-1.5 flex items-center justify-center shadow-sm"
+          >
+            <PaymentIcon method={method} size={size} />
+          </div>
+        ))}
+      </div>
     </div>
   )
 }

@@ -1,13 +1,28 @@
 "use client"
 
-import { useState } from "react"
 import type { Bundle, BundleItem } from "@lib/data/bundles"
 import { clx } from "@medusajs/ui"
+
+/**
+ * Single item option that appears first in the selector
+ */
+export type SingleItemOption = {
+  productName: string
+  price: number  // in cents
+  originalPrice?: number  // in cents, for showing strikethrough
+  variantTitle?: string  // e.g., "Standard" - shown if not generic
+}
 
 type BundleSelectorProps = {
   bundles: Bundle[]
   selectedBundleId: string | null
-  onSelect: (bundle: Bundle) => void
+  onSelect: (bundle: Bundle | null) => void  // null means single item selected
+  /** Single item purchase option - appears first when provided */
+  singleOption?: SingleItemOption
+  /** Whether single item is currently selected (when singleOption provided) */
+  singleSelected?: boolean
+  /** Callback when single item is selected */
+  onSelectSingle?: () => void
   /** Configurable headline text (default: "BUNDLE & SAVE") */
   headline?: string
   promoText?: string
@@ -82,11 +97,15 @@ function BundleItemsList({ items }: { items: BundleItem[] }) {
  * BundleSelector Component
  * Displays bundle tiers as radio buttons for product pages
  * Supports multi-product bundles where items can come from any product
+ * Now includes optional single-item purchase as first option
  */
 export default function BundleSelector({
   bundles,
   selectedBundleId,
   onSelect,
+  singleOption,
+  singleSelected = false,
+  onSelectSingle,
   headline = "BUNDLE & SAVE",
   promoText,
   disabled = false,
@@ -95,6 +114,11 @@ export default function BundleSelector({
   if (!bundles || bundles.length === 0) {
     return null
   }
+
+  // Build single item display name
+  const singleDisplayName = singleOption
+    ? `Single – "${singleOption.productName}"`
+    : null
 
   return (
     <div className="w-full border border-gray-300 rounded-lg p-4 bg-white">
@@ -107,15 +131,76 @@ export default function BundleSelector({
         <div className="flex-1 h-px bg-gray-300" />
       </div>
 
-      {/* Promo text banner */}
+      {/* Promo text banner - more prominent styling */}
       {promoText && (
-        <p className="text-center text-sm text-gray-700 mb-4">{promoText}</p>
+        <p className="text-center text-sm font-medium text-gray-800 mb-4">
+          <span className="mr-1">🎉</span>
+          {promoText}
+        </p>
       )}
 
-      {/* Bundle options */}
+      {/* Purchase options */}
       <div className="flex flex-col gap-2">
+        {/* Single Item Option - First */}
+        {singleOption && onSelectSingle && (
+          <button
+            type="button"
+            onClick={() => !disabled && onSelectSingle()}
+            disabled={disabled}
+            className={clx(
+              "w-full p-3 rounded-lg border transition-all text-left",
+              "flex items-start gap-3",
+              singleSelected
+                ? "border-gray-900 bg-gray-50"
+                : "border-gray-200 hover:border-gray-400",
+              disabled && "opacity-50 cursor-not-allowed"
+            )}
+          >
+            {/* Radio circle */}
+            <div
+              className={clx(
+                "mt-1 w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0",
+                singleSelected ? "border-gray-900" : "border-gray-400"
+              )}
+            >
+              {singleSelected && (
+                <div className="w-2.5 h-2.5 rounded-full bg-gray-900" />
+              )}
+            </div>
+
+            {/* Single item info */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex-1">
+                  <span className="font-medium text-gray-900">
+                    {singleDisplayName}
+                  </span>
+                  {singleOption.variantTitle && (
+                    <p className="text-sm text-gray-600 mt-0.5">
+                      {singleOption.variantTitle}
+                    </p>
+                  )}
+                </div>
+
+                {/* Pricing */}
+                <div className="text-right flex-shrink-0">
+                  <div className="font-bold text-gray-900">
+                    {formatPrice(singleOption.price)}
+                  </div>
+                  {singleOption.originalPrice && singleOption.originalPrice > singleOption.price && (
+                    <div className="text-sm text-gray-500 line-through">
+                      {formatPrice(singleOption.originalPrice)}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </button>
+        )}
+
+        {/* Bundle Options */}
         {bundles.map((bundle) => {
-          const isSelected = selectedBundleId === bundle.id
+          const isSelected = !singleSelected && selectedBundleId === bundle.id
 
           return (
             <button
@@ -127,7 +212,7 @@ export default function BundleSelector({
                 "w-full p-3 rounded-lg border transition-all text-left",
                 "flex items-start gap-3",
                 isSelected
-                  ? "border-black bg-gray-50"
+                  ? "border-gray-900 bg-gray-50"
                   : "border-gray-200 hover:border-gray-400",
                 disabled && "opacity-50 cursor-not-allowed"
               )}
@@ -136,11 +221,11 @@ export default function BundleSelector({
               <div
                 className={clx(
                   "mt-1 w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0",
-                  isSelected ? "border-black" : "border-gray-400"
+                  isSelected ? "border-gray-900" : "border-gray-400"
                 )}
               >
                 {isSelected && (
-                  <div className="w-2.5 h-2.5 rounded-full bg-black" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-gray-900" />
                 )}
               </div>
 
@@ -158,6 +243,13 @@ export default function BundleSelector({
                     )}
                   </div>
 
+                  {/* Badge - positioned inline with name */}
+                  {bundle.badge_text && (
+                    <div className="flex-shrink-0 ml-2">
+                      <BundleBadge text={bundle.badge_text} />
+                    </div>
+                  )}
+
                   {/* Pricing */}
                   <div className="text-right flex-shrink-0">
                     <div className="font-bold text-gray-900">
@@ -171,14 +263,7 @@ export default function BundleSelector({
                   </div>
                 </div>
 
-                {/* Badge */}
-                {bundle.badge_text && (
-                  <div className="mt-2 flex justify-end">
-                    <BundleBadge text={bundle.badge_text} />
-                  </div>
-                )}
-
-                {/* Bundle items list (shown when selected or always if showItems is true) */}
+                {/* Bundle items list (shown when selected) */}
                 {showItems && isSelected && bundle.items && bundle.items.length > 0 && (
                   <BundleItemsList items={bundle.items} />
                 )}
@@ -187,6 +272,13 @@ export default function BundleSelector({
           )
         })}
       </div>
+
+      {/* "Save with bundles" messaging when single is selected */}
+      {singleSelected && bundles.length > 0 && (
+        <p className="text-center text-xs text-amber-700 mt-3">
+          ✨ Save more with a bundle above
+        </p>
+      )}
     </div>
   )
 }

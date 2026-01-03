@@ -5,10 +5,10 @@ import { Bundle } from "@lib/data/bundles"
 import type { BundlePromoSettings } from "@lib/data/settings"
 import { useIntersection } from "@lib/hooks/use-in-view"
 import { HttpTypes } from "@medusajs/types"
-import { Button } from "@medusajs/ui"
+import { Button, clx } from "@medusajs/ui"
 import Divider from "@modules/common/components/divider"
 import OptionSelect from "@modules/products/components/product-actions/option-select"
-import BundleSelector from "@modules/products/components/bundle-selector"
+import BundleSelector, { SingleItemOption } from "@modules/products/components/bundle-selector"
 import { isEqual } from "lodash"
 import { useParams, usePathname, useSearchParams } from "next/navigation"
 import { useEffect, useMemo, useRef, useState } from "react"
@@ -23,6 +23,9 @@ type ProductActionsProps = {
   bundles?: Bundle[]
   bundleSettings?: BundlePromoSettings
 }
+
+/** Selection mode for bundle products */
+type SelectionMode = "single" | "bundle"
 
 const optionsAsKeymap = (
   variantOptions: HttpTypes.StoreProductVariant["options"]
@@ -45,13 +48,35 @@ export default function ProductActions({
 
   const [options, setOptions] = useState<Record<string, string | undefined>>({})
   const [isAdding, setIsAdding] = useState(false)
-  const [selectedBundle, setSelectedBundle] = useState<Bundle | null>(
-    bundles.length > 0 ? bundles[0] : null
-  )
+  const [selectedBundle, setSelectedBundle] = useState<Bundle | null>(null)
+  // Track selection mode: single item or bundle
+  const [selectionMode, setSelectionMode] = useState<SelectionMode>("single")
   const countryCode = useParams().countryCode as string
 
   // Determine if we should show bundles (when available)
   const hasBundles = bundles.length > 0
+
+  // Build single item option from first variant
+  const singleItemOption = useMemo<SingleItemOption | undefined>(() => {
+    const variant = product.variants?.[0]
+    if (!variant?.calculated_price) return undefined
+
+    const price = variant.calculated_price.calculated_amount ?? 0
+    const originalPrice = variant.calculated_price.original_amount ?? price
+
+    // Only show variant title if it's not generic
+    const genericTitles = ["standard", "default", "one size", "regular", "-"]
+    const variantTitle = variant.title && !genericTitles.includes(variant.title.toLowerCase())
+      ? variant.title
+      : undefined
+
+    return {
+      productName: product.title || "Product",
+      price,
+      originalPrice: originalPrice > price ? originalPrice : undefined,
+      variantTitle,
+    }
+  }, [product])
 
   // If there is only 1 variant, preselect the options
   useEffect(() => {
@@ -138,7 +163,7 @@ export default function ProductActions({
     setIsAdding(true)
 
     try {
-      if (hasBundles && selectedBundle) {
+      if (hasBundles && selectionMode === "bundle" && selectedBundle) {
         // Bundle flow: add all bundle items to cart
         for (const item of selectedBundle.items) {
           if (item.variant_id) {
@@ -152,7 +177,7 @@ export default function ProductActions({
         // Note: Bundle discount is already reflected in the bundle pricing
         // displayed to the customer. Future: Add promotion workflow.
       } else {
-        // Standard variant flow
+        // Standard variant flow (single item)
         if (!selectedVariant?.id) return null
 
         await addToCart({
@@ -169,9 +194,31 @@ export default function ProductActions({
   }
 
   // Handle bundle selection
-  const handleBundleSelect = (bundle: Bundle) => {
-    setSelectedBundle(bundle)
+  const handleBundleSelect = (bundle: Bundle | null) => {
+    if (bundle) {
+      setSelectedBundle(bundle)
+      setSelectionMode("bundle")
+    }
   }
+
+  // Handle single item selection
+  const handleSingleSelect = () => {
+    setSelectionMode("single")
+    setSelectedBundle(null)
+  }
+
+  // Determine if add to cart should be enabled
+  const canAddToCart = useMemo(() => {
+    if (hasBundles) {
+      // Bundle mode: need either single (with valid variant) or bundle selected
+      if (selectionMode === "single") {
+        return !!selectedVariant && inStock
+      }
+      return !!selectedBundle
+    }
+    // Standard mode: need valid variant in stock
+    return !!selectedVariant && inStock && isValidVariant
+  }, [hasBundles, selectionMode, selectedVariant, selectedBundle, inStock, isValidVariant])
 
   return (
     <>
@@ -183,6 +230,9 @@ export default function ProductActions({
               bundles={bundles}
               selectedBundleId={selectedBundle?.id || null}
               onSelect={handleBundleSelect}
+              singleOption={singleItemOption}
+              singleSelected={selectionMode === "single"}
+              onSelectSingle={handleSingleSelect}
               headline={bundleSettings?.headline || undefined}
               promoText={bundleSettings?.enabled && bundleSettings?.promo_text ? bundleSettings.promo_text : undefined}
               disabled={!!disabled || isAdding}
@@ -190,13 +240,19 @@ export default function ProductActions({
 
             <Button
               onClick={handleAddToCart}
-              disabled={!selectedBundle || !!disabled || isAdding}
+              disabled={!canAddToCart || !!disabled || isAdding}
               variant="primary"
-              className="w-full h-10"
+              className={clx(
+                "w-full h-12 lg:h-10 rounded-lg font-medium",
+                "transition-all duration-200",
+                canAddToCart && !disabled && !isAdding
+                  ? "bg-brand-500 hover:bg-brand-600 text-white shadow-md hover:shadow-lg"
+                  : ""
+              )}
               isLoading={isAdding}
               data-testid="add-bundle-button"
             >
-              {!selectedBundle ? "Select a bundle" : "Add to cart"}
+              Add to Cart
             </Button>
           </div>
         ) : (
@@ -236,7 +292,13 @@ export default function ProductActions({
                 !isValidVariant
               }
               variant="primary"
-              className="w-full h-10"
+              className={clx(
+                "w-full h-12 lg:h-10 rounded-lg font-medium",
+                "transition-all duration-200",
+                inStock && selectedVariant && isValidVariant && !disabled && !isAdding
+                  ? "bg-brand-500 hover:bg-brand-600 text-white shadow-md hover:shadow-lg"
+                  : ""
+              )}
               isLoading={isAdding}
               data-testid="add-product-button"
             >
@@ -244,7 +306,7 @@ export default function ProductActions({
                 ? "Select variant"
                 : !inStock || !isValidVariant
                 ? "Out of stock"
-                : "Add to cart"}
+                : "Add to Cart"}
             </Button>
           </>
         )}

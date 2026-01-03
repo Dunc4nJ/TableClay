@@ -53,5 +53,8 @@ export type {
   ProductReviewsResponse,
 } from "./review-types"
 
+// Re-export default stats for use in templates
+export { DEFAULT_REVIEW_STATS } from "./review-types"
+
 // Note: Utility functions (formatReviewDate, getRatingDistribution)
 // must be imported directly from "./review-types" as they are not async

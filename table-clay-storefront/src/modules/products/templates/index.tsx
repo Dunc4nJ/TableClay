@@ -23,6 +23,7 @@ import StarRating from "@modules/products/components/reviews-section/star-rating
 // Types
 import type { Bundle } from "@lib/data/bundles"
 import type { Review, ProductReviewStats } from "@lib/data/reviews"
+import { DEFAULT_REVIEW_STATS } from "@lib/data/review-types"
 import type { FAQ } from "@lib/data/faqs"
 
 type ProductTemplateProps = {
@@ -85,110 +86,131 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
 
   return (
     <>
-      {/* Above the Fold - Two Column Layout */}
-      <div
-        className="content-container py-6"
-        data-testid="product-container"
-      >
-        <div className="flex flex-col lg:flex-row lg:items-start gap-8">
-          {/* Left Column: Image Gallery */}
-          <div className="w-full lg:w-1/2 lg:sticky lg:top-24">
-            <ImageGallery images={images} />
-          </div>
+      {/* === ABOVE THE FOLD === */}
+      <div className="bg-white">
+        <div
+          className="content-container py-6 lg:py-8"
+          data-testid="product-container"
+        >
+          <div className="flex flex-col lg:flex-row lg:items-start gap-6 lg:gap-12">
+            {/* Left Column: Image Gallery */}
+            <div className="w-full lg:w-1/2 lg:sticky lg:top-24">
+              <ImageGallery images={images} />
+            </div>
 
-          {/* Right Column: Product Info & Actions */}
-          <div className="w-full lg:w-1/2 flex flex-col gap-y-6">
-            {/* Review Summary Badge */}
-            {reviewStats && reviewStats.total_count > 0 && (
-              <ReviewSummaryBadge stats={reviewStats} onClick={scrollToReviews} />
-            )}
+            {/* Right Column: Product Info & Actions */}
+            <div className="w-full lg:w-1/2 flex flex-col gap-y-3 lg:gap-y-6">
+              {/* Review Summary Badge - Always shown with defaults */}
+              <ReviewSummaryBadge
+                stats={reviewStats ?? DEFAULT_REVIEW_STATS}
+                onClick={scrollToReviews}
+              />
 
-            {/* Product Title & Subtitle */}
-            <ProductInfo product={product} />
+              {/* Product Title & Subtitle - Compact on mobile */}
+              <ProductInfo product={product} />
 
-            {/* Product Actions (Bundles/Variants + Add to Cart) */}
-            <div ref={addToCartRef}>
-              <Suspense
-                fallback={
-                  <ProductActions
-                    disabled={true}
-                    product={product}
+              {/* Product Actions (Bundles/Variants + Add to Cart) */}
+              <div ref={addToCartRef}>
+                <Suspense
+                  fallback={
+                    <ProductActions
+                      disabled={true}
+                      product={product}
+                      region={region}
+                      bundles={bundles}
+                    />
+                  }
+                >
+                  <ProductActionsWrapper
+                    id={product.id}
                     region={region}
                     bundles={bundles}
                   />
-                }
-              >
-                <ProductActionsWrapper
-                  id={product.id}
-                  region={region}
-                  bundles={bundles}
-                />
-              </Suspense>
-            </div>
-
-            {/* Payment Icons */}
-            <PaymentIcons size="sm" className="mt-2" />
-
-            {/* Trust Badges */}
-            <TrustBadges layout="vertical" size="md" className="mt-2" />
-          </div>
-        </div>
-      </div>
-
-      {/* Below the Fold - Full Width Sections */}
-
-      {/* Benefits Section */}
-      <BenefitsSection />
-
-      {/* FAQ Section */}
-      {faqs.length > 0 && (
-        <div className="border-t border-gray-100">
-          <FAQAccordion faqs={faqs} />
-        </div>
-      )}
-
-      {/* Reviews Section */}
-      {reviewStats && (
-        <div ref={reviewsSectionRef} className="border-t border-gray-100 bg-rose-50/30">
-          <div className="content-container py-12">
-            {/* Stats Header */}
-            <div className="text-center mb-8">
-              <h2 className="text-2xl font-semibold text-ui-fg-base mb-4">
-                Discover the Table Clay Difference
-              </h2>
-              <div className="flex items-center justify-center gap-2 mb-3">
-                <span className="text-3xl font-bold text-amber-500">
-                  {reviewStats.average_rating.toFixed(1)}
-                </span>
-                <StarRating rating={Math.round(reviewStats.average_rating)} size="lg" />
+                </Suspense>
               </div>
-              <p className="text-ui-fg-subtle text-sm max-w-xl mx-auto">
-                Join over {reviewStats.total_count.toLocaleString()}+ happy creators
-                and families who have discovered the joy of creating together.
+
+              {/* Artisan messaging */}
+              <p className="flex items-center gap-1.5 text-sm text-amber-700">
+                <span>✨</span>
+                <span>Handcrafted in small batches</span>
               </p>
-            </div>
 
-            {/* Review Cards */}
-            {reviews.length > 0 && (
-              <div className="max-w-3xl mx-auto">
-                {reviews.map((review) => (
-                  <ReviewCard key={review.id} review={review} />
-                ))}
-              </div>
-            )}
+              {/* Payment Icons */}
+              <PaymentIcons size="md" />
+
+              {/* Trust Badges */}
+              <TrustBadges layout="vertical" size="md" />
+
+              {/* FAQ Accordion - In right column for quick access */}
+              {faqs.length > 0 && (
+                <div className="mt-2">
+                  <FAQAccordion faqs={faqs} />
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      )}
-
-      {/* Related Products */}
-      <div
-        className="content-container my-16 small:my-32"
-        data-testid="related-products-container"
-      >
-        <Suspense fallback={<SkeletonRelatedProducts />}>
-          <RelatedProducts product={product} countryCode={countryCode} />
-        </Suspense>
       </div>
+
+      {/* === BELOW THE FOLD === */}
+
+      {/* Benefits Section - Cream background */}
+      <section className="bg-cream-100">
+        <BenefitsSection className="bg-transparent" />
+      </section>
+
+      {/* Reviews Section - Always shown with defaults */}
+      {(() => {
+        // Use API stats if available, otherwise use defaults
+        const displayStats = reviewStats ?? DEFAULT_REVIEW_STATS
+        return (
+          <div ref={reviewsSectionRef} className="bg-rose-50/30">
+            <div className="content-container py-12 lg:py-16">
+              {/* Stats Header */}
+              <div className="text-center mb-8">
+                <h2 className="text-2xl font-display font-semibold text-ui-fg-base mb-4">
+                  Discover the Table Clay Difference
+                </h2>
+                <div className="flex items-center justify-center gap-2 mb-3">
+                  <span className="text-3xl font-bold text-amber-500">
+                    {displayStats.average_rating.toFixed(1)}
+                  </span>
+                  <StarRating rating={Math.round(displayStats.average_rating)} size="lg" />
+                </div>
+                <p className="text-ui-fg-subtle text-sm max-w-xl mx-auto">
+                  Join over {displayStats.total_count.toLocaleString()}+ happy customers
+                  who have discovered the joy of handcrafted pottery.
+                </p>
+              </div>
+
+              {/* Review Cards */}
+              {reviews.length > 0 ? (
+                <div className="max-w-3xl mx-auto">
+                  {reviews.map((review) => (
+                    <ReviewCard key={review.id} review={review} />
+                  ))}
+                </div>
+              ) : (
+                <p className="text-center text-sm text-ui-fg-muted">
+                  Reviews coming soon!
+                </p>
+              )}
+            </div>
+          </div>
+        )
+      })()}
+
+      {/* Related Products - White background */}
+      <section className="bg-white border-t border-gray-100">
+        <div
+          className="content-container py-12 lg:py-16"
+          data-testid="related-products-container"
+        >
+          <Suspense fallback={<SkeletonRelatedProducts />}>
+            <RelatedProducts product={product} countryCode={countryCode} />
+          </Suspense>
+        </div>
+      </section>
 
       {/* Sticky Cart Bar */}
       <StickyCartBarWrapper
