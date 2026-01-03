@@ -2,8 +2,8 @@
 
 import { Text, clx } from "@medusajs/ui"
 import Image from "next/image"
-import type { Review } from "@lib/data/reviews"
-import { formatReviewDate } from "@lib/data/reviews"
+import type { Review } from "@lib/data/review-types"
+import { formatReviewDate } from "@lib/data/review-types"
 import StarRating from "./star-rating"
 
 interface ReviewCardProps {
