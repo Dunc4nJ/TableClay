@@ -39,7 +39,7 @@ const ImageGallery = ({ images }: ImageGalleryProps) => {
   return (
     <div
       ref={containerRef}
-      className="flex flex-col w-full small:mx-16 focus:outline-none"
+      className="flex flex-col w-full focus:outline-none"
       tabIndex={0} // Allow keyboard focus
     >
       {/* Main large image with navigation arrows */}

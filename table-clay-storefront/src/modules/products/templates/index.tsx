@@ -99,7 +99,7 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
             </div>
 
             {/* Right Column: Product Info & Actions */}
-            <div className="w-full lg:w-1/2 flex flex-col gap-y-3 lg:gap-y-6">
+            <div className="w-full lg:w-1/2 flex flex-col gap-y-3 lg:gap-y-6 overflow-hidden">
               {/* Review Summary Badge - Always shown with defaults */}
               <ReviewSummaryBadge
                 stats={reviewStats ?? DEFAULT_REVIEW_STATS}
@@ -130,7 +130,7 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
               </div>
 
               {/* Artisan messaging */}
-              <p className="flex items-center gap-1.5 text-sm text-amber-700">
+              <p className="flex items-center justify-center gap-1.5 text-sm text-amber-700">
                 <span>✨</span>
                 <span>Handcrafted in small batches</span>
               </p>

@@ -59,7 +59,7 @@ const TrustBadges = ({
         "flex",
         layout === "horizontal"
           ? "flex-row flex-wrap justify-center gap-4 sm:gap-6"
-          : "flex-col gap-2",
+          : "flex-col items-center gap-2",
         className
       )}
     >

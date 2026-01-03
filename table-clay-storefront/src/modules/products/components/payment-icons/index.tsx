@@ -78,7 +78,7 @@ const PaymentIcons = ({
   return (
     <div className={clx("flex flex-col gap-2", className)}>
       {/* Payment icons row */}
-      <div className="flex flex-wrap items-center justify-start gap-2">
+      <div className="flex flex-wrap items-center justify-center gap-2">
         {methods.map((method) => (
           <div
             key={method}
