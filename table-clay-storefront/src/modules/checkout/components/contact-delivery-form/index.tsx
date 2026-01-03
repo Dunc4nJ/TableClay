@@ -4,7 +4,7 @@ import { setAddresses, updateCart } from "@lib/data/cart"
 import compareAddresses from "@lib/util/compare-addresses"
 import { HttpTypes } from "@medusajs/types"
 import { useToggleState } from "@medusajs/ui"
-import { useActionState, useEffect, useState, useTransition } from "react"
+import { useActionState, useEffect, useState, useTransition, useRef, useCallback } from "react"
 import BillingAddress from "../billing_address"
 import ErrorMessage from "../error-message"
 import Input from "@modules/common/components/input"
@@ -12,7 +12,7 @@ import Checkbox from "@modules/common/components/checkbox"
 import CountrySelect from "../country-select"
 import AddressSelect from "../address-select"
 import { Container } from "@medusajs/ui"
-import { mapKeys } from "lodash"
+import { mapKeys, debounce } from "lodash"
 
 interface ContactDeliveryFormProps {
   cart: HttpTypes.StoreCart | null
@@ -45,6 +45,74 @@ const ContactDeliveryForm: React.FC<ContactDeliveryFormProps> = ({
   })
 
   const [message, formAction] = useActionState(setAddresses, null)
+  const [isSavingAddress, setIsSavingAddress] = useState(false)
+  const lastSavedAddressRef = useRef<string>("")
+
+  // Check if minimum required address fields are filled for shipping lookup
+  const hasMinimumAddressFields = useCallback((data: Record<string, any>) => {
+    return !!(
+      data["shipping_address.address_1"] &&
+      data["shipping_address.city"] &&
+      data["shipping_address.postal_code"] &&
+      data["shipping_address.country_code"]
+    )
+  }, [])
+
+  // Debounced function to save shipping address to cart
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const debouncedSaveAddress = useCallback(
+    debounce(async (data: Record<string, any>) => {
+      if (!cart?.id || !hasMinimumAddressFields(data)) return
+
+      // Create a hash of current address to check if it changed
+      const addressHash = JSON.stringify({
+        address_1: data["shipping_address.address_1"],
+        city: data["shipping_address.city"],
+        postal_code: data["shipping_address.postal_code"],
+        country_code: data["shipping_address.country_code"],
+        province: data["shipping_address.province"],
+      })
+
+      // Skip if address hasn't changed
+      if (addressHash === lastSavedAddressRef.current) return
+      lastSavedAddressRef.current = addressHash
+
+      setIsSavingAddress(true)
+      try {
+        await updateCart({
+          email: data.email || undefined,
+          shipping_address: {
+            first_name: data["shipping_address.first_name"] || "",
+            last_name: data["shipping_address.last_name"] || "",
+            address_1: data["shipping_address.address_1"] || "",
+            address_2: "",
+            company: data["shipping_address.company"] || "",
+            postal_code: data["shipping_address.postal_code"] || "",
+            city: data["shipping_address.city"] || "",
+            country_code: data["shipping_address.country_code"] || "",
+            province: data["shipping_address.province"] || "",
+            phone: data["shipping_address.phone"] || "",
+          },
+        })
+      } catch (error) {
+        console.error("[ContactDeliveryForm] Failed to auto-save address:", error)
+      } finally {
+        setIsSavingAddress(false)
+      }
+    }, 800),
+    [cart?.id, hasMinimumAddressFields]
+  )
+
+  // Auto-save address when form data changes
+  useEffect(() => {
+    if (hasMinimumAddressFields(formData)) {
+      debouncedSaveAddress(formData)
+    }
+    // Cleanup debounce on unmount
+    return () => {
+      debouncedSaveAddress.cancel()
+    }
+  }, [formData, debouncedSaveAddress, hasMinimumAddressFields])
 
   // Countries available in the cart's region
   const countriesInRegion = cart?.region?.countries?.map((c) => c.iso_2) || []
