@@ -16,7 +16,10 @@ const CHECKOUT_CART_FIELDS =
   "*items, *region, *items.product, *items.variant, *items.thumbnail, *items.metadata, +items.total, *promotions, +shipping_methods.name, *payment_collection, *payment_collection.payment_sessions, +payment_collection.payment_sessions.data"
 
 export default async function Checkout() {
-  let cart = await retrieveCart(undefined, CHECKOUT_CART_FIELDS)
+  // CRITICAL: Use skipCache=true to bypass Next.js caching and get fresh payment session data
+  // This fixes the Stripe CardElement not rendering issue (see GitHub medusajs/medusa#13512)
+  // The Medusa SDK has a bug where cache tags don't work properly with Next.js 15+
+  let cart = await retrieveCart(undefined, CHECKOUT_CART_FIELDS, true)
 
   if (!cart) {
     return notFound()
@@ -34,8 +37,8 @@ export default async function Checkout() {
       await initiatePaymentSession(cart, {
         provider_id: "pp_stripe",
       })
-      // Re-fetch cart with updated payment session (include payment_collection!)
-      cart = (await retrieveCart(undefined, CHECKOUT_CART_FIELDS)) || cart
+      // Re-fetch cart with updated payment session (skipCache=true for fresh data)
+      cart = (await retrieveCart(undefined, CHECKOUT_CART_FIELDS, true)) || cart
     } catch (error) {
       // Non-blocking - Express Checkout is optional enhancement
       console.error("[Checkout] Failed to initiate payment session:", error)

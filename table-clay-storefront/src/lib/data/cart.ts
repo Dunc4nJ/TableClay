@@ -19,9 +19,11 @@ import { getLocale } from "@lib/data/locale-actions"
 /**
  * Retrieves a cart by its ID. If no ID is provided, it will use the cart ID from the cookies.
  * @param cartId - optional - The ID of the cart to retrieve.
+ * @param fields - optional - The fields to retrieve.
+ * @param skipCache - optional - If true, bypasses cache to get fresh data. Use for checkout.
  * @returns The cart object if found, or null if not found.
  */
-export async function retrieveCart(cartId?: string, fields?: string) {
+export async function retrieveCart(cartId?: string, fields?: string, skipCache?: boolean) {
   const id = cartId || (await getCartId())
   fields ??=
     "*items, *region, *items.product, *items.variant, *items.thumbnail, *items.metadata, +items.total, *promotions, +shipping_methods.name"
@@ -38,6 +40,11 @@ export async function retrieveCart(cartId?: string, fields?: string) {
     ...(await getCacheOptions("carts")),
   }
 
+  // For checkout and payment flows, skip cache to get fresh payment session data
+  // This fixes Next.js 15+ caching issues with Medusa SDK where stale cart data
+  // causes Stripe CardElement to not render (see GitHub issue medusajs/medusa#13512)
+  const cacheOption = skipCache ? "no-store" : "force-cache"
+
   return await sdk.client
     .fetch<HttpTypes.StoreCartResponse>(`/store/carts/${id}`, {
       method: "GET",
@@ -46,7 +53,7 @@ export async function retrieveCart(cartId?: string, fields?: string) {
       },
       headers,
       next,
-      cache: "force-cache",
+      cache: cacheOption,
     })
     .then(({ cart }: { cart: HttpTypes.StoreCart }) => cart)
     .catch(() => null)
