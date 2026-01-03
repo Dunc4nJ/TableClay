@@ -129,11 +129,15 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
                 </Suspense>
               </div>
 
-              {/* Artisan messaging */}
-              <p className="flex items-center justify-center gap-1.5 text-sm text-amber-700">
-                <span>✨</span>
-                <span>Handcrafted in small batches</span>
-              </p>
+              {/* Artisan messaging - Elegant badge */}
+              <div className="flex justify-center">
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-cream-100 border border-cream-300 rounded-full">
+                  <span className="text-amber-600">✨</span>
+                  <span className="text-sm font-medium text-stone-600">
+                    Handcrafted in small batches
+                  </span>
+                </div>
+              </div>
 
               {/* Payment Icons */}
               <PaymentIcons size="md" />

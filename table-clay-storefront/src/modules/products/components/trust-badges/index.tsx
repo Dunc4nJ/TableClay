@@ -7,7 +7,7 @@ interface Badge {
 
 interface TrustBadgesProps {
   layout?: "horizontal" | "vertical"
-  size?: "sm" | "md"
+  size?: "sm" | "md" | "lg"
   className?: string
   badges?: Badge[]
 }
@@ -33,14 +33,15 @@ const ShieldIcon = ({ className = "w-5 h-5" }: { className?: string }) => (
 )
 
 const DEFAULT_BADGES: Badge[] = [
-  { icon: <TruckIcon />, label: "Free Shipping" },
-  { icon: <RefreshIcon />, label: "30-Day Money Back" },
-  { icon: <ShieldIcon />, label: "Secure Checkout" },
+  { icon: <TruckIcon className="w-5 h-5" />, label: "FAST SHIPPING" },
+  { icon: <RefreshIcon className="w-5 h-5" />, label: "30-DAY MONEY BACK" },
+  { icon: <ShieldIcon className="w-5 h-5" />, label: "SECURE CHECKOUT" },
 ]
 
 /**
  * TrustBadges - Display trust-building badges
- * Free Shipping, 30-Day Returns, Secure Checkout
+ * Fast Shipping, 30-Day Returns, Secure Checkout
+ * Enhanced with amber circle backgrounds and bold ALL CAPS text
  */
 const TrustBadges = ({
   layout = "vertical",
@@ -49,17 +50,32 @@ const TrustBadges = ({
   badges = DEFAULT_BADGES,
 }: TrustBadgesProps) => {
   const sizeClasses = {
-    sm: "text-xs gap-1.5",
-    md: "text-sm gap-2",
+    sm: {
+      text: "text-xs",
+      iconWrapper: "w-8 h-8",
+      gap: "gap-2",
+    },
+    md: {
+      text: "text-sm",
+      iconWrapper: "w-10 h-10",
+      gap: "gap-3",
+    },
+    lg: {
+      text: "text-base",
+      iconWrapper: "w-12 h-12",
+      gap: "gap-4",
+    },
   }
+
+  const currentSize = sizeClasses[size]
 
   return (
     <div
       className={clx(
         "flex",
         layout === "horizontal"
-          ? "flex-row flex-wrap justify-center gap-4 sm:gap-6"
-          : "flex-col items-center gap-2",
+          ? "flex-row flex-wrap justify-center gap-6"
+          : "flex-col items-center gap-3",
         className
       )}
     >
@@ -67,12 +83,28 @@ const TrustBadges = ({
         <div
           key={index}
           className={clx(
-            "flex items-center text-ui-fg-subtle",
-            sizeClasses[size]
+            "flex items-center",
+            currentSize.gap
           )}
         >
-          <span className="text-amber-600 flex-shrink-0">{badge.icon}</span>
-          <span className="font-medium">{badge.label}</span>
+          {/* Icon with amber circle background */}
+          <span
+            className={clx(
+              "rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0",
+              currentSize.iconWrapper
+            )}
+          >
+            <span className="text-amber-600">{badge.icon}</span>
+          </span>
+          {/* ALL CAPS bold text */}
+          <span
+            className={clx(
+              "font-bold tracking-wide text-stone-700",
+              currentSize.text
+            )}
+          >
+            {badge.label}
+          </span>
         </div>
       ))}
     </div>

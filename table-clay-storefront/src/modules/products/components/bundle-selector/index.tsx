@@ -273,9 +273,9 @@ export default function BundleSelector({
         })}
       </div>
 
-      {/* "Save with bundles" messaging when single is selected */}
+      {/* "Save with bundles" messaging when single is selected - animated */}
       {singleSelected && bundles.length > 0 && (
-        <p className="text-center text-xs text-amber-700 mt-3">
+        <p className="text-center text-base font-semibold text-amber-600 mt-4 animate-pulse">
           ✨ Save more with a bundle above
         </p>
       )}
