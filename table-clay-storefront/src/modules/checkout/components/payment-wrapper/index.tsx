@@ -27,11 +27,13 @@ const PaymentWrapper: React.FC<PaymentWrapperProps> = ({ cart, children }) => {
   const paymentSession = cart.payment_collection?.payment_sessions?.find(
     (s) => s.status === "pending"
   )
+  const hasClientSecret = !!paymentSession?.data?.client_secret
 
   if (
     isStripeLike(paymentSession?.provider_id) &&
     paymentSession &&
-    stripePromise
+    stripePromise &&
+    hasClientSecret
   ) {
     return (
       <StripeWrapper

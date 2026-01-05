@@ -20,11 +20,8 @@ const ExpressCheckout: React.FC<ExpressCheckoutProps> = ({ cart }) => {
 
   const hasClientSecret = !!paymentSession?.data?.client_secret
 
-  // Don't render section if no payment session
-  // The ExpressCheckoutButton will handle hiding itself if no methods available
-  if (!hasClientSecret) {
-    return null
-  }
+  const showFallbackBadges =
+    !hasClientSecret || (hasCheckedAvailability && !isAvailable)
 
   const handleAvailabilityChange = (available: boolean) => {
     setIsAvailable(available)
@@ -37,12 +34,14 @@ const ExpressCheckout: React.FC<ExpressCheckoutProps> = ({ cart }) => {
         <h2 className="text-lg font-semibold text-gray-900">Express checkout</h2>
       </div>
 
-      <ExpressCheckoutButton
-        cart={cart}
-        onAvailabilityChange={handleAvailabilityChange}
-      />
+      {hasClientSecret && (
+        <ExpressCheckoutButton
+          cart={cart}
+          onAvailabilityChange={handleAvailabilityChange}
+        />
+      )}
 
-      {hasCheckedAvailability && !isAvailable && (
+      {showFallbackBadges && (
         <div className="mt-3">
           <PaymentIcons methods={["apple-pay", "google-pay"]} size="md" />
           <p className="mt-2 text-xs text-gray-500 text-center">
