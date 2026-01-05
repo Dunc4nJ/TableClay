@@ -48,11 +48,25 @@ export default async function Checkout() {
   const customer = await retrieveCustomer()
 
   return (
-    <div className="grid grid-cols-1 small:grid-cols-[1fr_416px] content-container gap-x-40 py-12">
-      <PaymentWrapper cart={cart}>
-        <CheckoutForm cart={cart} customer={customer} />
-      </PaymentWrapper>
-      <CheckoutSummary cart={cart} />
+    <div className="bg-tc-cream">
+      <div className="grid grid-cols-1 small:grid-cols-[minmax(0,1fr)_420px]">
+        <section className="bg-tc-cream">
+          <div className="content-container py-10 small:py-12">
+            <div className="max-w-[720px]">
+              <PaymentWrapper cart={cart}>
+                <CheckoutForm cart={cart} customer={customer} />
+              </PaymentWrapper>
+            </div>
+          </div>
+        </section>
+        <aside className="bg-tc-cream small:bg-white small:border-l small:border-cream-300">
+          <div className="content-container py-10 small:py-12">
+            <div className="max-w-[420px] small:ml-auto">
+              <CheckoutSummary cart={cart} />
+            </div>
+          </div>
+        </aside>
+      </div>
     </div>
   )
 }

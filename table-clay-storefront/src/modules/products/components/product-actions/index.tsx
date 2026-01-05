@@ -4,8 +4,9 @@ import { addToCart } from "@lib/data/cart"
 import { Bundle } from "@lib/data/bundles"
 import type { BundlePromoSettings } from "@lib/data/settings"
 import { useIntersection } from "@lib/hooks/use-in-view"
+import { Spinner } from "@medusajs/icons"
 import { HttpTypes } from "@medusajs/types"
-import { Button, clx } from "@medusajs/ui"
+import { clx } from "@medusajs/ui"
 import Divider from "@modules/common/components/divider"
 import OptionSelect from "@modules/products/components/product-actions/option-select"
 import BundleSelector, { SingleItemOption } from "@modules/products/components/bundle-selector"
@@ -26,6 +27,18 @@ type ProductActionsProps = {
 
 /** Selection mode for bundle products */
 type SelectionMode = "single" | "bundle"
+
+const ADD_TO_CART_BASE_CLASSES =
+  "w-full h-12 lg:h-10 rounded-lg font-medium text-base transition-all duration-200 flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:ring-offset-2"
+
+const getAddToCartClasses = (isDisabled: boolean, isLoading: boolean) =>
+  clx(
+    ADD_TO_CART_BASE_CLASSES,
+    isDisabled
+      ? "bg-gray-200 text-gray-500 cursor-not-allowed shadow-none"
+      : "bg-brand-500 hover:bg-brand-600 text-white shadow-md hover:shadow-lg",
+    isLoading && "opacity-90 cursor-wait"
+  )
 
 const optionsAsKeymap = (
   variantOptions: HttpTypes.StoreProductVariant["options"]
@@ -220,6 +233,27 @@ export default function ProductActions({
     return !!selectedVariant && inStock && isValidVariant
   }, [hasBundles, selectionMode, selectedVariant, selectedBundle, inStock, isValidVariant])
 
+  const showDisabledStyles = !canAddToCart || !!disabled
+  const isAddToCartDisabled = showDisabledStyles || isAdding
+
+  const bundleButtonLabel = () => {
+    if (isAdding) return "Adding..."
+    if (selectionMode === "single") {
+      if (!selectedVariant || !isValidVariant) return "Select an option"
+      if (!inStock) return "Out of stock"
+      return "Add to Cart"
+    }
+    if (!selectedBundle) return "Select an option"
+    return "Add to Cart"
+  }
+
+  const standardButtonLabel = () => {
+    if (isAdding) return "Adding..."
+    if (!selectedVariant || !isValidVariant) return "Select an option"
+    if (!inStock) return "Out of stock"
+    return "Add to Cart"
+  }
+
   return (
     <>
       <div className="flex flex-col gap-y-2" ref={actionsRef}>
@@ -238,22 +272,16 @@ export default function ProductActions({
               disabled={!!disabled || isAdding}
             />
 
-            <Button
+            <button
               onClick={handleAddToCart}
-              disabled={!canAddToCart || !!disabled || isAdding}
-              variant="primary"
-              className={clx(
-                "w-full h-12 lg:h-10 rounded-lg font-medium",
-                "transition-all duration-200",
-                canAddToCart && !disabled && !isAdding
-                  ? "bg-brand-500 hover:bg-brand-600 text-white shadow-md hover:shadow-lg"
-                  : ""
-              )}
-              isLoading={isAdding}
+              type="button"
+              disabled={isAddToCartDisabled}
+              className={getAddToCartClasses(showDisabledStyles, isAdding)}
               data-testid="add-bundle-button"
             >
-              Add to Cart
-            </Button>
+              {isAdding && <Spinner className="h-5 w-5 animate-spin" />}
+              <span>{bundleButtonLabel()}</span>
+            </button>
           </div>
         ) : (
           /* Standard Variant Selector */
@@ -282,32 +310,16 @@ export default function ProductActions({
 
             <ProductPrice product={product} variant={selectedVariant} />
 
-            <Button
+            <button
               onClick={handleAddToCart}
-              disabled={
-                !inStock ||
-                !selectedVariant ||
-                !!disabled ||
-                isAdding ||
-                !isValidVariant
-              }
-              variant="primary"
-              className={clx(
-                "w-full h-12 lg:h-10 rounded-lg font-medium",
-                "transition-all duration-200",
-                inStock && selectedVariant && isValidVariant && !disabled && !isAdding
-                  ? "bg-brand-500 hover:bg-brand-600 text-white shadow-md hover:shadow-lg"
-                  : ""
-              )}
-              isLoading={isAdding}
+              disabled={isAddToCartDisabled}
+              type="button"
+              className={getAddToCartClasses(showDisabledStyles, isAdding)}
               data-testid="add-product-button"
             >
-              {!selectedVariant && !options
-                ? "Select variant"
-                : !inStock || !isValidVariant
-                ? "Out of stock"
-                : "Add to Cart"}
-            </Button>
+              {isAdding && <Spinner className="h-5 w-5 animate-spin" />}
+              <span>{standardButtonLabel()}</span>
+            </button>
           </>
         )}
 

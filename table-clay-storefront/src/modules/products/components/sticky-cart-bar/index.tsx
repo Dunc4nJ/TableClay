@@ -63,7 +63,7 @@ const StickyCartBar = ({
         className
       )}
     >
-      <div className="max-w-7xl mx-auto px-4 py-3">
+      <div className="max-w-7xl mx-auto px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)]">
         <div className="flex items-center justify-between gap-4">
           {/* Left: Product info */}
           <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -96,7 +96,7 @@ const StickyCartBar = ({
             onClick={onAddToCart}
             disabled={disabled || isLoading}
             isLoading={isLoading}
-            className="flex-shrink-0 bg-amber-500 hover:bg-amber-600 text-white px-6 border-0"
+            className="flex-shrink-0 h-12 bg-amber-500 hover:bg-amber-600 text-white px-6 border-0"
           >
             Add to Cart
           </Button>

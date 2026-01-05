@@ -88,7 +88,7 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
       {/* === ABOVE THE FOLD === */}
       <div className="bg-white">
         <div
-          className="content-container py-6 lg:py-8"
+          className="content-container py-4 lg:py-8"
           data-testid="product-container"
         >
           <div className="flex flex-col lg:flex-row lg:items-start gap-6 lg:gap-12">
@@ -100,16 +100,20 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
             {/* Right Column: Product Info & Actions */}
             <div className="w-full lg:w-1/2 flex flex-col gap-y-3 lg:gap-y-6 overflow-hidden">
               {/* Review Summary Badge - Always shown with defaults */}
-              <ReviewSummaryBadge
-                stats={reviewStats ?? DEFAULT_REVIEW_STATS}
-                onClick={scrollToReviews}
-              />
+              <div className="order-3 lg:order-none">
+                <ReviewSummaryBadge
+                  stats={reviewStats ?? DEFAULT_REVIEW_STATS}
+                  onClick={scrollToReviews}
+                />
+              </div>
 
               {/* Product Title & Subtitle - Compact on mobile */}
-              <ProductInfo product={product} />
+              <div className="order-1 lg:order-none">
+                <ProductInfo product={product} />
+              </div>
 
               {/* Product Actions (Bundles/Variants + Add to Cart) */}
-              <div ref={addToCartRef}>
+              <div ref={addToCartRef} className="order-2 lg:order-none">
                 <Suspense
                   fallback={
                     <ProductActions
@@ -129,7 +133,7 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
               </div>
 
               {/* Artisan messaging - Elegant badge */}
-              <div className="flex justify-center">
+              <div className="hidden lg:flex justify-center">
                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-cream-100 border border-cream-300 rounded-full">
                   <span className="text-amber-600">✨</span>
                   <span className="text-sm font-medium text-stone-600">
@@ -139,14 +143,18 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
               </div>
 
               {/* Payment Icons */}
-              <PaymentIcons size="md" />
+              <div className="hidden lg:block">
+                <PaymentIcons size="md" />
+              </div>
 
               {/* Trust Badges */}
-              <TrustBadges layout="vertical" size="md" />
+              <div className="hidden lg:block">
+                <TrustBadges layout="vertical" size="md" />
+              </div>
 
               {/* FAQ Accordion - In right column for quick access */}
               {faqs.length > 0 && (
-                <div className="mt-2">
+                <div className="hidden lg:block mt-2">
                   <FAQAccordion faqs={faqs} />
                 </div>
               )}
@@ -156,6 +164,21 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
       </div>
 
       {/* === BELOW THE FOLD === */}
+      <div className="bg-white lg:hidden">
+        <div className="content-container py-6 space-y-6">
+          {faqs.length > 0 && <FAQAccordion faqs={faqs} />}
+          <PaymentIcons size="md" />
+          <TrustBadges layout="vertical" size="md" />
+          <div className="flex justify-center">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-cream-100 border border-cream-300 rounded-full">
+              <span className="text-amber-600">✨</span>
+              <span className="text-sm font-medium text-stone-600">
+                Handcrafted in small batches
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Benefits Section - Cream background */}
       <section className="bg-cream-100">

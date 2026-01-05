@@ -1,4 +1,5 @@
 import { Dialog, Transition } from "@headlessui/react"
+import { Spinner } from "@medusajs/icons"
 import { Button, clx } from "@medusajs/ui"
 import React, { Fragment, useMemo } from "react"
 
@@ -22,6 +23,18 @@ type MobileActionsProps = {
   show: boolean
   optionsDisabled: boolean
 }
+
+const MOBILE_ADD_TO_CART_BASE_CLASSES =
+  "w-full h-12 rounded-lg font-medium text-base transition-all duration-200 flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:ring-offset-2"
+
+const getMobileAddToCartClasses = (isDisabled: boolean, isLoading: boolean) =>
+  clx(
+    MOBILE_ADD_TO_CART_BASE_CLASSES,
+    isDisabled
+      ? "bg-gray-200 text-gray-500 cursor-not-allowed shadow-none"
+      : "bg-brand-500 hover:bg-brand-600 text-white shadow-md hover:shadow-lg",
+    isLoading && "opacity-90 cursor-wait"
+  )
 
 const MobileActions: React.FC<MobileActionsProps> = ({
   product,
@@ -51,6 +64,14 @@ const MobileActions: React.FC<MobileActionsProps> = ({
   }, [price])
 
   const isSimple = isSimpleProduct(product)
+  const canAddToCart = !!variant && !!inStock
+
+  const addToCartLabel = () => {
+    if (isAdding) return "Adding..."
+    if (!variant) return "Select an option"
+    if (!inStock) return "Out of stock"
+    return "Add to cart"
+  }
 
   return (
     <>
@@ -104,7 +125,7 @@ const MobileActions: React.FC<MobileActionsProps> = ({
               {!isSimple && <Button
                 onClick={open}
                 variant="secondary"
-                className="w-full"
+                className="w-full h-12"
                 data-testid="mobile-actions-button"
               >
                 <div className="flex items-center justify-between w-full">
@@ -116,19 +137,16 @@ const MobileActions: React.FC<MobileActionsProps> = ({
                   <ChevronDown />
                 </div>
               </Button>}
-              <Button
+              <button
                 onClick={handleAddToCart}
-                disabled={!inStock || !variant}
-                className="w-full"
-                isLoading={isAdding}
+                type="button"
+                disabled={!canAddToCart || !!isAdding}
+                className={getMobileAddToCartClasses(!canAddToCart, !!isAdding)}
                 data-testid="mobile-cart-button"
               >
-                {!variant
-                  ? "Select variant"
-                  : !inStock
-                  ? "Out of stock"
-                  : "Add to cart"}
-              </Button>
+                {isAdding && <Spinner className="h-5 w-5 animate-spin" />}
+                <span>{addToCartLabel()}</span>
+              </button>
             </div>
           </div>
         </Transition>

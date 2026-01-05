@@ -140,7 +140,7 @@ export default function BundleSelector({
       )}
 
       {/* Purchase options */}
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-3">
         {/* Single Item Option - First */}
         {singleOption && onSelectSingle && (
           <button
@@ -148,7 +148,7 @@ export default function BundleSelector({
             onClick={() => !disabled && onSelectSingle()}
             disabled={disabled}
             className={clx(
-              "w-full p-3 rounded-lg border transition-all text-left",
+              "w-full min-h-[60px] p-4 rounded-lg border transition-all text-left",
               "flex items-start gap-3",
               singleSelected
                 ? "border-gray-900 bg-gray-50"
@@ -209,7 +209,7 @@ export default function BundleSelector({
               onClick={() => !disabled && onSelect(bundle)}
               disabled={disabled}
               className={clx(
-                "w-full p-3 rounded-lg border transition-all text-left",
+                "w-full min-h-[60px] p-4 rounded-lg border transition-all text-left",
                 "flex items-start gap-3",
                 isSelected
                   ? "border-gray-900 bg-gray-50"

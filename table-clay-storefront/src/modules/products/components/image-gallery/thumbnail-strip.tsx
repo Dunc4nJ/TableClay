@@ -34,7 +34,7 @@ const ThumbnailStrip = ({
             onClick={() => onSelect(index)}
             className={clx(
               "relative overflow-hidden rounded-lg",
-              "w-16 h-16 sm:w-20 sm:h-20",
+              "w-14 h-14 sm:w-20 sm:h-20",
               "border-2 transition-all duration-200",
               "hover:opacity-90",
               "focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500",
@@ -61,7 +61,7 @@ const ThumbnailStrip = ({
             onClick={() => onSelect(MAX_VISIBLE)}
             className={clx(
               "relative overflow-hidden rounded-lg",
-              "w-16 h-16 sm:w-20 sm:h-20",
+              "w-14 h-14 sm:w-20 sm:h-20",
               "border-2 border-gray-200 hover:border-gray-300",
               "bg-gray-100 flex items-center justify-center",
               "transition-all duration-200"
