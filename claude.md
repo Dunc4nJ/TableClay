@@ -546,6 +546,85 @@ return sdk.client.fetch("/store/collections", {
 - `table-clay-storefront/src/lib/data/collections.ts`
 - `table-clay-storefront/src/lib/data/categories.ts`
 
+### CORS Configuration: Include www Subdomain
+
+**Problem:** Browser requests from `www.tableclay.com` fail with CORS errors even though `tableclay.com` is in CORS config.
+
+**Root Cause:** `www.tableclay.com` and `tableclay.com` are treated as different origins by browsers.
+
+**Solution:** Always include BOTH domains in Railway environment variables:
+```bash
+STORE_CORS=https://tableclay.com,https://www.tableclay.com,...
+AUTH_CORS=https://tableclay.com,https://www.tableclay.com,...
+ADMIN_CORS=https://tableclay.com,https://www.tableclay.com,...
+```
+
+**Test CORS with curl:**
+```bash
+curl -s -I -X OPTIONS 'https://tableclay-production.up.railway.app/store/products' \
+  -H 'Origin: https://www.tableclay.com' \
+  -H 'Access-Control-Request-Method: GET'
+# Should return: access-control-allow-origin: https://www.tableclay.com
+```
+
+### React Hydration: Avoid Async Server Components in Suspense
+
+**Problem:** React Error #419 (hydration mismatch) causing Suspense fallback to display permanently.
+
+**Root Cause:** Async Server Components wrapped in `<Suspense>` inside Client Components fail to recover from hydration errors in Next.js 15 + React 19.
+
+**Symptoms:**
+- Skeleton/loading state stuck permanently
+- Console shows "Minified React error #419"
+- Component works on hard refresh but breaks on client navigation
+
+**Solution:** Convert async Server Component to Client Component with `useEffect`:
+
+```typescript
+// ❌ Bad - Async Server Component in Suspense
+async function RelatedProducts({ product }) {
+  const data = await fetchProducts() // Server-side async
+  return <ProductList products={data} />
+}
+
+// Wrapped in parent:
+<Suspense fallback={<Skeleton />}>
+  <RelatedProducts product={product} />
+</Suspense>
+
+// ✅ Good - Client Component with useEffect
+"use client"
+function RelatedProducts({ product }) {
+  const [products, setProducts] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    fetch('/store/products')
+      .then(res => res.json())
+      .then(data => setProducts(data.products))
+      .finally(() => setIsLoading(false))
+  }, [product.id])
+
+  if (isLoading) return <Skeleton />
+  return <ProductList products={products} />
+}
+```
+
+**Key file:** `table-clay-storefront/src/modules/products/components/related-products/index.tsx`
+
+### Client-Side Fetching: Disable Cache for Random Selection
+
+**Problem:** Random product selection returns same products on every page load.
+
+**Solution:** Use `cache: 'no-store'` to disable Next.js/browser caching:
+
+```typescript
+const response = await fetch(`${baseUrl}/store/products?${params}`, {
+  headers: { "x-publishable-api-key": apiKey },
+  cache: "no-store", // Disable caching for random selection
+})
+```
+
 ### Store API vs Admin API
 
 | Feature | Store API | Admin API |
