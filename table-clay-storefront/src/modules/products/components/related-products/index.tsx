@@ -13,10 +13,12 @@ type RelatedProductsProps = {
 }
 
 /**
- * RelatedProducts - Client-side component for displaying related products
+ * RelatedProducts - Smart selection of 3 related products:
+ * 1. Global bestseller (top-selling product)
+ * 2. Random product from same collection (if available)
+ * 3. Random product from different collection
  *
- * Converted from async Server Component to Client Component to avoid
- * hydration issues with async components in Suspense boundaries.
+ * Products refresh randomly on each page load.
  */
 export default function RelatedProducts({
   product,
@@ -28,44 +30,111 @@ export default function RelatedProducts({
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    async function fetchRelatedProducts() {
+    async function fetchSmartRelatedProducts() {
       try {
         setIsLoading(true)
         setError(null)
 
-        // Build query params for related products
-        const params = new URLSearchParams()
-        if (region?.id) {
-          params.set("region_id", region.id)
-        }
-        if (product.collection_id) {
-          params.set("collection_id[]", product.collection_id)
-        }
-        params.set("is_giftcard", "false")
-        params.set("limit", "8")
+        const results: HttpTypes.StoreProduct[] = []
+        const usedIds = new Set([product.id])
+        const apiKey = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || ""
+        const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
 
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/store/products?${params.toString()}`,
-          {
-            headers: {
-              "x-publishable-api-key": process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "",
-            },
-            credentials: "include",
+        // Helper to fetch products
+        const fetchProducts = async (params: URLSearchParams): Promise<HttpTypes.StoreProduct[]> => {
+          params.set("region_id", region.id)
+          params.set("is_giftcard", "false")
+          params.set("fields", "*variants.calculated_price,+variants.inventory_quantity,*variants.images")
+
+          const response = await fetch(
+            `${baseUrl}/store/products?${params.toString()}`,
+            {
+              headers: { "x-publishable-api-key": apiKey },
+              credentials: "include",
+              cache: "no-store", // Disable caching for random selection
+            }
+          )
+
+          if (!response.ok) {
+            throw new Error(`Failed to fetch products: ${response.status}`)
           }
+
+          const data = await response.json()
+          return data.products || []
+        }
+
+        // 1. GLOBAL BESTSELLER - Try to get the top-selling product
+        try {
+          const bestsellerResponse = await fetch(
+            `${baseUrl}/store/products/bestseller?region_id=${region.id}`,
+            {
+              headers: { "x-publishable-api-key": apiKey },
+              credentials: "include",
+              // Bestseller can be cached for 5 minutes (acceptable staleness)
+              next: { revalidate: 300 },
+            }
+          )
+
+          if (bestsellerResponse.ok) {
+            const data = await bestsellerResponse.json()
+            if (data.product && !usedIds.has(data.product.id)) {
+              results.push(data.product)
+              usedIds.add(data.product.id)
+            }
+          }
+        } catch (e) {
+          // Bestseller endpoint may not exist yet, continue silently
+          console.debug("Bestseller endpoint not available, using fallback")
+        }
+
+        // 2. SAME COLLECTION RANDOM - Get a random product from current product's collection
+        if (product.collection_id) {
+          const sameCollectionParams = new URLSearchParams()
+          sameCollectionParams.set("collection_id[]", product.collection_id)
+          sameCollectionParams.set("limit", "50")
+
+          const sameCollectionProducts = await fetchProducts(sameCollectionParams)
+          const eligibleSameCollection = sameCollectionProducts.filter(
+            (p) => !usedIds.has(p.id)
+          )
+
+          if (eligibleSameCollection.length > 0) {
+            const randomIndex = Math.floor(Math.random() * eligibleSameCollection.length)
+            const randomProduct = eligibleSameCollection[randomIndex]
+            results.push(randomProduct)
+            usedIds.add(randomProduct.id)
+          }
+        }
+
+        // 3. DIFFERENT COLLECTION RANDOM - Get a random product from any other collection
+        const allProductsParams = new URLSearchParams()
+        allProductsParams.set("limit", "100")
+
+        const allProducts = await fetchProducts(allProductsParams)
+
+        // Filter for products from different collections
+        const differentCollectionProducts = allProducts.filter(
+          (p) => !usedIds.has(p.id) && p.collection_id !== product.collection_id
         )
 
-        if (!response.ok) {
-          throw new Error(`Failed to fetch related products: ${response.status}`)
+        if (differentCollectionProducts.length > 0) {
+          const randomIndex = Math.floor(Math.random() * differentCollectionProducts.length)
+          const randomProduct = differentCollectionProducts[randomIndex]
+          results.push(randomProduct)
+          usedIds.add(randomProduct.id)
         }
 
-        const data = await response.json()
+        // 4. FALLBACK - Fill remaining slots with any available products
+        const remainingProducts = allProducts.filter((p) => !usedIds.has(p.id))
 
-        // Filter out current product and limit to 4
-        const filteredProducts = (data.products || [])
-          .filter((p: HttpTypes.StoreProduct) => p.id !== product.id)
-          .slice(0, 4)
+        while (results.length < 3 && remainingProducts.length > 0) {
+          const randomIndex = Math.floor(Math.random() * remainingProducts.length)
+          const randomProduct = remainingProducts.splice(randomIndex, 1)[0]
+          results.push(randomProduct)
+          usedIds.add(randomProduct.id)
+        }
 
-        setProducts(filteredProducts)
+        setProducts(results.slice(0, 3))
       } catch (err) {
         console.error("Error fetching related products:", err)
         setError(err instanceof Error ? err.message : "Failed to load related products")
@@ -75,11 +144,11 @@ export default function RelatedProducts({
     }
 
     if (product?.id && region?.id) {
-      fetchRelatedProducts()
+      fetchSmartRelatedProducts()
     }
   }, [product.id, product.collection_id, region?.id])
 
-  // Loading state - show skeleton
+  // Loading state - show 3 skeletons
   if (isLoading) {
     return (
       <section className="bg-cream-50 py-12 lg:py-16">
@@ -89,9 +158,9 @@ export default function RelatedProducts({
             <div className="h-8 w-64 bg-gray-200 animate-pulse rounded mx-auto mb-3" />
             <div className="h-5 w-80 bg-gray-100 animate-pulse rounded mx-auto" />
           </div>
-          {/* Products skeleton */}
-          <ul className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-            {repeat(4).map((index) => (
+          {/* Products skeleton - 3 columns */}
+          <ul className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 max-w-4xl mx-auto">
+            {repeat(3).map((index) => (
               <li key={index}>
                 <SkeletonProductPreview />
               </li>
@@ -102,7 +171,7 @@ export default function RelatedProducts({
     )
   }
 
-  // Error state - hide section silently
+  // Error state or no products - hide section silently
   if (error || products.length === 0) {
     return null
   }
@@ -120,8 +189,8 @@ export default function RelatedProducts({
           </p>
         </div>
 
-        {/* Product grid - 4 columns on desktop, 2 on mobile */}
-        <ul className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+        {/* Product grid - 3 columns centered */}
+        <ul className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 max-w-4xl mx-auto">
           {products.map((relatedProduct) => (
             <li key={relatedProduct.id}>
               <Product region={region} product={relatedProduct} />
