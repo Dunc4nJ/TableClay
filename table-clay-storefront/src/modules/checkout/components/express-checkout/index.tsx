@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { HttpTypes } from "@medusajs/types"
 import ExpressCheckoutButton from "./express-checkout-button"
+import PaymentIcons from "@modules/products/components/payment-icons"
 
 interface ExpressCheckoutProps {
   cart: HttpTypes.StoreCart
@@ -10,6 +11,7 @@ interface ExpressCheckoutProps {
 
 const ExpressCheckout: React.FC<ExpressCheckoutProps> = ({ cart }) => {
   const [isAvailable, setIsAvailable] = useState(false)
+  const [hasCheckedAvailability, setHasCheckedAvailability] = useState(false)
 
   // Check if payment session exists with client_secret
   const paymentSession = cart.payment_collection?.payment_sessions?.find(
@@ -24,17 +26,9 @@ const ExpressCheckout: React.FC<ExpressCheckoutProps> = ({ cart }) => {
     return null
   }
 
-  // Hide entire section if no express methods available
-  if (!isAvailable && hasClientSecret) {
-    // Still render the button so it can call onAvailabilityChange
-    return (
-      <div className="hidden">
-        <ExpressCheckoutButton
-          cart={cart}
-          onAvailabilityChange={setIsAvailable}
-        />
-      </div>
-    )
+  const handleAvailabilityChange = (available: boolean) => {
+    setIsAvailable(available)
+    setHasCheckedAvailability(true)
   }
 
   return (
@@ -45,8 +39,17 @@ const ExpressCheckout: React.FC<ExpressCheckoutProps> = ({ cart }) => {
 
       <ExpressCheckoutButton
         cart={cart}
-        onAvailabilityChange={setIsAvailable}
+        onAvailabilityChange={handleAvailabilityChange}
       />
+
+      {hasCheckedAvailability && !isAvailable && (
+        <div className="mt-3">
+          <PaymentIcons methods={["apple-pay", "google-pay"]} size="md" />
+          <p className="mt-2 text-xs text-gray-500 text-center">
+            Available on supported devices and browsers
+          </p>
+        </div>
+      )}
     </div>
   )
 }
