@@ -9,7 +9,6 @@ import ProductInfo from "@modules/products/templates/product-info"
 import ProductActionsWrapper from "./product-actions-wrapper"
 import ProductActions from "@modules/products/components/product-actions"
 import RelatedProducts from "@modules/products/components/related-products"
-import SkeletonRelatedProducts from "@modules/skeletons/templates/skeleton-related-products"
 
 // New components
 import TrustBadges from "@modules/products/components/trust-badges"
@@ -204,11 +203,9 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
         )
       })()}
 
-      {/* Related Products - Handles its own styling */}
+      {/* Related Products - Client component with internal loading state */}
       <div data-testid="related-products-container">
-        <Suspense fallback={<SkeletonRelatedProducts />}>
-          <RelatedProducts product={product} countryCode={countryCode} />
-        </Suspense>
+        <RelatedProducts product={product} countryCode={countryCode} region={region} />
       </div>
 
       {/* Sticky Cart Bar */}
