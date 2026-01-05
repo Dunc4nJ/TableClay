@@ -1,6 +1,6 @@
 import { defineWidgetConfig } from "@medusajs/admin-sdk"
 import { Container, Heading, Text, Input, Button, Badge } from "@medusajs/ui"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 
 type SalesData = {
   product_id: string
@@ -12,7 +12,7 @@ type SalesData = {
  * Product Sales Widget
  * Shows sales count on product details page with inline editing
  */
-const ProductSalesWidget = ({ data }: { data: { product: { id: string } } }) => {
+const ProductSalesWidget = ({ data }: { data: { product?: { id: string } } }) => {
   const [salesData, setSalesData] = useState<SalesData | null>(null)
   const [isEditing, setIsEditing] = useState(false)
   const [editValue, setEditValue] = useState("")
@@ -20,13 +20,11 @@ const ProductSalesWidget = ({ data }: { data: { product: { id: string } } }) => 
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const productId = data.product.id
+  const productId = data?.product?.id
 
-  useEffect(() => {
-    fetchSalesData()
-  }, [productId])
+  const fetchSalesData = useCallback(async () => {
+    if (!productId) return
 
-  const fetchSalesData = async () => {
     setIsLoading(true)
     setError(null)
     try {
@@ -44,9 +42,17 @@ const ProductSalesWidget = ({ data }: { data: { product: { id: string } } }) => 
       setError("Failed to load sales data")
     }
     setIsLoading(false)
-  }
+  }, [productId])
+
+  useEffect(() => {
+    if (productId) {
+      fetchSalesData()
+    }
+  }, [productId, fetchSalesData])
 
   const handleSave = async () => {
+    if (!productId) return
+
     const newCount = parseInt(editValue, 10)
     if (isNaN(newCount) || newCount < 0) {
       setError("Please enter a valid non-negative number")
@@ -90,6 +96,11 @@ const ProductSalesWidget = ({ data }: { data: { product: { id: string } } }) => 
       hour: "2-digit",
       minute: "2-digit",
     })
+  }
+
+  // Don't render if product data isn't available yet
+  if (!productId) {
+    return null
   }
 
   if (isLoading) {
