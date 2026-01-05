@@ -12,10 +12,16 @@ import OptionSelect from "@modules/products/components/product-actions/option-se
 import BundleSelector, { SingleItemOption } from "@modules/products/components/bundle-selector"
 import { isEqual } from "lodash"
 import { useParams, usePathname, useSearchParams } from "next/navigation"
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState, type RefObject } from "react"
 import ProductPrice from "../product-price"
 import MobileActions from "./mobile-actions"
 import { useRouter } from "next/navigation"
+import StickyCartBar from "@modules/products/components/sticky-cart-bar"
+
+const PUBLIC_BACKEND_URL =
+  process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || ""
+const PUBLISHABLE_KEY =
+  process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || ""
 
 type ProductActionsProps = {
   product: HttpTypes.StoreProduct
@@ -23,6 +29,7 @@ type ProductActionsProps = {
   disabled?: boolean
   bundles?: Bundle[]
   bundleSettings?: BundlePromoSettings
+  stickyTriggerRef?: RefObject<HTMLDivElement | null>
 }
 
 /** Selection mode for bundle products */
@@ -49,11 +56,14 @@ const optionsAsKeymap = (
   }, {})
 }
 
+const formatPrice = (amount: number) => `$${(amount / 100).toFixed(2)}`
+
 export default function ProductActions({
   product,
   disabled,
   bundles = [],
   bundleSettings,
+  stickyTriggerRef,
 }: ProductActionsProps) {
   const router = useRouter()
   const pathname = usePathname() ?? ""
@@ -62,6 +72,8 @@ export default function ProductActions({
   const [options, setOptions] = useState<Record<string, string | undefined>>({})
   const [isAdding, setIsAdding] = useState(false)
   const [selectedBundle, setSelectedBundle] = useState<Bundle | null>(null)
+  const [liveBundleSettings, setLiveBundleSettings] =
+    useState<BundlePromoSettings | undefined>(bundleSettings)
   // Track selection mode: single item or bundle
   const [selectionMode, setSelectionMode] = useState<SelectionMode>("single")
   const params = useParams()
@@ -70,6 +82,42 @@ export default function ProductActions({
 
   // Determine if we should show bundles (when available)
   const hasBundles = bundles.length > 0
+
+  useEffect(() => {
+    if (!PUBLIC_BACKEND_URL) return
+
+    let isMounted = true
+    const fetchSettings = async () => {
+      try {
+        const response = await fetch(`${PUBLIC_BACKEND_URL}/store/settings`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            ...(PUBLISHABLE_KEY
+              ? { "x-publishable-api-key": PUBLISHABLE_KEY }
+              : {}),
+          },
+          cache: "no-store",
+        })
+
+        if (!response.ok) {
+          return
+        }
+
+        const data = await response.json()
+        if (isMounted && data?.bundle_promo) {
+          setLiveBundleSettings(data.bundle_promo)
+        }
+      } catch (error) {
+        console.warn("Failed to refresh bundle settings:", error)
+      }
+    }
+
+    fetchSettings()
+    return () => {
+      isMounted = false
+    }
+  }, [])
 
   // Build single item option from first variant
   const singleItemOption = useMemo<SingleItemOption | undefined>(() => {
@@ -262,6 +310,35 @@ export default function ProductActions({
     return "Add to Cart"
   }
 
+  const stickyPrice = useMemo(() => {
+    if (hasBundles && selectionMode === "bundle" && selectedBundle) {
+      return formatPrice(selectedBundle.sale_price)
+    }
+    const variant = selectedVariant ?? product.variants?.[0]
+    const amount = variant?.calculated_price?.calculated_amount
+    return typeof amount === "number" ? formatPrice(amount) : ""
+  }, [hasBundles, selectionMode, selectedBundle, selectedVariant, product.variants])
+
+  const stickyOriginalPrice = useMemo(() => {
+    if (hasBundles && selectionMode === "bundle" && selectedBundle) {
+      if (selectedBundle.original_price > selectedBundle.sale_price) {
+        return formatPrice(selectedBundle.original_price)
+      }
+      return undefined
+    }
+    const variant = selectedVariant ?? product.variants?.[0]
+    const original = variant?.calculated_price?.original_amount
+    const current = variant?.calculated_price?.calculated_amount
+    if (
+      typeof original === "number" &&
+      typeof current === "number" &&
+      original > current
+    ) {
+      return formatPrice(original)
+    }
+    return undefined
+  }, [hasBundles, selectionMode, selectedBundle, selectedVariant, product.variants])
+
   return (
     <>
       <div className="flex flex-col gap-y-2" ref={actionsRef}>
@@ -275,8 +352,8 @@ export default function ProductActions({
               singleOption={singleItemOption}
               singleSelected={selectionMode === "single"}
               onSelectSingle={handleSingleSelect}
-              headline={bundleSettings?.headline || undefined}
-              promoText={bundleSettings?.enabled && bundleSettings?.promo_text ? bundleSettings.promo_text : undefined}
+              headline={liveBundleSettings?.headline || undefined}
+              promoText={liveBundleSettings?.enabled && liveBundleSettings?.promo_text ? liveBundleSettings.promo_text : undefined}
               disabled={!!disabled || isAdding}
             />
 
@@ -343,6 +420,17 @@ export default function ProductActions({
           optionsDisabled={!!disabled || isAdding}
         />
       </div>
+      {stickyTriggerRef && stickyPrice && (
+        <StickyCartBar
+          product={product}
+          price={stickyPrice}
+          originalPrice={stickyOriginalPrice}
+          onAddToCart={handleAddToCart}
+          isLoading={isAdding}
+          disabled={isAddToCartDisabled}
+          triggerRef={stickyTriggerRef}
+        />
+      )}
     </>
   )
 }

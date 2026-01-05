@@ -15,7 +15,6 @@ import PaymentIcons from "@modules/products/components/payment-icons"
 import BenefitsSection from "@modules/products/components/benefits-section"
 import FAQAccordion from "@modules/products/components/faq-accordion"
 import ReviewsSection from "@modules/products/components/reviews-section"
-import StickyCartBar from "@modules/products/components/sticky-cart-bar"
 import StarRating from "@modules/products/components/reviews-section/star-rating"
 
 // Types
@@ -121,6 +120,7 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
                   region={region}
                   bundles={bundles}
                   bundleSettings={bundleSettings}
+                  stickyTriggerRef={addToCartRef}
                 />
               </div>
 
@@ -224,12 +224,7 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
       </div>
 
       {/* Sticky Cart Bar */}
-      <StickyCartBarWrapper
-        product={product}
-        region={region}
-        bundles={bundles}
-        triggerRef={addToCartRef}
-      />
+      {/* Sticky cart is rendered inside ProductActions to stay in sync */}
     </>
   )
 }
@@ -330,99 +325,6 @@ function formatReviewDate(dateString: string): string {
   } catch {
     return ""
   }
-}
-
-/**
- * StickyCartBarWrapper - Client wrapper for sticky cart functionality
- */
-import { useState, useEffect, useMemo, RefObject } from "react"
-import { useParams } from "next/navigation"
-import { addToCart } from "@lib/data/cart"
-
-const StickyCartBarWrapper = ({
-  product,
-  region,
-  bundles,
-  triggerRef,
-}: {
-  product: HttpTypes.StoreProduct
-  region: HttpTypes.StoreRegion
-  bundles: Bundle[]
-  triggerRef: RefObject<HTMLDivElement | null>
-}) => {
-  const [isAdding, setIsAdding] = useState(false)
-  const params = useParams()
-  const countryCode =
-    typeof params?.countryCode === "string" ? params.countryCode : ""
-
-  // Get the first variant or bundle price for display
-  const price = useMemo(() => {
-    if (bundles.length > 0) {
-      const bundle = bundles[0]
-      return `$${(bundle.sale_price / 100).toFixed(2)}`
-    }
-    const variant = product.variants?.[0]
-    if (variant?.calculated_price?.calculated_amount) {
-      return `$${(variant.calculated_price.calculated_amount / 100).toFixed(2)}`
-    }
-    return ""
-  }, [bundles, product.variants])
-
-  const originalPrice = useMemo(() => {
-    if (bundles.length > 0) {
-      const bundle = bundles[0]
-      if (bundle.original_price > bundle.sale_price) {
-        return `$${(bundle.original_price / 100).toFixed(2)}`
-      }
-    }
-    return undefined
-  }, [bundles])
-
-  const handleAddToCart = async () => {
-    setIsAdding(true)
-    try {
-      if (!countryCode) {
-        throw new Error("Missing country code when adding to cart")
-      }
-      if (bundles.length > 0) {
-        // Add first bundle items
-        const bundle = bundles[0]
-        for (const item of bundle.items) {
-          if (item.variant_id) {
-            await addToCart({
-              variantId: item.variant_id,
-              quantity: item.quantity,
-              countryCode,
-            })
-          }
-        }
-      } else {
-        // Add first variant
-        const variant = product.variants?.[0]
-        if (variant?.id) {
-          await addToCart({
-            variantId: variant.id,
-            quantity: 1,
-            countryCode,
-          })
-        }
-      }
-    } catch (error) {
-      console.error("Error adding to cart:", error)
-    }
-    setIsAdding(false)
-  }
-
-  return (
-    <StickyCartBar
-      product={product}
-      price={price}
-      originalPrice={originalPrice}
-      onAddToCart={handleAddToCart}
-      isLoading={isAdding}
-      triggerRef={triggerRef}
-    />
-  )
 }
 
 export default ProductTemplate

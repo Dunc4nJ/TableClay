@@ -18,6 +18,17 @@ The Table Clay storefront is a Next.js 15 application with custom components for
 
 ---
 
+## Local Development Notes
+
+- If `yarn dev` fails with `Cannot resolve '@floating-ui/react/utils'`, reinstall dependencies:
+
+```bash
+rm -rf table-clay-storefront/node_modules
+yarn install
+```
+
+---
+
 ## Design System
 
 ### Color Palette
