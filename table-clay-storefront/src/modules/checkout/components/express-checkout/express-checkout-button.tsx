@@ -74,6 +74,7 @@ const ExpressCheckoutButton: React.FC<ExpressCheckoutButtonProps> = ({
   const elements = useElements()
 
   const [isAvailable, setIsAvailable] = useState(false)
+  const [hasCheckedAvailability, setHasCheckedAvailability] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
 
@@ -93,6 +94,7 @@ const ExpressCheckoutButton: React.FC<ExpressCheckoutButtonProps> = ({
         availablePaymentMethods?.link
 
       setIsAvailable(!!hasExpressMethods)
+      setHasCheckedAvailability(true)
       onAvailabilityChange?.(!!hasExpressMethods)
 
       if (!hasExpressMethods) {
@@ -265,7 +267,7 @@ const ExpressCheckoutButton: React.FC<ExpressCheckoutButtonProps> = ({
   }
 
   // Hide if no express methods available (after onReady has been called)
-  if (!isAvailable && elements) {
+  if (hasCheckedAvailability && !isAvailable) {
     return null
   }
 
