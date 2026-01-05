@@ -56,7 +56,7 @@ export default function ProductActions({
   bundleSettings,
 }: ProductActionsProps) {
   const router = useRouter()
-  const pathname = usePathname()
+  const pathname = usePathname() ?? ""
   const searchParams = useSearchParams()
 
   const [options, setOptions] = useState<Record<string, string | undefined>>({})
@@ -64,7 +64,9 @@ export default function ProductActions({
   const [selectedBundle, setSelectedBundle] = useState<Bundle | null>(null)
   // Track selection mode: single item or bundle
   const [selectionMode, setSelectionMode] = useState<SelectionMode>("single")
-  const countryCode = useParams().countryCode as string
+  const params = useParams()
+  const countryCode =
+    typeof params?.countryCode === "string" ? params.countryCode : ""
 
   // Determine if we should show bundles (when available)
   const hasBundles = bundles.length > 0
@@ -127,7 +129,7 @@ export default function ProductActions({
   }, [product.variants, options])
 
   useEffect(() => {
-    const params = new URLSearchParams(searchParams.toString())
+    const params = new URLSearchParams(searchParams?.toString() ?? "")
     const value = isValidVariant ? selectedVariant?.id : null
 
     if (params.get("v_id") === value) {
@@ -140,7 +142,10 @@ export default function ProductActions({
       params.delete("v_id")
     }
 
-    router.replace(pathname + "?" + params.toString())
+    const target = pathname
+      ? pathname + "?" + params.toString()
+      : "?" + params.toString()
+    router.replace(target)
   }, [selectedVariant, isValidVariant])
 
   // check if the selected variant is in stock
@@ -176,6 +181,9 @@ export default function ProductActions({
     setIsAdding(true)
 
     try {
+      if (!countryCode) {
+        throw new Error("Missing country code when adding to cart")
+      }
       if (hasBundles && selectionMode === "bundle" && selectedBundle) {
         // Bundle flow: add all bundle items to cart
         for (const item of selectedBundle.items) {

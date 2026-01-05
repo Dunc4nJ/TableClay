@@ -13,7 +13,7 @@ export function Pagination({
   'data-testid'?: string
 }) {
   const router = useRouter()
-  const pathname = usePathname()
+  const pathname = usePathname() ?? ""
   const searchParams = useSearchParams()
 
   // Helper function to generate an array of numbers within a range
@@ -22,9 +22,12 @@ export function Pagination({
 
   // Function to handle page changes
   const handlePageChange = (newPage: number) => {
-    const params = new URLSearchParams(searchParams)
+    const params = new URLSearchParams(searchParams?.toString() ?? "")
     params.set("page", newPage.toString())
-    router.push(`${pathname}?${params.toString()}`)
+    const target = pathname
+      ? `${pathname}?${params.toString()}`
+      : `?${params.toString()}`
+    router.push(target)
   }
 
   // Function to render a page button

@@ -1,12 +1,11 @@
 "use client"
 
-import React, { Suspense, useRef } from "react"
+import React, { useRef } from "react"
 import { HttpTypes } from "@medusajs/types"
 import { notFound } from "next/navigation"
 
 import ImageGallery from "@modules/products/components/image-gallery"
 import ProductInfo from "@modules/products/templates/product-info"
-import ProductActionsWrapper from "./product-actions-wrapper"
 import ProductActions from "@modules/products/components/product-actions"
 import RelatedProducts from "@modules/products/components/related-products"
 
@@ -24,6 +23,7 @@ import type { Bundle } from "@lib/data/bundles"
 import type { Review, ProductReviewStats } from "@lib/data/reviews"
 import { DEFAULT_REVIEW_STATS } from "@lib/data/review-types"
 import type { FAQ } from "@lib/data/faqs"
+import type { BundlePromoSettings } from "@lib/data/settings"
 
 type ProductTemplateProps = {
   product: HttpTypes.StoreProduct
@@ -31,6 +31,7 @@ type ProductTemplateProps = {
   countryCode: string
   images: HttpTypes.StoreProductImage[]
   bundles?: Bundle[]
+  bundleSettings?: BundlePromoSettings
   reviews?: Review[]
   reviewStats?: ProductReviewStats | null
   faqs?: FAQ[]
@@ -68,6 +69,7 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
   countryCode,
   images,
   bundles = [],
+  bundleSettings,
   reviews = [],
   reviewStats,
   faqs = [],
@@ -114,22 +116,12 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
 
               {/* Product Actions (Bundles/Variants + Add to Cart) */}
               <div ref={addToCartRef} className="order-2 lg:order-none">
-                <Suspense
-                  fallback={
-                    <ProductActions
-                      disabled={true}
-                      product={product}
-                      region={region}
-                      bundles={bundles}
-                    />
-                  }
-                >
-                  <ProductActionsWrapper
-                    id={product.id}
-                    region={region}
-                    bundles={bundles}
-                  />
-                </Suspense>
+                <ProductActions
+                  product={product}
+                  region={region}
+                  bundles={bundles}
+                  bundleSettings={bundleSettings}
+                />
               </div>
 
               {/* Artisan messaging - Elegant badge */}
@@ -359,7 +351,9 @@ const StickyCartBarWrapper = ({
   triggerRef: RefObject<HTMLDivElement | null>
 }) => {
   const [isAdding, setIsAdding] = useState(false)
-  const countryCode = useParams().countryCode as string
+  const params = useParams()
+  const countryCode =
+    typeof params?.countryCode === "string" ? params.countryCode : ""
 
   // Get the first variant or bundle price for display
   const price = useMemo(() => {
@@ -387,6 +381,9 @@ const StickyCartBarWrapper = ({
   const handleAddToCart = async () => {
     setIsAdding(true)
     try {
+      if (!countryCode) {
+        throw new Error("Missing country code when adding to cart")
+      }
       if (bundles.length > 0) {
         // Add first bundle items
         const bundle = bundles[0]

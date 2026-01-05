@@ -23,9 +23,9 @@ const Addresses = ({
 }) => {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const pathname = usePathname()
+  const pathname = usePathname() ?? ""
 
-  const isOpen = searchParams.get("step") === "address"
+  const isOpen = searchParams?.get("step") === "address"
 
   const { state: sameAsBilling, toggle: toggleSameAsBilling } = useToggleState(
     cart?.shipping_address && cart?.billing_address
@@ -34,7 +34,8 @@ const Addresses = ({
   )
 
   const handleEdit = () => {
-    router.push(pathname + "?step=address")
+    const target = pathname ? `${pathname}?step=address` : "?step=address"
+    router.push(target)
   }
 
   const [message, formAction] = useActionState(setAddresses, null)

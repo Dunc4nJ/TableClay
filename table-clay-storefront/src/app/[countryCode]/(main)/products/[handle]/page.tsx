@@ -5,6 +5,7 @@ import { getRegion, listRegions } from "@lib/data/regions"
 import { getBundlesForProduct } from "@lib/data/bundles"
 import { getProductReviews } from "@lib/data/reviews"
 import { getProductFAQs } from "@lib/data/faqs"
+import { getStoreSettings } from "@lib/data/settings"
 import ProductTemplate from "@modules/products/templates"
 import { HttpTypes } from "@medusajs/types"
 
@@ -123,11 +124,12 @@ export default async function ProductPage(props: Props) {
 
   const images = getImagesForVariant(pricedProduct, selectedVariantId) || []
 
-  // Fetch bundles, reviews, and FAQs in parallel
-  const [bundles, reviewData, faqs] = await Promise.all([
+  // Fetch bundles, reviews, FAQs, and store settings in parallel
+  const [bundles, reviewData, faqs, bundleSettings] = await Promise.all([
     getBundlesForProduct(pricedProduct.id),
     getProductReviews(pricedProduct.id),
     getProductFAQs(pricedProduct.id),
+    getStoreSettings(),
   ])
 
   return (
@@ -137,6 +139,7 @@ export default async function ProductPage(props: Props) {
       countryCode={params.countryCode}
       images={images as HttpTypes.StoreProductImage[]}
       bundles={bundles}
+      bundleSettings={bundleSettings}
       reviews={reviewData.reviews}
       reviewStats={reviewData.stats}
       faqs={faqs}

@@ -63,7 +63,7 @@ const CartDropdown = ({
     }
   }, [activeTimer])
 
-  const pathname = usePathname()
+  const pathname = usePathname() ?? ""
 
   // open cart dropdown when modifying the cart items, but only if we're not on the cart page
   useEffect(() => {

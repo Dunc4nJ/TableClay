@@ -8,7 +8,7 @@ import { useSearchParams } from "next/navigation"
 const Review = ({ cart }: { cart: any }) => {
   const searchParams = useSearchParams()
 
-  const isOpen = searchParams.get("step") === "review"
+  const isOpen = searchParams?.get("step") === "review"
 
   const paidByGiftcard =
     cart?.gift_cards && cart?.gift_cards?.length > 0 && cart?.total === 0

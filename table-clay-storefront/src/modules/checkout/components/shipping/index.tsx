@@ -72,9 +72,9 @@ const Shipping: React.FC<ShippingProps> = ({
 
   const searchParams = useSearchParams()
   const router = useRouter()
-  const pathname = usePathname()
+  const pathname = usePathname() ?? ""
 
-  const isOpen = searchParams.get("step") === "delivery"
+  const isOpen = searchParams?.get("step") === "delivery"
 
   const _shippingMethods = availableShippingMethods?.filter(
     (sm) => sm.service_zone?.fulfillment_set?.type !== "pickup"
@@ -113,7 +113,8 @@ const Shipping: React.FC<ShippingProps> = ({
   }, [availableShippingMethods])
 
   const handleEdit = () => {
-    router.push(pathname + "?step=delivery", { scroll: false })
+    const target = pathname ? `${pathname}?step=delivery` : "?step=delivery"
+    router.push(target, { scroll: false })
   }
 
   const handleSubmit = async () => {
@@ -131,7 +132,8 @@ const Shipping: React.FC<ShippingProps> = ({
     }
 
     // Navigate to payment step and refresh to get updated cart with payment session
-    router.push(pathname + "?step=payment", { scroll: false })
+    const target = pathname ? `${pathname}?step=payment` : "?step=payment"
+    router.push(target, { scroll: false })
     router.refresh()
   }
 

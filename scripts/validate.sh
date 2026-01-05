@@ -44,6 +44,10 @@ validate_frontend() {
     log_step "TypeScript compilation..."
     npx tsc --noEmit && log_pass "TypeScript OK" || log_fail "TypeScript errors"
 
+    # Clean Next.js build cache to avoid stale artifacts
+    log_step "Cleaning Next.js build cache..."
+    rm -rf .next
+
     # Build check (also runs linting)
     log_step "Build check..."
     yarn build && log_pass "Build OK" || log_fail "Build failed"

@@ -34,9 +34,9 @@ const Payment = ({
 
   const searchParams = useSearchParams()
   const router = useRouter()
-  const pathname = usePathname()
+  const pathname = usePathname() ?? ""
 
-  const isOpen = searchParams.get("step") === "payment"
+  const isOpen = searchParams?.get("step") === "payment"
 
   const setPaymentMethod = async (method: string) => {
     setError(null)
@@ -56,7 +56,7 @@ const Payment = ({
 
   const createQueryString = useCallback(
     (name: string, value: string) => {
-      const params = new URLSearchParams(searchParams)
+      const params = new URLSearchParams(searchParams?.toString() ?? "")
       params.set(name, value)
 
       return params.toString()
@@ -65,7 +65,10 @@ const Payment = ({
   )
 
   const handleEdit = () => {
-    router.push(pathname + "?" + createQueryString("step", "payment"), {
+    const target = pathname
+      ? pathname + "?" + createQueryString("step", "payment")
+      : "?" + createQueryString("step", "payment")
+    router.push(target, {
       scroll: false,
     })
   }
@@ -86,12 +89,10 @@ const Payment = ({
       }
 
       if (!shouldInputCard) {
-        return router.push(
-          pathname + "?" + createQueryString("step", "review"),
-          {
-            scroll: false,
-          }
-        )
+        const target = pathname
+          ? pathname + "?" + createQueryString("step", "review")
+          : "?" + createQueryString("step", "review")
+        return router.push(target, { scroll: false })
       }
     } catch (err: any) {
       setError(err.message)

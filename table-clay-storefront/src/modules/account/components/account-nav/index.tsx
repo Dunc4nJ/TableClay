@@ -17,17 +17,20 @@ const AccountNav = ({
 }: {
   customer: HttpTypes.StoreCustomer | null
 }) => {
-  const route = usePathname()
-  const { countryCode } = useParams() as { countryCode: string }
+  const route = usePathname() ?? ""
+  const params = useParams()
+  const countryCode =
+    typeof params?.countryCode === "string" ? params.countryCode : ""
+  const accountRoot = countryCode ? `/${countryCode}/account` : "/account"
 
   const handleLogout = async () => {
-    await signout(countryCode)
+    await signout(countryCode || undefined)
   }
 
   return (
     <div>
       <div className="small:hidden" data-testid="mobile-account-nav">
-        {route !== `/${countryCode}/account` ? (
+        {route !== accountRoot ? (
           <LocalizedClientLink
             href="/account"
             className="flex items-center gap-x-2 text-small-regular py-2"
@@ -117,7 +120,7 @@ const AccountNav = ({
               <li>
                 <AccountNavLink
                   href="/account"
-                  route={route!}
+                  route={route}
                   data-testid="overview-link"
                 >
                   Overview
@@ -126,7 +129,7 @@ const AccountNav = ({
               <li>
                 <AccountNavLink
                   href="/account/profile"
-                  route={route!}
+                  route={route}
                   data-testid="profile-link"
                 >
                   Profile
@@ -135,7 +138,7 @@ const AccountNav = ({
               <li>
                 <AccountNavLink
                   href="/account/addresses"
-                  route={route!}
+                  route={route}
                   data-testid="addresses-link"
                 >
                   Addresses
@@ -144,7 +147,7 @@ const AccountNav = ({
               <li>
                 <AccountNavLink
                   href="/account/orders"
-                  route={route!}
+                  route={route}
                   data-testid="orders-link"
                 >
                   Orders
@@ -180,9 +183,13 @@ const AccountNavLink = ({
   children,
   "data-testid": dataTestId,
 }: AccountNavLinkProps) => {
-  const { countryCode }: { countryCode: string } = useParams()
+  const params = useParams()
+  const countryCode =
+    typeof params?.countryCode === "string" ? params.countryCode : ""
 
-  const active = route.split(countryCode)[1] === href
+  const active = countryCode
+    ? route.split(countryCode)[1] === href
+    : route.endsWith(href)
   return (
     <LocalizedClientLink
       href={href}
