@@ -4,6 +4,9 @@ import { useState, useCallback, useRef, useEffect } from "react"
 import { debounce } from "lodash"
 import { MagnifyingGlass } from "@medusajs/icons"
 
+const PUBLISHABLE_KEY =
+  process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || ""
+
 interface AddressSuggestion {
   place_id: string
   description: string
@@ -67,7 +70,12 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
     setIsLoading(true)
     try {
       const response = await fetch(
-        `${BACKEND_URL}/store/address-autocomplete?input=${encodeURIComponent(input)}`
+        `${BACKEND_URL}/store/address-autocomplete?input=${encodeURIComponent(input)}`,
+        {
+          headers: {
+            "x-publishable-api-key": PUBLISHABLE_KEY,
+          },
+        }
       )
       const data = await response.json()
 
@@ -98,7 +106,12 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
 
     try {
       const response = await fetch(
-        `${BACKEND_URL}/store/address-autocomplete/details?place_id=${encodeURIComponent(suggestion.place_id)}`
+        `${BACKEND_URL}/store/address-autocomplete/details?place_id=${encodeURIComponent(suggestion.place_id)}`,
+        {
+          headers: {
+            "x-publishable-api-key": PUBLISHABLE_KEY,
+          },
+        }
       )
       const data = await response.json()
 
