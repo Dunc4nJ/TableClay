@@ -173,9 +173,9 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
     }, 200)
   }
 
-  // Handle focus
+  // Handle focus - show dropdown if suggestions exist
   const handleFocus = () => {
-    if (suggestions.length > 0 && value.length >= 3) {
+    if (suggestions.length > 0) {
       setShowDropdown(true)
     }
   }
@@ -208,9 +208,24 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
 
   return (
     <div className="relative w-full">
+      {/* Static label above input */}
+      <label
+        htmlFor={name}
+        onClick={() => inputRef.current?.focus()}
+        className={`
+          block text-sm font-medium mb-1.5
+          ${hasError ? "text-rose-500" : "text-gray-700"}
+        `}
+      >
+        {label}
+        {required && <span className="text-rose-500 ml-0.5">*</span>}
+      </label>
+
+      {/* Input with search icon */}
       <div className="relative">
         <input
           ref={inputRef}
+          id={name}
           type="text"
           name={name}
           value={value}
@@ -220,30 +235,20 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
           onFocus={handleFocus}
           disabled={disabled}
           autoComplete="off"
-          placeholder=" "
+          placeholder="Start typing an address..."
           className={`
-            pt-4 pb-1 block w-full h-11 px-4 pr-10 mt-0
+            block w-full h-11 px-4 pr-10 py-2
             bg-ui-bg-field border rounded-md appearance-none
-            focus:outline-none focus:ring-0 focus:shadow-borders-interactive-with-active
+            text-ui-fg-base placeholder:text-gray-400
+            focus:outline-none focus:ring-2 focus:ring-tc-terracotta focus:border-tc-terracotta
             hover:bg-ui-bg-field-hover
-            ${hasError ? "border-red-500" : "border-ui-border-base"}
+            transition-colors duration-150
+            ${hasError ? "border-rose-500" : "border-ui-border-base"}
             ${disabled ? "opacity-50 cursor-not-allowed" : ""}
           `}
           data-testid={testId}
         />
-        <label
-          htmlFor={name}
-          onClick={() => inputRef.current?.focus()}
-          className={`
-            flex items-center justify-center mx-3 px-1
-            transition-all absolute duration-300 top-3 -z-1 origin-0
-            ${hasError ? "text-red-500" : "text-ui-fg-subtle"}
-          `}
-        >
-          {label}
-          {required && <span className="text-rose-500">*</span>}
-        </label>
-        {/* Search icon */}
+        {/* Search/loading icon */}
         <div className="absolute right-3 top-1/2 -translate-y-1/2 text-ui-fg-muted pointer-events-none">
           {isLoading ? (
             <div className="w-4 h-4 border-2 border-ui-fg-muted border-t-transparent rounded-full animate-spin" />
@@ -255,16 +260,16 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
 
       {/* Error message */}
       {hasError && (
-        <p className="mt-1 text-sm text-red-500">{error}</p>
+        <p className="mt-1 text-sm text-rose-500">{error}</p>
       )}
 
-      {/* Dropdown suggestions */}
+      {/* Dropdown suggestions - max 5 */}
       {showDropdown && suggestions.length > 0 && (
         <div
           ref={dropdownRef}
           className="absolute z-50 left-0 right-0 mt-1 bg-white border border-ui-border-base rounded-md shadow-lg max-h-60 overflow-y-auto"
         >
-          {suggestions.map((suggestion, index) => (
+          {suggestions.slice(0, 5).map((suggestion, index, arr) => (
             <button
               key={suggestion.place_id}
               type="button"
@@ -272,7 +277,7 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
               className={`
                 w-full px-4 py-3 text-left hover:bg-ui-bg-subtle transition-colors
                 ${index === selectedIndex ? "bg-ui-bg-subtle" : ""}
-                ${index !== suggestions.length - 1 ? "border-b border-ui-border-base" : ""}
+                ${index !== arr.length - 1 ? "border-b border-ui-border-base" : ""}
               `}
             >
               <div className="text-sm font-medium text-ui-fg-base">

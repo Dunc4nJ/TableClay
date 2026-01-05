@@ -16,6 +16,8 @@ import BillingAddress from "../billing_address"
 import ErrorMessage from "../error-message"
 import AddressSelect from "../address-select"
 import AddressAutocomplete from "../address-autocomplete"
+import StaticFormField from "../static-form-field"
+import StaticSelectField from "../static-select-field"
 import { Container } from "@medusajs/ui"
 import { mapKeys, debounce } from "lodash"
 import { useRouter } from "next/navigation"
@@ -375,74 +377,42 @@ const ContactDeliveryForm: React.FC<ContactDeliveryFormProps> = ({
   // Check if current country is US for state dropdown
   const isUS = formData["shipping_address.country_code"] === "us"
 
-  // Input component with error styling
-  const FormInput = ({
-    name,
-    label,
-    required = false,
-    type = "text",
-    autoComplete,
-    testId,
-  }: {
-    name: string
-    label: string
-    required?: boolean
-    type?: string
-    autoComplete?: string
-    testId?: string
-  }) => {
-    const shortName = name.replace("shipping_address.", "")
-    const error = touched[shortName as keyof TouchedFields]
+  // Helper to get error for a field
+  const getFieldError = (fieldName: string): string | undefined => {
+    const shortName = fieldName.replace("shipping_address.", "")
+    return touched[shortName as keyof TouchedFields]
       ? errors[shortName as keyof FormErrors]
       : undefined
-    const hasError = Boolean(error)
-
-    return (
-      <div className="w-full">
-        <div className="relative">
-          <input
-            type={type}
-            name={name}
-            value={formData[name] || ""}
-            onChange={handleChange}
-            onBlur={() => handleBlur(name)}
-            autoComplete={autoComplete}
-            placeholder=" "
-            className={`
-              pt-4 pb-1 block w-full h-11 px-4 mt-0
-              bg-ui-bg-field border rounded-md appearance-none
-              focus:outline-none focus:ring-0 focus:shadow-borders-interactive-with-active
-              hover:bg-ui-bg-field-hover
-              ${hasError ? "border-red-500" : "border-ui-border-base"}
-            `}
-            data-testid={testId}
-          />
-          <label
-            htmlFor={name}
-            className={`
-              flex items-center justify-center mx-3 px-1
-              transition-all absolute duration-300 top-3 -z-1 origin-0
-              ${hasError ? "text-red-500" : "text-ui-fg-subtle"}
-            `}
-          >
-            {label}
-            {required && <span className="text-rose-500">*</span>}
-          </label>
-        </div>
-        {hasError && <p className="mt-1 text-sm text-red-500">{error}</p>}
-      </div>
-    )
   }
+
+  // Helper to check if field is touched
+  const isFieldTouched = (fieldName: string): boolean => {
+    const shortName = fieldName.replace("shipping_address.", "")
+    return Boolean(touched[shortName as keyof TouchedFields])
+  }
+
+  // Country options from region
+  const countryOptions = (cart?.region?.countries || [])
+    .filter((country) => country.iso_2 && country.display_name)
+    .map((country) => ({
+      value: country.iso_2!,
+      label: country.display_name!,
+    }))
 
   return (
     <form action={formAction}>
-      {/* Email at top */}
+      {/* Email */}
       <div className="mb-4">
-        <FormInput
+        <StaticFormField
           name="email"
           label="Email"
           type="email"
+          value={formData.email || ""}
+          onChange={handleChange}
+          onBlur={() => handleBlur("email")}
           required
+          error={getFieldError("email")}
+          touched={isFieldTouched("email")}
           autoComplete="email"
           testId="contact-email-input"
         />
@@ -450,46 +420,16 @@ const ContactDeliveryForm: React.FC<ContactDeliveryFormProps> = ({
 
       {/* Country/Region Dropdown */}
       <div className="mb-4">
-        <div className="relative">
-          <select
-            name="shipping_address.country_code"
-            value={formData["shipping_address.country_code"]}
-            onChange={handleChange}
-            onBlur={() => handleBlur("shipping_address.country_code")}
-            className="
-              pt-4 pb-1 block w-full h-11 px-4 mt-0
-              bg-ui-bg-field border border-ui-border-base rounded-md appearance-none
-              focus:outline-none focus:ring-0 focus:shadow-borders-interactive-with-active
-              hover:bg-ui-bg-field-hover cursor-pointer
-            "
-            data-testid="shipping-country-select"
-          >
-            {cart?.region?.countries?.map((country) => (
-              <option key={country.iso_2} value={country.iso_2}>
-                {country.display_name}
-              </option>
-            ))}
-          </select>
-          <label className="flex items-center justify-center mx-3 px-1 transition-all absolute duration-300 top-3 -z-1 origin-0 text-ui-fg-subtle">
-            Country/Region
-          </label>
-          {/* Dropdown arrow */}
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-            <svg
-              className="w-4 h-4 text-ui-fg-muted"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
-          </div>
-        </div>
+        <StaticSelectField
+          name="shipping_address.country_code"
+          label="Country/Region"
+          value={formData["shipping_address.country_code"] || "us"}
+          onChange={handleChange}
+          onBlur={() => handleBlur("shipping_address.country_code")}
+          options={countryOptions}
+          required
+          testId="shipping-country-select"
+        />
       </div>
 
       {/* Saved Addresses Selector */}
@@ -512,17 +452,27 @@ const ContactDeliveryForm: React.FC<ContactDeliveryFormProps> = ({
 
       {/* First name / Last name - side by side */}
       <div className="grid grid-cols-2 gap-4 mb-4">
-        <FormInput
+        <StaticFormField
           name="shipping_address.first_name"
           label="First name"
+          value={formData["shipping_address.first_name"] || ""}
+          onChange={handleChange}
+          onBlur={() => handleBlur("shipping_address.first_name")}
           required
+          error={getFieldError("shipping_address.first_name")}
+          touched={isFieldTouched("shipping_address.first_name")}
           autoComplete="given-name"
           testId="shipping-first-name-input"
         />
-        <FormInput
+        <StaticFormField
           name="shipping_address.last_name"
           label="Last name"
+          value={formData["shipping_address.last_name"] || ""}
+          onChange={handleChange}
+          onBlur={() => handleBlur("shipping_address.last_name")}
           required
+          error={getFieldError("shipping_address.last_name")}
+          touched={isFieldTouched("shipping_address.last_name")}
           autoComplete="family-name"
           testId="shipping-last-name-input"
         />
@@ -550,11 +500,13 @@ const ContactDeliveryForm: React.FC<ContactDeliveryFormProps> = ({
         />
       </div>
 
-      {/* Apartment, suite, etc. */}
+      {/* Apartment, suite, etc. (optional) */}
       <div className="mb-4">
-        <FormInput
+        <StaticFormField
           name="shipping_address.company"
           label="Apartment, suite, etc. (optional)"
+          value={formData["shipping_address.company"] || ""}
+          onChange={handleChange}
           autoComplete="address-line2"
           testId="shipping-company-input"
         />
@@ -563,90 +515,59 @@ const ContactDeliveryForm: React.FC<ContactDeliveryFormProps> = ({
       {/* City / State / ZIP - three columns */}
       <div className="grid grid-cols-3 gap-4 mb-4">
         {/* City */}
-        <FormInput
+        <StaticFormField
           name="shipping_address.city"
           label="City"
+          value={formData["shipping_address.city"] || ""}
+          onChange={handleChange}
+          onBlur={() => handleBlur("shipping_address.city")}
           required
+          error={getFieldError("shipping_address.city")}
+          touched={isFieldTouched("shipping_address.city")}
           autoComplete="address-level2"
           testId="shipping-city-input"
         />
 
         {/* State - Dropdown for US, text input for others */}
         {isUS ? (
-          <div className="w-full">
-            <div className="relative">
-              <select
-                name="shipping_address.province"
-                value={formData["shipping_address.province"]}
-                onChange={handleChange}
-                onBlur={() => handleBlur("shipping_address.province")}
-                className={`
-                  pt-4 pb-1 block w-full h-11 px-4 mt-0
-                  bg-ui-bg-field border rounded-md appearance-none
-                  focus:outline-none focus:ring-0 focus:shadow-borders-interactive-with-active
-                  hover:bg-ui-bg-field-hover cursor-pointer
-                  ${
-                    touched.province && errors.province
-                      ? "border-red-500"
-                      : "border-ui-border-base"
-                  }
-                `}
-                data-testid="shipping-province-input"
-              >
-                <option value="">Select state</option>
-                {US_STATES.map((state) => (
-                  <option key={state.value} value={state.value}>
-                    {state.label}
-                  </option>
-                ))}
-              </select>
-              <label
-                className={`
-                  flex items-center justify-center mx-3 px-1
-                  transition-all absolute duration-300 top-3 -z-1 origin-0
-                  ${
-                    touched.province && errors.province
-                      ? "text-red-500"
-                      : "text-ui-fg-subtle"
-                  }
-                `}
-              >
-                State<span className="text-rose-500">*</span>
-              </label>
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                <svg
-                  className="w-4 h-4 text-ui-fg-muted"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 9l-7 7-7-7"
-                  />
-                </svg>
-              </div>
-            </div>
-            {touched.province && errors.province && (
-              <p className="mt-1 text-sm text-red-500">{errors.province}</p>
-            )}
-          </div>
+          <StaticSelectField
+            name="shipping_address.province"
+            label="State"
+            value={formData["shipping_address.province"] || ""}
+            onChange={handleChange}
+            onBlur={() => handleBlur("shipping_address.province")}
+            options={US_STATES}
+            required
+            error={getFieldError("shipping_address.province")}
+            touched={isFieldTouched("shipping_address.province")}
+            placeholder="Select state"
+            testId="shipping-province-input"
+          />
         ) : (
-          <FormInput
+          <StaticFormField
             name="shipping_address.province"
             label="State / Province"
+            value={formData["shipping_address.province"] || ""}
+            onChange={handleChange}
+            onBlur={() => handleBlur("shipping_address.province")}
+            required
+            error={getFieldError("shipping_address.province")}
+            touched={isFieldTouched("shipping_address.province")}
             autoComplete="address-level1"
             testId="shipping-province-input"
           />
         )}
 
-        {/* ZIP Code */}
-        <FormInput
+        {/* ZIP/Postal Code */}
+        <StaticFormField
           name="shipping_address.postal_code"
           label="ZIP code"
+          value={formData["shipping_address.postal_code"] || ""}
+          onChange={handleChange}
+          onBlur={() => handleBlur("shipping_address.postal_code")}
           required
+          error={getFieldError("shipping_address.postal_code")}
+          touched={isFieldTouched("shipping_address.postal_code")}
           autoComplete="postal-code"
           testId="shipping-postal-code-input"
         />
@@ -654,10 +575,15 @@ const ContactDeliveryForm: React.FC<ContactDeliveryFormProps> = ({
 
       {/* Phone (optional) */}
       <div className="mb-4">
-        <FormInput
+        <StaticFormField
           name="shipping_address.phone"
           label="Phone (optional)"
           type="tel"
+          value={formData["shipping_address.phone"] || ""}
+          onChange={handleChange}
+          onBlur={() => handleBlur("shipping_address.phone")}
+          error={getFieldError("shipping_address.phone")}
+          touched={isFieldTouched("shipping_address.phone")}
           autoComplete="tel"
           testId="shipping-phone-input"
         />

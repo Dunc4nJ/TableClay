@@ -50,7 +50,7 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
       body: JSON.stringify({
         input,
         includedPrimaryTypes: ["street_address", "premise", "subpremise", "route"],
-        includedRegionCodes: ["us"], // Restrict to US addresses
+        // No region restriction - supports international addresses
       }),
     })
 
