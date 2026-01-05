@@ -284,7 +284,6 @@ const ExpressCheckoutButton: React.FC<ExpressCheckoutButtonProps> = ({
     layout: {
       maxColumns: 3,
       maxRows: 1,
-      overflow: "never",
     },
     paymentMethods: {
       applePay: "auto",
