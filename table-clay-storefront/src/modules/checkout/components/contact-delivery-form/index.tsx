@@ -4,20 +4,102 @@ import { setAddresses, updateCartSilent } from "@lib/data/cart"
 import compareAddresses from "@lib/util/compare-addresses"
 import { HttpTypes } from "@medusajs/types"
 import { useToggleState } from "@medusajs/ui"
-import { useActionState, useEffect, useState, useTransition, useRef, useCallback } from "react"
+import {
+  useActionState,
+  useEffect,
+  useState,
+  useTransition,
+  useRef,
+  useCallback,
+} from "react"
 import BillingAddress from "../billing_address"
 import ErrorMessage from "../error-message"
-import Input from "@modules/common/components/input"
-import Checkbox from "@modules/common/components/checkbox"
-import CountrySelect from "../country-select"
 import AddressSelect from "../address-select"
+import AddressAutocomplete from "../address-autocomplete"
 import { Container } from "@medusajs/ui"
 import { mapKeys, debounce } from "lodash"
 import { useRouter } from "next/navigation"
 
+// US State options for dropdown
+const US_STATES = [
+  { value: "AL", label: "Alabama" },
+  { value: "AK", label: "Alaska" },
+  { value: "AZ", label: "Arizona" },
+  { value: "AR", label: "Arkansas" },
+  { value: "CA", label: "California" },
+  { value: "CO", label: "Colorado" },
+  { value: "CT", label: "Connecticut" },
+  { value: "DE", label: "Delaware" },
+  { value: "FL", label: "Florida" },
+  { value: "GA", label: "Georgia" },
+  { value: "HI", label: "Hawaii" },
+  { value: "ID", label: "Idaho" },
+  { value: "IL", label: "Illinois" },
+  { value: "IN", label: "Indiana" },
+  { value: "IA", label: "Iowa" },
+  { value: "KS", label: "Kansas" },
+  { value: "KY", label: "Kentucky" },
+  { value: "LA", label: "Louisiana" },
+  { value: "ME", label: "Maine" },
+  { value: "MD", label: "Maryland" },
+  { value: "MA", label: "Massachusetts" },
+  { value: "MI", label: "Michigan" },
+  { value: "MN", label: "Minnesota" },
+  { value: "MS", label: "Mississippi" },
+  { value: "MO", label: "Missouri" },
+  { value: "MT", label: "Montana" },
+  { value: "NE", label: "Nebraska" },
+  { value: "NV", label: "Nevada" },
+  { value: "NH", label: "New Hampshire" },
+  { value: "NJ", label: "New Jersey" },
+  { value: "NM", label: "New Mexico" },
+  { value: "NY", label: "New York" },
+  { value: "NC", label: "North Carolina" },
+  { value: "ND", label: "North Dakota" },
+  { value: "OH", label: "Ohio" },
+  { value: "OK", label: "Oklahoma" },
+  { value: "OR", label: "Oregon" },
+  { value: "PA", label: "Pennsylvania" },
+  { value: "RI", label: "Rhode Island" },
+  { value: "SC", label: "South Carolina" },
+  { value: "SD", label: "South Dakota" },
+  { value: "TN", label: "Tennessee" },
+  { value: "TX", label: "Texas" },
+  { value: "UT", label: "Utah" },
+  { value: "VT", label: "Vermont" },
+  { value: "VA", label: "Virginia" },
+  { value: "WA", label: "Washington" },
+  { value: "WV", label: "West Virginia" },
+  { value: "WI", label: "Wisconsin" },
+  { value: "WY", label: "Wyoming" },
+  { value: "DC", label: "District of Columbia" },
+]
+
 interface ContactDeliveryFormProps {
   cart: HttpTypes.StoreCart | null
   customer: HttpTypes.StoreCustomer | null
+}
+
+interface FormErrors {
+  email?: string
+  first_name?: string
+  last_name?: string
+  address_1?: string
+  city?: string
+  province?: string
+  postal_code?: string
+  phone?: string
+}
+
+interface TouchedFields {
+  email?: boolean
+  first_name?: boolean
+  last_name?: boolean
+  address_1?: boolean
+  city?: boolean
+  province?: boolean
+  postal_code?: boolean
+  phone?: boolean
 }
 
 const ContactDeliveryForm: React.FC<ContactDeliveryFormProps> = ({
@@ -41,14 +123,92 @@ const ContactDeliveryForm: React.FC<ContactDeliveryFormProps> = ({
     "shipping_address.postal_code": cart?.shipping_address?.postal_code || "",
     "shipping_address.city": cart?.shipping_address?.city || "",
     "shipping_address.country_code":
-      cart?.shipping_address?.country_code || "",
+      cart?.shipping_address?.country_code || "us",
     "shipping_address.province": cart?.shipping_address?.province || "",
     "shipping_address.phone": cart?.shipping_address?.phone || "",
   })
 
+  const [errors, setErrors] = useState<FormErrors>({})
+  const [touched, setTouched] = useState<TouchedFields>({})
+
   const [message, formAction] = useActionState(setAddresses, null)
   const [isSavingAddress, setIsSavingAddress] = useState(false)
   const lastSavedAddressRef = useRef<string>("")
+
+  // Validation functions
+  const validateEmail = (email: string): string | undefined => {
+    if (!email) return "Email is required"
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) return "Please enter a valid email address"
+    return undefined
+  }
+
+  const validateRequired = (
+    value: string,
+    fieldName: string
+  ): string | undefined => {
+    if (!value || !value.trim()) return `${fieldName} is required`
+    return undefined
+  }
+
+  const validatePostalCode = (
+    postalCode: string,
+    countryCode: string
+  ): string | undefined => {
+    if (!postalCode) return "ZIP code is required"
+    if (countryCode === "us") {
+      const usZipRegex = /^\d{5}(-\d{4})?$/
+      if (!usZipRegex.test(postalCode)) return "Please enter a valid ZIP code"
+    }
+    return undefined
+  }
+
+  const validatePhone = (phone: string): string | undefined => {
+    if (!phone) return undefined // Phone is optional
+    // Basic phone validation - allows various formats
+    const phoneRegex = /^[\d\s\-\(\)\+\.]{7,20}$/
+    if (!phoneRegex.test(phone)) return "Please enter a valid phone number"
+    return undefined
+  }
+
+  // Validate a single field
+  const validateField = (name: string, value: string): string | undefined => {
+    switch (name) {
+      case "email":
+        return validateEmail(value)
+      case "shipping_address.first_name":
+        return validateRequired(value, "First name")
+      case "shipping_address.last_name":
+        return validateRequired(value, "Last name")
+      case "shipping_address.address_1":
+        return validateRequired(value, "Address")
+      case "shipping_address.city":
+        return validateRequired(value, "City")
+      case "shipping_address.province":
+        return validateRequired(value, "State")
+      case "shipping_address.postal_code":
+        return validatePostalCode(
+          value,
+          formData["shipping_address.country_code"]
+        )
+      case "shipping_address.phone":
+        return validatePhone(value)
+      default:
+        return undefined
+    }
+  }
+
+  // Handle blur - validate field
+  const handleBlur = (fieldName: string) => {
+    const shortName = fieldName.replace("shipping_address.", "")
+    setTouched((prev) => ({ ...prev, [shortName]: true }))
+
+    const error = validateField(fieldName, formData[fieldName] || "")
+    setErrors((prev) => ({
+      ...prev,
+      [shortName]: error,
+    }))
+  }
 
   // Check if minimum required address fields are filled for shipping lookup
   const hasMinimumAddressFields = useCallback((data: Record<string, any>) => {
@@ -61,13 +221,11 @@ const ContactDeliveryForm: React.FC<ContactDeliveryFormProps> = ({
   }, [])
 
   // Debounced function to save shipping address to cart
-  // Uses updateCartSilent to avoid automatic revalidation, then manually refreshes
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const debouncedSaveAddress = useCallback(
     debounce(async (data: Record<string, any>) => {
       if (!cart?.id || !hasMinimumAddressFields(data)) return
 
-      // Create a hash of current address to check if it changed
       const addressHash = JSON.stringify({
         address_1: data["shipping_address.address_1"],
         city: data["shipping_address.city"],
@@ -76,7 +234,6 @@ const ContactDeliveryForm: React.FC<ContactDeliveryFormProps> = ({
         province: data["shipping_address.province"],
       })
 
-      // Skip if address hasn't changed
       if (addressHash === lastSavedAddressRef.current) return
       lastSavedAddressRef.current = addressHash
 
@@ -97,10 +254,12 @@ const ContactDeliveryForm: React.FC<ContactDeliveryFormProps> = ({
             phone: data["shipping_address.phone"] || "",
           },
         })
-        // Trigger client-side refresh to fetch updated cart with shipping address
         router.refresh()
       } catch (error) {
-        console.error("[ContactDeliveryForm] Failed to auto-save address:", error)
+        console.error(
+          "[ContactDeliveryForm] Failed to auto-save address:",
+          error
+        )
       } finally {
         setIsSavingAddress(false)
       }
@@ -113,7 +272,6 @@ const ContactDeliveryForm: React.FC<ContactDeliveryFormProps> = ({
     if (hasMinimumAddressFields(formData)) {
       debouncedSaveAddress(formData)
     }
-    // Cleanup debounce on unmount
     return () => {
       debouncedSaveAddress.cancel()
     }
@@ -131,9 +289,48 @@ const ContactDeliveryForm: React.FC<ContactDeliveryFormProps> = ({
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
+    const { name, value } = e.target
     setFormData((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value,
+      [name]: value,
+    }))
+
+    // Clear error if user starts typing
+    const shortName = name.replace("shipping_address.", "")
+    if (errors[shortName as keyof FormErrors]) {
+      setErrors((prev) => ({
+        ...prev,
+        [shortName]: undefined,
+      }))
+    }
+  }
+
+  // Handle address autocomplete selection
+  const handleAddressSelect = (address: {
+    address_1: string
+    address_2: string
+    city: string
+    state: string
+    postal_code: string
+    country_code: string
+  }) => {
+    setFormData((prev) => ({
+      ...prev,
+      "shipping_address.address_1": address.address_1,
+      "shipping_address.company": address.address_2 || prev["shipping_address.company"],
+      "shipping_address.city": address.city,
+      "shipping_address.province": address.state,
+      "shipping_address.postal_code": address.postal_code,
+      "shipping_address.country_code": address.country_code || "us",
+    }))
+
+    // Clear errors for auto-filled fields
+    setErrors((prev) => ({
+      ...prev,
+      address_1: undefined,
+      city: undefined,
+      province: undefined,
+      postal_code: undefined,
     }))
   }
 
@@ -150,7 +347,7 @@ const ContactDeliveryForm: React.FC<ContactDeliveryFormProps> = ({
         "shipping_address.company": address?.company || "",
         "shipping_address.postal_code": address?.postal_code || "",
         "shipping_address.city": address?.city || "",
-        "shipping_address.country_code": address?.country_code || "",
+        "shipping_address.country_code": address?.country_code || "us",
         "shipping_address.province": address?.province || "",
         "shipping_address.phone": address?.phone || "",
       }))
@@ -175,25 +372,129 @@ const ContactDeliveryForm: React.FC<ContactDeliveryFormProps> = ({
     }
   }, [cart?.id])
 
+  // Check if current country is US for state dropdown
+  const isUS = formData["shipping_address.country_code"] === "us"
+
+  // Input component with error styling
+  const FormInput = ({
+    name,
+    label,
+    required = false,
+    type = "text",
+    autoComplete,
+    testId,
+  }: {
+    name: string
+    label: string
+    required?: boolean
+    type?: string
+    autoComplete?: string
+    testId?: string
+  }) => {
+    const shortName = name.replace("shipping_address.", "")
+    const error = touched[shortName as keyof TouchedFields]
+      ? errors[shortName as keyof FormErrors]
+      : undefined
+    const hasError = Boolean(error)
+
+    return (
+      <div className="w-full">
+        <div className="relative">
+          <input
+            type={type}
+            name={name}
+            value={formData[name] || ""}
+            onChange={handleChange}
+            onBlur={() => handleBlur(name)}
+            autoComplete={autoComplete}
+            placeholder=" "
+            className={`
+              pt-4 pb-1 block w-full h-11 px-4 mt-0
+              bg-ui-bg-field border rounded-md appearance-none
+              focus:outline-none focus:ring-0 focus:shadow-borders-interactive-with-active
+              hover:bg-ui-bg-field-hover
+              ${hasError ? "border-red-500" : "border-ui-border-base"}
+            `}
+            data-testid={testId}
+          />
+          <label
+            htmlFor={name}
+            className={`
+              flex items-center justify-center mx-3 px-1
+              transition-all absolute duration-300 top-3 -z-1 origin-0
+              ${hasError ? "text-red-500" : "text-ui-fg-subtle"}
+            `}
+          >
+            {label}
+            {required && <span className="text-rose-500">*</span>}
+          </label>
+        </div>
+        {hasError && <p className="mt-1 text-sm text-red-500">{error}</p>}
+      </div>
+    )
+  }
+
   return (
     <form action={formAction}>
-      {/* Email/Contact at top */}
-      <div className="mb-6">
-        <Input
-          label="Email"
+      {/* Email at top */}
+      <div className="mb-4">
+        <FormInput
           name="email"
+          label="Email"
           type="email"
-          autoComplete="email"
-          value={formData.email}
-          onChange={handleChange}
           required
-          data-testid="contact-email-input"
+          autoComplete="email"
+          testId="contact-email-input"
         />
+      </div>
+
+      {/* Country/Region Dropdown */}
+      <div className="mb-4">
+        <div className="relative">
+          <select
+            name="shipping_address.country_code"
+            value={formData["shipping_address.country_code"]}
+            onChange={handleChange}
+            onBlur={() => handleBlur("shipping_address.country_code")}
+            className="
+              pt-4 pb-1 block w-full h-11 px-4 mt-0
+              bg-ui-bg-field border border-ui-border-base rounded-md appearance-none
+              focus:outline-none focus:ring-0 focus:shadow-borders-interactive-with-active
+              hover:bg-ui-bg-field-hover cursor-pointer
+            "
+            data-testid="shipping-country-select"
+          >
+            {cart?.region?.countries?.map((country) => (
+              <option key={country.iso_2} value={country.iso_2}>
+                {country.display_name}
+              </option>
+            ))}
+          </select>
+          <label className="flex items-center justify-center mx-3 px-1 transition-all absolute duration-300 top-3 -z-1 origin-0 text-ui-fg-subtle">
+            Country/Region
+          </label>
+          {/* Dropdown arrow */}
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+            <svg
+              className="w-4 h-4 text-ui-fg-muted"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 9l-7 7-7-7"
+              />
+            </svg>
+          </div>
+        </div>
       </div>
 
       {/* Saved Addresses Selector */}
       {customer && addressesInRegion.length > 0 && (
-        <Container className="mb-6 flex flex-col gap-y-4 p-5 bg-gray-50 rounded-lg">
+        <Container className="mb-4 flex flex-col gap-y-4 p-5 bg-gray-50 rounded-lg">
           <p className="text-sm text-gray-600">
             {`Hi ${customer.first_name}, would you like to use a saved address?`}
           </p>
@@ -209,112 +510,203 @@ const ContactDeliveryForm: React.FC<ContactDeliveryFormProps> = ({
         </Container>
       )}
 
-      {/* Delivery Address Fields */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <CountrySelect
-          name="shipping_address.country_code"
-          autoComplete="country"
-          region={cart?.region}
-          value={formData["shipping_address.country_code"]}
-          onChange={handleChange}
-          required
-          data-testid="shipping-country-select"
-        />
-        <div className="hidden sm:block"></div>
-
-        <Input
-          label="First name"
+      {/* First name / Last name - side by side */}
+      <div className="grid grid-cols-2 gap-4 mb-4">
+        <FormInput
           name="shipping_address.first_name"
+          label="First name"
+          required
           autoComplete="given-name"
-          value={formData["shipping_address.first_name"]}
-          onChange={handleChange}
-          required
-          data-testid="shipping-first-name-input"
+          testId="shipping-first-name-input"
         />
-        <Input
-          label="Last name"
+        <FormInput
           name="shipping_address.last_name"
+          label="Last name"
+          required
           autoComplete="family-name"
-          value={formData["shipping_address.last_name"]}
-          onChange={handleChange}
-          required
-          data-testid="shipping-last-name-input"
+          testId="shipping-last-name-input"
         />
+      </div>
 
-        <div className="sm:col-span-2">
-          <Input
-            label="Address"
-            name="shipping_address.address_1"
-            autoComplete="address-line1"
-            value={formData["shipping_address.address_1"]}
-            onChange={handleChange}
-            required
-            data-testid="shipping-address-input"
-          />
-        </div>
+      {/* Address with Google Places Autocomplete */}
+      <div className="mb-4">
+        <AddressAutocomplete
+          value={formData["shipping_address.address_1"] || ""}
+          onChange={(value) =>
+            setFormData((prev) => ({
+              ...prev,
+              "shipping_address.address_1": value,
+            }))
+          }
+          onAddressSelect={handleAddressSelect}
+          name="shipping_address.address_1"
+          label="Address"
+          required
+          error={
+            touched.address_1 ? errors.address_1 : undefined
+          }
+          onBlur={() => handleBlur("shipping_address.address_1")}
+          data-testid="shipping-address-input"
+        />
+      </div>
 
-        <div className="sm:col-span-2">
-          <Input
-            label="Apartment, suite, etc. (optional)"
-            name="shipping_address.company"
-            value={formData["shipping_address.company"]}
-            onChange={handleChange}
-            autoComplete="organization"
-            data-testid="shipping-company-input"
-          />
-        </div>
+      {/* Apartment, suite, etc. */}
+      <div className="mb-4">
+        <FormInput
+          name="shipping_address.company"
+          label="Apartment, suite, etc. (optional)"
+          autoComplete="address-line2"
+          testId="shipping-company-input"
+        />
+      </div>
 
-        <Input
-          label="City"
+      {/* City / State / ZIP - three columns */}
+      <div className="grid grid-cols-3 gap-4 mb-4">
+        {/* City */}
+        <FormInput
           name="shipping_address.city"
-          autoComplete="address-level2"
-          value={formData["shipping_address.city"]}
-          onChange={handleChange}
+          label="City"
           required
-          data-testid="shipping-city-input"
+          autoComplete="address-level2"
+          testId="shipping-city-input"
         />
 
-        <div className="grid grid-cols-2 gap-4">
-          <Input
-            label="State / Province"
+        {/* State - Dropdown for US, text input for others */}
+        {isUS ? (
+          <div className="w-full">
+            <div className="relative">
+              <select
+                name="shipping_address.province"
+                value={formData["shipping_address.province"]}
+                onChange={handleChange}
+                onBlur={() => handleBlur("shipping_address.province")}
+                className={`
+                  pt-4 pb-1 block w-full h-11 px-4 mt-0
+                  bg-ui-bg-field border rounded-md appearance-none
+                  focus:outline-none focus:ring-0 focus:shadow-borders-interactive-with-active
+                  hover:bg-ui-bg-field-hover cursor-pointer
+                  ${
+                    touched.province && errors.province
+                      ? "border-red-500"
+                      : "border-ui-border-base"
+                  }
+                `}
+                data-testid="shipping-province-input"
+              >
+                <option value="">Select state</option>
+                {US_STATES.map((state) => (
+                  <option key={state.value} value={state.value}>
+                    {state.label}
+                  </option>
+                ))}
+              </select>
+              <label
+                className={`
+                  flex items-center justify-center mx-3 px-1
+                  transition-all absolute duration-300 top-3 -z-1 origin-0
+                  ${
+                    touched.province && errors.province
+                      ? "text-red-500"
+                      : "text-ui-fg-subtle"
+                  }
+                `}
+              >
+                State<span className="text-rose-500">*</span>
+              </label>
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                <svg
+                  className="w-4 h-4 text-ui-fg-muted"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </div>
+            </div>
+            {touched.province && errors.province && (
+              <p className="mt-1 text-sm text-red-500">{errors.province}</p>
+            )}
+          </div>
+        ) : (
+          <FormInput
             name="shipping_address.province"
+            label="State / Province"
             autoComplete="address-level1"
-            value={formData["shipping_address.province"]}
-            onChange={handleChange}
-            data-testid="shipping-province-input"
+            testId="shipping-province-input"
           />
-          <Input
-            label="ZIP code"
-            name="shipping_address.postal_code"
-            autoComplete="postal-code"
-            value={formData["shipping_address.postal_code"]}
-            onChange={handleChange}
-            required
-            data-testid="shipping-postal-code-input"
-          />
-        </div>
+        )}
 
-        <div className="sm:col-span-2">
-          <Input
-            label="Phone (optional)"
-            name="shipping_address.phone"
-            autoComplete="tel"
-            value={formData["shipping_address.phone"]}
-            onChange={handleChange}
-            data-testid="shipping-phone-input"
-          />
-        </div>
+        {/* ZIP Code */}
+        <FormInput
+          name="shipping_address.postal_code"
+          label="ZIP code"
+          required
+          autoComplete="postal-code"
+          testId="shipping-postal-code-input"
+        />
+      </div>
+
+      {/* Phone (optional) */}
+      <div className="mb-4">
+        <FormInput
+          name="shipping_address.phone"
+          label="Phone (optional)"
+          type="tel"
+          autoComplete="tel"
+          testId="shipping-phone-input"
+        />
       </div>
 
       {/* Billing Address Checkbox */}
       <div className="my-6">
-        <Checkbox
-          label="Use shipping address as billing address"
-          name="same_as_billing"
-          checked={sameAsBilling}
-          onChange={toggleSameAsBilling}
-          data-testid="billing-address-checkbox"
-        />
+        <label className="flex items-center gap-3 cursor-pointer group">
+          <div className="relative">
+            <input
+              type="checkbox"
+              name="same_as_billing_checkbox"
+              checked={sameAsBilling}
+              onChange={toggleSameAsBilling}
+              className="sr-only peer"
+              data-testid="billing-address-checkbox"
+            />
+            <div
+              className={`
+                w-5 h-5 border-2 rounded
+                transition-colors duration-200
+                ${
+                  sameAsBilling
+                    ? "bg-black border-black"
+                    : "bg-white border-gray-300 group-hover:border-gray-400"
+                }
+              `}
+            >
+              {sameAsBilling && (
+                <svg
+                  className="w-full h-full text-white p-0.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={3}
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              )}
+            </div>
+          </div>
+          <span className="text-sm text-gray-700">
+            Use shipping address as billing address
+          </span>
+        </label>
       </div>
 
       {/* Billing Address (if different) */}
@@ -330,7 +722,11 @@ const ContactDeliveryForm: React.FC<ContactDeliveryFormProps> = ({
       <ErrorMessage error={message} data-testid="address-error-message" />
 
       {/* Hidden submit - form submits via footer button */}
-      <input type="hidden" name="same_as_billing" value={sameAsBilling ? "on" : ""} />
+      <input
+        type="hidden"
+        name="same_as_billing"
+        value={sameAsBilling ? "on" : ""}
+      />
     </form>
   )
 }
