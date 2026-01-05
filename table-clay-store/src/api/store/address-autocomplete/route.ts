@@ -2,7 +2,7 @@ import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 
 /**
  * GET /store/address-autocomplete
- * Proxy endpoint for Google Places Autocomplete API
+ * Proxy endpoint for Google Places Autocomplete API (New)
  *
  * Query Parameters:
  * - input (required): The address search input (min 3 characters)
@@ -39,18 +39,25 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
       })
     }
 
-    // Call Google Places Autocomplete API
-    const url = new URL("https://maps.googleapis.com/maps/api/place/autocomplete/json")
-    url.searchParams.set("input", input)
-    url.searchParams.set("types", "address")
-    url.searchParams.set("components", "country:us") // Restrict to US addresses
-    url.searchParams.set("key", apiKey)
+    // Call Google Places Autocomplete API (New)
+    // Uses POST with JSON body and API key in header
+    const response = await fetch("https://places.googleapis.com/v1/places:autocomplete", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Goog-Api-Key": apiKey,
+      },
+      body: JSON.stringify({
+        input,
+        includedPrimaryTypes: ["street_address", "premise", "subpremise", "route"],
+        includedRegionCodes: ["us"], // Restrict to US addresses
+      }),
+    })
 
-    const response = await fetch(url.toString())
     const data = await response.json()
 
-    if (data.status !== "OK" && data.status !== "ZERO_RESULTS") {
-      console.error("Google Places API error:", data.status, data.error_message)
+    if (!response.ok) {
+      console.error("Google Places API error:", data.error?.message || response.statusText)
       return res.status(500).json({
         success: false,
         error: "Failed to fetch address suggestions",
@@ -58,14 +65,17 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
     }
 
     // Transform response to simpler format
-    const suggestions = (data.predictions || []).map((prediction: any) => ({
-      place_id: prediction.place_id,
-      description: prediction.description,
-      structured: {
-        main_text: prediction.structured_formatting?.main_text || "",
-        secondary_text: prediction.structured_formatting?.secondary_text || "",
-      },
-    }))
+    // New API returns suggestions[].placePrediction
+    const suggestions = (data.suggestions || [])
+      .filter((s: any) => s.placePrediction) // Only place predictions, not query predictions
+      .map((s: any) => ({
+        place_id: s.placePrediction.placeId,
+        description: s.placePrediction.text?.text || "",
+        structured: {
+          main_text: s.placePrediction.structuredFormat?.mainText?.text || "",
+          secondary_text: s.placePrediction.structuredFormat?.secondaryText?.text || "",
+        },
+      }))
 
     return res.json({
       success: true,

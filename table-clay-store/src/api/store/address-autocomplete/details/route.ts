@@ -2,7 +2,7 @@ import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 
 /**
  * GET /store/address-autocomplete/details
- * Proxy endpoint for Google Places Details API
+ * Proxy endpoint for Google Places Details API (New)
  * Returns structured address components from a place_id
  *
  * Query Parameters:
@@ -33,27 +33,31 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
       })
     }
 
-    // Call Google Places Details API
-    const url = new URL("https://maps.googleapis.com/maps/api/place/details/json")
-    url.searchParams.set("place_id", place_id)
-    url.searchParams.set("fields", "address_components,formatted_address")
-    url.searchParams.set("key", apiKey)
+    // Call Google Places Details API (New)
+    // GET request with place_id in URL and fieldMask for specific fields
+    const url = `https://places.googleapis.com/v1/places/${place_id}`
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "X-Goog-Api-Key": apiKey,
+        "X-Goog-FieldMask": "addressComponents,formattedAddress",
+      },
+    })
 
-    const response = await fetch(url.toString())
     const data = await response.json()
 
-    if (data.status !== "OK") {
-      console.error("Google Places Details API error:", data.status, data.error_message)
+    if (!response.ok) {
+      console.error("Google Places Details API error:", data.error?.message || response.statusText)
       return res.status(500).json({
         success: false,
         error: "Failed to fetch address details",
       })
     }
 
-    // Extract address components
-    const components = data.result?.address_components || []
+    // Extract address components from new API format
+    const components = data.addressComponents || []
     const address = parseAddressComponents(components)
-    address.formatted_address = data.result?.formatted_address || ""
+    address.formatted_address = data.formattedAddress || ""
 
     return res.json({
       success: true,
@@ -69,7 +73,8 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
 }
 
 /**
- * Parse Google address_components into a structured address object
+ * Parse Google address_components (New API format) into a structured address object
+ * New API uses different field names: types[] -> types[], longText, shortText
  */
 function parseAddressComponents(components: any[]): {
   street_number: string
@@ -100,23 +105,23 @@ function parseAddressComponents(components: any[]): {
     const types = component.types || []
 
     if (types.includes("street_number")) {
-      result.street_number = component.long_name
+      result.street_number = component.longText || ""
     } else if (types.includes("route")) {
-      result.route = component.long_name
+      result.route = component.longText || ""
     } else if (types.includes("subpremise")) {
-      result.address_2 = component.long_name
+      result.address_2 = component.longText || ""
     } else if (types.includes("locality")) {
-      result.city = component.long_name
+      result.city = component.longText || ""
     } else if (types.includes("sublocality_level_1") && !result.city) {
       // Fallback for cities like New York that use sublocality
-      result.city = component.long_name
+      result.city = component.longText || ""
     } else if (types.includes("administrative_area_level_1")) {
-      result.state = component.short_name // Use abbreviation for US states
+      result.state = component.shortText || "" // Use abbreviation for US states
     } else if (types.includes("postal_code")) {
-      result.postal_code = component.long_name
+      result.postal_code = component.longText || ""
     } else if (types.includes("country")) {
-      result.country = component.long_name
-      result.country_code = component.short_name?.toLowerCase() || ""
+      result.country = component.longText || ""
+      result.country_code = component.shortText?.toLowerCase() || ""
     }
   }
 
