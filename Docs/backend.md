@@ -134,6 +134,8 @@ The Table Clay backend is a **Medusa.js v2.12.3** e-commerce engine deployed to 
 | POST | `/store/newsletter/subscribe` | Subscribe to newsletter |
 | GET | `/store/newsletter/unsubscribe` | Unsubscribe from newsletter |
 | GET | `/store/settings` | Get bundle promo settings |
+| GET | `/store/address-autocomplete?input=xxx` | Get address suggestions (Google Places) |
+| GET | `/store/address-autocomplete/details?place_id=xxx` | Get structured address from place_id |
 | GET | `/store/cart/:id/tip` | Get tip amount |
 | POST | `/store/cart/:id/tip` | Add tip to cart |
 | DELETE | `/store/cart/:id/tip` | Remove tip from cart |
@@ -249,6 +251,7 @@ modules: [
 | `S3_FILE_URL` | S3 file URL base |
 | `SENDGRID_API_KEY` | SendGrid API key |
 | `SENDGRID_FROM` | SendGrid sender email |
+| `GOOGLE_PLACES_API_KEY` | Google Places API key (for address autocomplete) |
 
 ---
 
@@ -297,6 +300,42 @@ modules: [
     "email": "customer@example.com",
     "discount_code": "FREESHIP-ABC123",
     "is_new": true
+  }
+}
+```
+
+### Address Autocomplete
+
+```typescript
+// GET /store/address-autocomplete?input=123%20main
+{
+  "success": true,
+  "suggestions": [
+    {
+      "place_id": "ChIJN5s4fz8ttokRRTs6z_7qzRg",
+      "description": "123 Main Street, Gaithersburg, MD, USA",
+      "structured": {
+        "main_text": "123 Main Street",
+        "secondary_text": "Gaithersburg, MD, USA"
+      }
+    }
+  ]
+}
+
+// GET /store/address-autocomplete/details?place_id=ChIJN5s4fz8ttokRRTs6z_7qzRg
+{
+  "success": true,
+  "address": {
+    "street_number": "123",
+    "route": "Main Street",
+    "address_1": "123 Main Street",
+    "address_2": "",
+    "city": "Gaithersburg",
+    "state": "MD",
+    "postal_code": "20878",
+    "country": "United States",
+    "country_code": "us",
+    "formatted_address": "123 Main St, Gaithersburg, MD 20878, USA"
   }
 }
 ```
@@ -415,7 +454,7 @@ The patch divides amounts by `10^decimalDigits` before formatting, correctly con
 
 ---
 
-*Last updated: January 2, 2026*
+*Last updated: January 4, 2026*
 *Medusa Version: 2.12.3*
 *Status: PRODUCTION READY*
 
@@ -425,6 +464,7 @@ The patch divides amounts by `10^decimalDigits` before formatting, correctly con
 
 | Date | Change |
 |------|--------|
+| Jan 4, 2026 | Added Google Places API integration (address autocomplete endpoints) |
 | Jan 2, 2026 | Added configurable bundle headline setting to Store Settings |
 | Jan 2, 2026 | Added FAQ admin pages (new/edit routes) |
 | Jan 2, 2026 | Added review image upload with alt text support |
