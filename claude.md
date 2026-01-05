@@ -28,6 +28,39 @@ cd table-clay-storefront && yarn dev
 
 ---
 
+## Beads Workflow (REQUIRED)
+
+1. Read the current bead specification and implement accordingly.
+2. Run `./scripts/validate.sh all`.
+3. Push to GitHub (triggers Railway + Vercel deployments).
+4. Run `./scripts/monitor-deploy.sh` and wait for successful deploys.
+5. Verify backend changes using the Store API.
+6. Verify frontend changes by navigating to https://tableclay.com and confirming behavior.
+7. Only close the bead after verification succeeds. If verification fails, iterate and repeat this loop.
+
+---
+
+
+### Pre-existing Bugs and Errors
+When you encounter bugs or errors that are **unrelated to the current task** or are **pre-existing in the codebase**:
+1. **Create a bead** for the issue using `bd create "BUG: <description>" -p 2 --type bug`
+2. **Do NOT attempt to fix** if it would distract from the current task
+3. **Document** what you observed in the bead description
+4. **Continue** with the original task
+
+This ensures issues are captured for another developer to resolve without derailing current work.
+
+### CRITICAL: Verification Before Closing
+**NEVER close a bead until the fix/feature is VERIFIED to be working correctly.**
+
+- Do NOT close beads just because code was written and pushed
+- Do NOT close beads based on "should work" assumptions
+- Wait for deployment to complete and TEST the actual behavior
+- Ask the user to verify if you cannot test yourself
+- Only close after confirmation that the change works as expected
+
+If you need to track that code is written but unverified, add a comment to the bead or update its description with "Pending verification" instead of closing it.
+
 ## Pre-Push Validation (REQUIRED)
 
 ```bash

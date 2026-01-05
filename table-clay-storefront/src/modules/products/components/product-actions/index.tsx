@@ -255,6 +255,8 @@ export default function ProductActions({
           countryCode,
         })
       }
+
+      router.push(`/${countryCode}/checkout`)
     } catch (error) {
       console.error("Error adding to cart:", error)
     }
