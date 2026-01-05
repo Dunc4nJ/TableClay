@@ -100,5 +100,9 @@ module.exports = defineConfig({
     {
       resolve: "./src/modules/store-settings",
     },
+    // Custom Sales Tracking Module for bestseller functionality
+    {
+      resolve: "./src/modules/sales-tracking",
+    },
   ],
 })
