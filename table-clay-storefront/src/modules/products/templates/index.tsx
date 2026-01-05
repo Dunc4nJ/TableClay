@@ -57,7 +57,7 @@ const ReviewSummaryBadge = ({
       </span>
       <StarRating rating={Math.round(stats.average_rating)} size="sm" />
       <span className="underline">
-        {stats.total_count.toLocaleString()} Reviews
+        {stats.total_count.toLocaleString("en-US")} Reviews
       </span>
     </button>
   )
@@ -182,7 +182,7 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
                   <StarRating rating={Math.round(displayStats.average_rating)} size="lg" />
                 </div>
                 <p className="text-ui-fg-subtle text-sm max-w-xl mx-auto">
-                  Join over {displayStats.total_count.toLocaleString()}+ happy customers
+                  Join over {displayStats.total_count.toLocaleString("en-US")}+ happy customers
                   who have discovered the joy of handcrafted pottery.
                 </p>
               </div>

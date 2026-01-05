@@ -21,7 +21,7 @@ const ReviewStats = ({
   subtitle,
   className = "",
 }: ReviewStatsProps) => {
-  const defaultSubtitle = `Join over ${stats.total_count.toLocaleString()}+ happy creators and families who have discovered the joy of creating together with the Table Clay Pottery Wheel.`
+  const defaultSubtitle = `Join over ${stats.total_count.toLocaleString("en-US")}+ happy creators and families who have discovered the joy of creating together with the Table Clay Pottery Wheel.`
 
   return (
     <div className={clx("text-center py-8", className)}>
