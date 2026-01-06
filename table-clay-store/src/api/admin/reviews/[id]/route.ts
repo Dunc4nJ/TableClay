@@ -44,6 +44,7 @@ export async function PUT(req: MedusaRequest, res: MedusaResponse) {
     const contentService: ContentModuleService = req.scope.resolve(CONTENT_MODULE)
 
     const {
+      product_id,
       customer_name,
       is_verified_buyer,
       rating,
@@ -56,6 +57,7 @@ export async function PUT(req: MedusaRequest, res: MedusaResponse) {
       image_urls,
       metadata,
     } = req.body as {
+      product_id?: string
       customer_name?: string
       is_verified_buyer?: boolean
       rating?: number
@@ -71,6 +73,15 @@ export async function PUT(req: MedusaRequest, res: MedusaResponse) {
 
     // Build update data
     const updateData: Record<string, unknown> = {}
+    if (product_id !== undefined) {
+      if (!product_id) {
+        return res.status(400).json({
+          success: false,
+          error: "Product ID is required",
+        })
+      }
+      updateData.product_id = product_id
+    }
     if (customer_name !== undefined) updateData.customer_name = customer_name
     if (is_verified_buyer !== undefined) updateData.is_verified_buyer = is_verified_buyer
     if (rating !== undefined) {
