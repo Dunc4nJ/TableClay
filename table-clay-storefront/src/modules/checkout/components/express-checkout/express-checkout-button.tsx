@@ -89,10 +89,8 @@ const ExpressCheckoutButton: React.FC<ExpressCheckoutButtonProps> = ({
   const onReady = useCallback(
     ({ availablePaymentMethods }: StripeExpressCheckoutElementReadyEvent) => {
       // Show component only if at least one express method is available
-      const hasExpressMethods =
-        availablePaymentMethods?.applePay ||
-        availablePaymentMethods?.googlePay ||
-        availablePaymentMethods?.link
+      const hasExpressMethods = !!availablePaymentMethods &&
+        Object.values(availablePaymentMethods).some(Boolean)
 
       setIsAvailable(!!hasExpressMethods)
       setHasCheckedAvailability(true)
@@ -281,15 +279,18 @@ const ExpressCheckoutButton: React.FC<ExpressCheckoutButtonProps> = ({
       applePay: "buy",
       googlePay: "buy",
     },
-    buttonHeight: 48,
+    buttonHeight: 52,
     layout: {
-      maxColumns: 3,
-      maxRows: 1,
+      maxColumns: 2,
+      maxRows: 2,
     },
     paymentMethods: {
       applePay: "auto",
       googlePay: "auto",
       link: "auto",
+      amazonPay: "auto",
+      paypal: "never",
+      klarna: "never",
     },
   }
 
