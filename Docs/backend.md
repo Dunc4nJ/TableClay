@@ -190,6 +190,13 @@ Custom admin UI pages under `/app`:
 | `/app/newsletter` | Newsletter subscriber list |
 | `/app/settings` | Store settings (bundle promo) |
 
+Custom admin widgets:
+
+| Widget | Location | Purpose |
+|--------|----------|---------|
+| `ProductSalesWidget` | `src/admin/widgets/product-sales-widget.tsx` | Edit sales count on product detail pages |
+| `ProductReviewStatsWidget` | `src/admin/widgets/product-review-stats.tsx` | Edit review count + average rating per product |
+
 ### Reusable Admin Components
 
 | Component | Location | Purpose |
@@ -454,7 +461,7 @@ The patch divides amounts by `10^decimalDigits` before formatting, correctly con
 
 ---
 
-*Last updated: January 5, 2026*
+*Last updated: January 6, 2026*
 *Medusa Version: 2.12.3*
 *Status: PRODUCTION READY*
 
@@ -464,6 +471,7 @@ The patch divides amounts by `10^decimalDigits` before formatting, correctly con
 
 | Date | Change |
 |------|--------|
+| Jan 6, 2026 | Added product review stats widget on product detail pages |
 | Jan 5, 2026 | Admin review updates now allow switching the associated product |
 | Jan 4, 2026 | Added Google Places API integration (address autocomplete endpoints) |
 | Jan 2, 2026 | Added configurable bundle headline setting to Store Settings |

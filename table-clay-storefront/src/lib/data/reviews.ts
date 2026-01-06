@@ -35,9 +35,20 @@ export async function getProductReviews(
     }
 
     const data = await response.json()
+    const stats = data.stats
+      ? {
+          average_rating: Number.parseFloat(data.stats.average_rating),
+          total_count: Number.parseInt(data.stats.total_count, 10) || 0,
+          rating_5_count: Number.parseInt(data.stats.rating_5_count, 10) || 0,
+          rating_4_count: Number.parseInt(data.stats.rating_4_count, 10) || 0,
+          rating_3_count: Number.parseInt(data.stats.rating_3_count, 10) || 0,
+          rating_2_count: Number.parseInt(data.stats.rating_2_count, 10) || 0,
+          rating_1_count: Number.parseInt(data.stats.rating_1_count, 10) || 0,
+        }
+      : null
     return {
       reviews: data.reviews || [],
-      stats: data.stats || null,
+      stats: stats && Number.isFinite(stats.average_rating) ? stats : null,
     }
   } catch (error) {
     console.error("Error fetching reviews:", error)
