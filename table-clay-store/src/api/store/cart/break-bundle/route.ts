@@ -18,13 +18,26 @@ type LineItemAdjustmentPayload = {
 }
 
 const stripBundleMetadata = (metadata: Record<string, unknown> | null) => {
-  if (!metadata) {
-    return null
-  }
+  const base = metadata
+    ? Object.fromEntries(
+        Object.entries(metadata).filter(([key]) => !key.startsWith("bundle_"))
+      )
+    : {}
 
-  return Object.fromEntries(
-    Object.entries(metadata).filter(([key]) => !key.startsWith("bundle_"))
-  )
+  return {
+    ...base,
+    bundle_id: null,
+    bundle_instance_id: null,
+    bundle_name: null,
+    bundle_item_index: null,
+    bundle_total_items: null,
+    bundle_original_price: null,
+    bundle_sale_price: null,
+    bundle_savings: null,
+    bundle_savings_percent: null,
+    bundle_badge: null,
+    bundle_badge_text: null,
+  }
 }
 
 /**
