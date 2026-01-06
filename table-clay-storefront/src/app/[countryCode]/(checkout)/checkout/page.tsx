@@ -29,7 +29,10 @@ export default async function Checkout() {
   // This ensures client_secret is available when Express Checkout renders
   // NOTE: Provider ID is "pp_stripe" (not "pp_stripe_stripe") based on medusa-config.ts id: "stripe"
   const hasPaymentSession = cart.payment_collection?.payment_sessions?.some(
-    (s) => s.status === "pending" && s.provider_id === "pp_stripe"
+    (s) =>
+      s.status === "pending" &&
+      (s.provider_id?.startsWith("pp_stripe") ||
+        s.provider_id?.startsWith("pp_medusa-"))
   )
 
   if (!hasPaymentSession) {
