@@ -155,7 +155,7 @@ The Table Clay backend is a **Medusa.js v2.12.3** e-commerce engine deployed to 
 | GET | `/admin/reviews` | List all reviews |
 | POST | `/admin/reviews` | Create review |
 | GET | `/admin/reviews/:id` | Get review details |
-| PUT | `/admin/reviews/:id` | Update review |
+| PUT | `/admin/reviews/:id` | Update review (supports `product_id` changes) |
 | DELETE | `/admin/reviews/:id` | Delete review |
 | GET | `/admin/reviews/stats` | Get review statistics |
 | GET | `/admin/reviews/product-stats` | Get per-product stats |
@@ -454,7 +454,7 @@ The patch divides amounts by `10^decimalDigits` before formatting, correctly con
 
 ---
 
-*Last updated: January 4, 2026*
+*Last updated: January 5, 2026*
 *Medusa Version: 2.12.3*
 *Status: PRODUCTION READY*
 
@@ -464,6 +464,7 @@ The patch divides amounts by `10^decimalDigits` before formatting, correctly con
 
 | Date | Change |
 |------|--------|
+| Jan 5, 2026 | Admin review updates now allow switching the associated product |
 | Jan 4, 2026 | Added Google Places API integration (address autocomplete endpoints) |
 | Jan 2, 2026 | Added configurable bundle headline setting to Store Settings |
 | Jan 2, 2026 | Added FAQ admin pages (new/edit routes) |

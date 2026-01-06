@@ -1,10 +1,10 @@
 # Table Clay Storefront - Frontend Documentation
 
-## Current State (December 2024)
+## Current State (January 2026)
 
 The Table Clay storefront is a Next.js 15 application with custom components for showcasing handmade pottery. The design uses a warm, earthy color palette with cream backgrounds and terracotta accents.
 
-**Latest Update:** 26 products now live with S3-hosted images across 6 collections.
+**Latest Update:** PDP reviews show 3 items with a centered "Load more reviews" button that reveals 3 more at a time.
 
 ---
 
@@ -177,6 +177,11 @@ const FEATURED_COLLECTIONS = ["cloud-line", "modern-line", "japanese-line"]
 - Location: `src/modules/layout/templates/footer/index.tsx`
 - Shop, Collections, Company columns
 - All 6 collection links displayed
+
+### 8. Product Detail Page (PDP)
+- Location: `src/modules/products/templates/index.tsx`
+- Reviews section renders the first 3 reviews by default
+- If more than 3 reviews exist, a centered "Load more reviews" button reveals 3 more per click
 
 ---
 

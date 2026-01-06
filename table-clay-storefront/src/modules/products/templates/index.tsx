@@ -1,8 +1,9 @@
 "use client"
 
-import React, { useRef } from "react"
+import React, { useRef, useEffect, useState } from "react"
 import { HttpTypes } from "@medusajs/types"
 import { notFound } from "next/navigation"
+import { Button } from "@medusajs/ui"
 
 import ImageGallery from "@modules/products/components/image-gallery"
 import ProductInfo from "@modules/products/templates/product-info"
@@ -73,8 +74,11 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
   reviewStats,
   faqs = [],
 }) => {
+  const initialReviewCount = Math.min(3, reviews.length)
   const reviewsSectionRef = useRef<HTMLDivElement>(null)
   const addToCartRef = useRef<HTMLDivElement>(null)
+  const [visibleReviewCount, setVisibleReviewCount] =
+    useState(initialReviewCount)
 
   if (!product || !product.id) {
     return notFound()
@@ -83,6 +87,10 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
   const scrollToReviews = () => {
     reviewsSectionRef.current?.scrollIntoView({ behavior: "smooth" })
   }
+
+  useEffect(() => {
+    setVisibleReviewCount(initialReviewCount)
+  }, [initialReviewCount, product?.id])
 
   return (
     <>
@@ -204,9 +212,25 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
               {/* Review Cards */}
               {reviews.length > 0 ? (
                 <div className="max-w-3xl mx-auto">
-                  {reviews.map((review) => (
+                  {reviews.slice(0, visibleReviewCount).map((review) => (
                     <ReviewCard key={review.id} review={review} />
                   ))}
+                  {reviews.length > visibleReviewCount && (
+                    <div className="flex justify-center mt-8">
+                      <Button
+                        variant="secondary"
+                        className="px-6"
+                        type="button"
+                        onClick={() =>
+                          setVisibleReviewCount((count) =>
+                            Math.min(count + 3, reviews.length)
+                          )
+                        }
+                      >
+                        Load more reviews
+                      </Button>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <p className="text-center text-sm text-ui-fg-muted">
