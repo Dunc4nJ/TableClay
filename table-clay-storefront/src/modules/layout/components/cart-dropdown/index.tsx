@@ -145,15 +145,6 @@ const CartDropdown = ({
                                       {bundle.bundleBadgeText}
                                     </span>
                                   )}
-                                  {bundle.bundlePricing &&
-                                    bundle.bundlePricing.savings > 0 && (
-                                      <span className="text-[0.6rem] font-semibold px-2 py-1 rounded-full bg-emerald-50 text-emerald-700">
-                                        Save{" "}
-                                        {formatPrice(
-                                          bundle.bundlePricing.savings
-                                        )}
-                                      </span>
-                                    )}
                                 </div>
                                 {bundle.bundlePricing && (
                                   <div className="text-right">
@@ -170,13 +161,6 @@ const CartDropdown = ({
                                   </div>
                                 )}
                               </div>
-                              {bundle.bundlePricing &&
-                                bundle.bundlePricing.savings > 0 && (
-                                <Text className="text-xs text-ui-fg-subtle mt-1">
-                                  Bundle discount -{" "}
-                                  {formatPrice(bundle.bundlePricing.savings)}
-                                </Text>
-                              )}
                             </div>
                             <div className="mt-4 grid grid-cols-1 gap-y-6">
                               {bundle.items.map((item) => {
@@ -251,6 +235,14 @@ const CartDropdown = ({
                                 )
                               })}
                             </div>
+                            {bundle.bundlePricing &&
+                              bundle.bundlePricing.savings > 0 && (
+                                <div className="mt-4 flex justify-end">
+                                  <span className="text-sm font-semibold px-3.5 py-1.5 rounded-full bg-emerald-50 text-emerald-700">
+                                    Save {formatPrice(bundle.bundlePricing.savings)}
+                                  </span>
+                                </div>
+                              )}
                           </div>
                         ))}
                         {sortedRegularItems.map((item) => {

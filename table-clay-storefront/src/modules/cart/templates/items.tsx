@@ -41,18 +41,7 @@ function BundleHeader({
               {bundle.bundleBadgeText}
             </span>
           )}
-          {bundle.bundlePricing && bundle.bundlePricing.savings > 0 && (
-            <span className="text-[0.65rem] font-semibold px-2 py-1 rounded-full bg-emerald-50 text-emerald-700">
-              Save {formatPrice(bundle.bundlePricing.savings)}
-            </span>
-          )}
         </div>
-        {bundle.bundlePricing && bundle.bundlePricing.savings > 0 && (
-          <Text className="text-xs text-ui-fg-subtle mt-1">
-            {bundle.items.length} items • Bundle discount -{" "}
-            {formatPrice(bundle.bundlePricing.savings)}
-          </Text>
-        )}
       </td>
       <td className="text-center p-4">
         <Text className="text-ui-fg-muted text-sm">{bundle.items.length} items</Text>
@@ -77,6 +66,12 @@ function BundleHeader({
 
 const ItemsTemplate = ({ cart }: ItemsTemplateProps) => {
   const items = cart?.items
+  const formatPrice = (cents: number) => {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: cart?.currency_code || "USD",
+    }).format(cents / 100)
+  }
 
   // Group items by bundle
   const { bundles, regularItems } = items
@@ -125,6 +120,17 @@ const ItemsTemplate = ({ cart }: ItemsTemplateProps) => {
                       isBundleItem={true}
                     />
                   ))}
+                  {bundle.bundlePricing && bundle.bundlePricing.savings > 0 && (
+                    <tr className="bg-ui-bg-subtle-hover">
+                      <td colSpan={5} className="p-4 !pl-0">
+                        <div className="flex items-center justify-end">
+                          <span className="text-sm font-semibold px-3.5 py-1.5 rounded-full bg-emerald-50 text-emerald-700">
+                            Save {formatPrice(bundle.bundlePricing.savings)}
+                          </span>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
                 </React.Fragment>
               ))}
 

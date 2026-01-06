@@ -59,17 +59,7 @@ const ItemsPreviewTemplate = ({ cart }: ItemsTemplateProps) => {
                             {bundle.bundleBadgeText}
                           </span>
                         )}
-                        {bundle.bundlePricing && bundle.bundlePricing.savings > 0 && (
-                          <span className="text-[0.6rem] font-semibold px-2 py-1 rounded-full bg-emerald-50 text-emerald-700">
-                            Save {formatPrice(bundle.bundlePricing.savings)}
-                          </span>
-                        )}
                       </div>
-                      {bundle.bundlePricing && bundle.bundlePricing.savings > 0 && (
-                        <Text className="text-xs text-ui-fg-subtle mt-1">
-                          Bundle discount - {formatPrice(bundle.bundlePricing.savings)}
-                        </Text>
-                      )}
                     </td>
                   </Table.Row>
                   {bundle.items.map((item) => (
@@ -81,6 +71,17 @@ const ItemsPreviewTemplate = ({ cart }: ItemsTemplateProps) => {
                       isBundleItem={true}
                     />
                   ))}
+                  {bundle.bundlePricing && bundle.bundlePricing.savings > 0 && (
+                    <Table.Row className="bg-ui-bg-subtle-hover">
+                      <td colSpan={2} className="!pl-0 p-3">
+                        <div className="flex items-center justify-end">
+                          <span className="text-sm font-semibold px-3.5 py-1.5 rounded-full bg-emerald-50 text-emerald-700">
+                            Save {formatPrice(bundle.bundlePricing.savings)}
+                          </span>
+                        </div>
+                      </td>
+                    </Table.Row>
+                  )}
                 </React.Fragment>
               ))}
               {sortedRegularItems.map((item) => (
