@@ -17,7 +17,7 @@ const PaymentSessionGuard = ({
   paymentMethods,
 }: PaymentSessionGuardProps) => {
   const router = useRouter()
-  const [hasAttempted, setHasAttempted] = useState(false)
+  const [attemptedKey, setAttemptedKey] = useState<string | null>(null)
 
   const pendingSession = cart.payment_collection?.payment_sessions?.find(
     (session) => session.status === "pending" && isStripeLike(session.provider_id)
@@ -30,13 +30,21 @@ const PaymentSessionGuard = ({
     [paymentMethods]
   )
 
+  const attemptKey = [
+    cart.id,
+    stripeProviderId ?? "none",
+    cart.email ?? "",
+    cart.shipping_address?.address_1 ?? "",
+    cart.shipping_methods?.length ?? 0,
+  ].join("|")
+
   useEffect(() => {
-    if (hasClientSecret || hasAttempted || !stripeProviderId) {
+    if (hasClientSecret || !stripeProviderId || attemptedKey === attemptKey) {
       return
     }
 
     const run = async () => {
-      setHasAttempted(true)
+      setAttemptedKey(attemptKey)
 
       try {
         await initiatePaymentSession(cart, { provider_id: stripeProviderId })
@@ -47,7 +55,14 @@ const PaymentSessionGuard = ({
     }
 
     run()
-  }, [hasClientSecret, hasAttempted, stripeProviderId, cart, router])
+  }, [
+    hasClientSecret,
+    stripeProviderId,
+    attemptKey,
+    attemptedKey,
+    cart,
+    router,
+  ])
 
   return null
 }

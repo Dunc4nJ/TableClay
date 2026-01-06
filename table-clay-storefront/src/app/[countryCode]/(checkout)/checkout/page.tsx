@@ -1,4 +1,5 @@
 import { initiatePaymentSession, retrieveCart } from "@lib/data/cart"
+import { listCartPaymentMethods } from "@lib/data/payment"
 import { retrieveCustomer } from "@lib/data/customer"
 import PaymentWrapper from "@modules/checkout/components/payment-wrapper"
 import CheckoutForm from "@modules/checkout/templates/checkout-form"
@@ -37,8 +38,17 @@ export default async function Checkout() {
 
   if (!hasPaymentSession) {
     try {
+      const paymentMethods = await listCartPaymentMethods(cart.region?.id ?? "")
+      const stripeProviderId =
+        paymentMethods?.find(
+          (method) =>
+            method.id === "pp_stripe" ||
+            method.id?.startsWith("pp_stripe") ||
+            method.id?.startsWith("pp_medusa-")
+        )?.id || "pp_stripe"
+
       await initiatePaymentSession(cart, {
-        provider_id: "pp_stripe",
+        provider_id: stripeProviderId,
       })
       // Re-fetch cart with updated payment session (skipCache=true for fresh data)
       cart = (await retrieveCart(undefined, CHECKOUT_CART_FIELDS, true)) || cart
