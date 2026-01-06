@@ -10,9 +10,9 @@ type ReviewStats = {
 const ProductReviewStatsWidget = ({
   data,
 }: {
-  data: { product?: { id: string } }
+  data?: { id?: string }
 }) => {
-  const productId = data?.product?.id
+  const productId = data?.id
   const [stats, setStats] = useState<ReviewStats | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isEditing, setIsEditing] = useState(false)
