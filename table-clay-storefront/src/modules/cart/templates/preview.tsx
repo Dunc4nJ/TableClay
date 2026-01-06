@@ -72,8 +72,8 @@ const ItemsPreviewTemplate = ({ cart }: ItemsTemplateProps) => {
                     />
                   ))}
                   {bundle.bundlePricing && bundle.bundlePricing.savings > 0 && (
-                    <Table.Row className="bg-ui-bg-subtle-hover">
-                      <td colSpan={2} className="!pl-0 p-3">
+                    <Table.Row className="border-t border-ui-border-base">
+                      <td colSpan={2} className="!pl-0 py-2">
                         <div className="flex items-center justify-end">
                           <span className="text-sm font-semibold px-3.5 py-1.5 rounded-full bg-emerald-50 text-emerald-700">
                             Save {formatPrice(bundle.bundlePricing.savings)}

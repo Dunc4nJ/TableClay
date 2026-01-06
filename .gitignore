@@ -47,3 +47,6 @@ digital-assets/
 
 # bv (beads viewer) local config and caches
 .bv/
+# Local research files
+Assets/Product Research.csv
+Product Research - Sheet1 (1).csv
