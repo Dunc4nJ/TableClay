@@ -1,7 +1,7 @@
 "use client"
 
-import { addToCart } from "@lib/data/cart"
-import { Bundle } from "@lib/data/bundles"
+import { addToCart, getOrSetCart } from "@lib/data/cart"
+import { addBundleToCart, Bundle } from "@lib/data/bundles"
 import type { BundlePromoSettings } from "@lib/data/settings"
 import { useIntersection } from "@lib/hooks/use-in-view"
 import { Spinner } from "@medusajs/icons"
@@ -233,18 +233,11 @@ export default function ProductActions({
         throw new Error("Missing country code when adding to cart")
       }
       if (hasBundles && selectionMode === "bundle" && selectedBundle) {
-        // Bundle flow: add all bundle items to cart
-        for (const item of selectedBundle.items) {
-          if (item.variant_id) {
-            await addToCart({
-              variantId: item.variant_id,
-              quantity: item.quantity,
-              countryCode,
-            })
-          }
+        const cart = await getOrSetCart(countryCode)
+        const result = await addBundleToCart(cart.id, selectedBundle.id)
+        if (!result?.success) {
+          throw new Error(result?.error || "Failed to add bundle to cart")
         }
-        // Note: Bundle discount is already reflected in the bundle pricing
-        // displayed to the customer. Future: Add promotion workflow.
       } else {
         // Standard variant flow (single item)
         if (!selectedVariant?.id) return null

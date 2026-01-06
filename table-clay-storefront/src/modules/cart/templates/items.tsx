@@ -1,69 +1,14 @@
 import React from "react"
 import repeat from "@lib/util/repeat"
 import { HttpTypes } from "@medusajs/types"
-import { Heading, Table, Text, Badge } from "@medusajs/ui"
+import { Heading, Table, Text } from "@medusajs/ui"
 
 import Item from "@modules/cart/components/item"
 import SkeletonLineItem from "@modules/skeletons/components/skeleton-line-item"
+import { BundleGroup, groupItemsByBundle } from "@modules/cart/utils/bundles"
 
 type ItemsTemplateProps = {
   cart?: HttpTypes.StoreCart
-}
-
-type BundleGroup = {
-  bundleInstanceId: string
-  bundleName: string
-  bundlePricing?: {
-    originalPrice: number
-    salePrice: number
-    savings: number
-    savingsPercent: number
-  }
-  items: HttpTypes.StoreCartLineItem[]
-}
-
-/**
- * Group cart items by bundle_instance_id
- * Returns: { bundles: BundleGroup[], regularItems: StoreCartLineItem[] }
- */
-function groupItemsByBundle(items: HttpTypes.StoreCartLineItem[]): {
-  bundles: BundleGroup[]
-  regularItems: HttpTypes.StoreCartLineItem[]
-} {
-  const bundleMap = new Map<string, BundleGroup>()
-  const regularItems: HttpTypes.StoreCartLineItem[] = []
-
-  for (const item of items) {
-    const metadata = item.metadata as Record<string, unknown> | null
-    const bundleInstanceId = metadata?.bundle_instance_id as string | undefined
-
-    if (bundleInstanceId) {
-      if (!bundleMap.has(bundleInstanceId)) {
-        bundleMap.set(bundleInstanceId, {
-          bundleInstanceId,
-          bundleName: (metadata?.bundle_name as string) || "Bundle",
-          bundlePricing:
-            metadata?.bundle_original_price !== undefined
-              ? {
-                  originalPrice: metadata.bundle_original_price as number,
-                  salePrice: metadata.bundle_sale_price as number,
-                  savings: metadata.bundle_savings as number,
-                  savingsPercent: metadata.bundle_savings_percent as number,
-                }
-              : undefined,
-          items: [],
-        })
-      }
-      bundleMap.get(bundleInstanceId)!.items.push(item)
-    } else {
-      regularItems.push(item)
-    }
-  }
-
-  return {
-    bundles: Array.from(bundleMap.values()),
-    regularItems,
-  }
 }
 
 /**
@@ -86,17 +31,26 @@ function BundleHeader({
   return (
     <tr className="bg-ui-bg-subtle border-t-2 border-ui-border-strong">
       <td colSpan={2} className="!pl-0 p-4">
-        <div className="flex items-center gap-2">
-          <Badge color="purple" size="small">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-[0.65rem] uppercase tracking-[0.18em] text-ui-fg-subtle">
             Bundle
-          </Badge>
+          </span>
           <Text className="font-semibold text-ui-fg-base">{bundle.bundleName}</Text>
+          {bundle.bundleBadgeText && (
+            <span className="text-[0.65rem] font-semibold uppercase tracking-[0.08em] px-2 py-1 rounded-full bg-black text-white">
+              {bundle.bundleBadgeText}
+            </span>
+          )}
+          {bundle.bundlePricing && bundle.bundlePricing.savings > 0 && (
+            <span className="text-[0.65rem] font-semibold px-2 py-1 rounded-full bg-emerald-50 text-emerald-700">
+              Save {formatPrice(bundle.bundlePricing.savings)}
+            </span>
+          )}
         </div>
-        {bundle.bundlePricing && (
+        {bundle.bundlePricing && bundle.bundlePricing.savings > 0 && (
           <Text className="text-xs text-ui-fg-subtle mt-1">
-            {bundle.items.length} items • Save{" "}
-            {formatPrice(bundle.bundlePricing.savings)} (
-            {bundle.bundlePricing.savingsPercent.toFixed(0)}% off)
+            {bundle.items.length} items • Bundle discount -{" "}
+            {formatPrice(bundle.bundlePricing.savings)}
           </Text>
         )}
       </td>

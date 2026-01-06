@@ -8,11 +8,12 @@ import {
 } from "@headlessui/react"
 import { convertToLocale } from "@lib/util/money"
 import { HttpTypes } from "@medusajs/types"
-import { Button } from "@medusajs/ui"
+import { Button, Text } from "@medusajs/ui"
 import DeleteButton from "@modules/common/components/delete-button"
 import LineItemOptions from "@modules/common/components/line-item-options"
 import LineItemPrice from "@modules/common/components/line-item-price"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
+import { groupItemsByBundle } from "@modules/cart/utils/bundles"
 import Thumbnail from "@modules/products/components/thumbnail"
 import { usePathname } from "next/navigation"
 import { Fragment, useEffect, useRef, useState } from "react"
@@ -37,6 +38,13 @@ const CartDropdown = ({
 
   const subtotal = cartState?.subtotal ?? 0
   const itemRef = useRef<number>(totalItems || 0)
+
+  const formatPrice = (cents: number) => {
+    return convertToLocale({
+      amount: cents,
+      currency_code: cartState?.currency_code || "USD",
+    })
+  }
 
   const timedOpen = () => {
     open()
@@ -108,71 +116,215 @@ const CartDropdown = ({
             {cartState && cartState.items?.length ? (
               <>
                 <div className="overflow-y-scroll max-h-[402px] px-4 grid grid-cols-1 gap-y-8 no-scrollbar p-px">
-                  {cartState.items
-                    .sort((a, b) => {
+                  {(() => {
+                    const { bundles, regularItems } = groupItemsByBundle(
+                      cartState.items
+                    )
+
+                    const sortedRegularItems = regularItems.sort((a, b) => {
                       return (a.created_at ?? "") > (b.created_at ?? "")
                         ? -1
                         : 1
                     })
-                    .map((item) => (
-                      <div
-                        className="grid grid-cols-[122px_1fr] gap-x-4"
-                        key={item.id}
-                        data-testid="cart-item"
-                      >
-                        <LocalizedClientLink
-                          href={`/products/${item.product_handle}`}
-                          className="w-24"
-                        >
-                          <Thumbnail
-                            thumbnail={item.thumbnail}
-                            images={item.variant?.product?.images}
-                            size="square"
-                          />
-                        </LocalizedClientLink>
-                        <div className="flex flex-col justify-between flex-1">
-                          <div className="flex flex-col flex-1">
-                            <div className="flex items-start justify-between">
-                              <div className="flex flex-col overflow-ellipsis whitespace-nowrap mr-4 w-[180px]">
-                                <h3 className="text-base-regular overflow-hidden text-ellipsis">
-                                  <LocalizedClientLink
-                                    href={`/products/${item.product_handle}`}
-                                    data-testid="product-link"
-                                  >
-                                    {item.title}
-                                  </LocalizedClientLink>
-                                </h3>
-                                <LineItemOptions
-                                  variant={item.variant}
-                                  data-testid="cart-item-variant"
-                                  data-value={item.variant}
-                                />
-                                <span
-                                  data-testid="cart-item-quantity"
-                                  data-value={item.quantity}
+
+                    return (
+                      <>
+                        {bundles.map((bundle) => (
+                          <div key={`bundle-${bundle.bundleInstanceId}`}>
+                            <div className="rounded-lg border border-ui-border-base bg-ui-bg-subtle p-3">
+                              <div className="flex flex-wrap items-center justify-between gap-3">
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <span className="text-[0.6rem] uppercase tracking-[0.2em] text-ui-fg-subtle">
+                                    Bundle
+                                  </span>
+                                  <Text className="text-sm font-semibold text-ui-fg-base">
+                                    {bundle.bundleName}
+                                  </Text>
+                                  {bundle.bundleBadgeText && (
+                                    <span className="text-[0.6rem] font-semibold uppercase tracking-[0.08em] px-2 py-1 rounded-full bg-black text-white">
+                                      {bundle.bundleBadgeText}
+                                    </span>
+                                  )}
+                                  {bundle.bundlePricing &&
+                                    bundle.bundlePricing.savings > 0 && (
+                                      <span className="text-[0.6rem] font-semibold px-2 py-1 rounded-full bg-emerald-50 text-emerald-700">
+                                        Save{" "}
+                                        {formatPrice(
+                                          bundle.bundlePricing.savings
+                                        )}
+                                      </span>
+                                    )}
+                                </div>
+                                {bundle.bundlePricing && (
+                                  <div className="text-right">
+                                    <div className="text-xs text-ui-fg-muted line-through">
+                                      {formatPrice(
+                                        bundle.bundlePricing.originalPrice
+                                      )}
+                                    </div>
+                                    <div className="text-sm font-semibold text-ui-fg-base">
+                                      {formatPrice(
+                                        bundle.bundlePricing.salePrice
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                              {bundle.bundlePricing &&
+                                bundle.bundlePricing.savings > 0 && (
+                                <Text className="text-xs text-ui-fg-subtle mt-1">
+                                  Bundle discount -{" "}
+                                  {formatPrice(bundle.bundlePricing.savings)}
+                                </Text>
+                              )}
+                            </div>
+                            <div className="mt-4 grid grid-cols-1 gap-y-6">
+                              {bundle.items.map((item) => {
+                                const metadata = item.metadata as Record<
+                                  string,
+                                  unknown
                                 >
-                                  Quantity: {item.quantity}
-                                </span>
-                              </div>
-                              <div className="flex justify-end">
-                                <LineItemPrice
-                                  item={item}
-                                  style="tight"
-                                  currencyCode={cartState.currency_code}
-                                />
-                              </div>
+                                const bundleInstanceId = metadata
+                                  ?.bundle_instance_id as string | undefined
+
+                                return (
+                                  <div
+                                    className="grid grid-cols-[122px_1fr] gap-x-4"
+                                    key={item.id}
+                                    data-testid="cart-item"
+                                  >
+                                    <LocalizedClientLink
+                                      href={`/products/${item.product_handle}`}
+                                      className="w-24"
+                                    >
+                                      <Thumbnail
+                                        thumbnail={item.thumbnail}
+                                        images={item.variant?.product?.images}
+                                        size="square"
+                                      />
+                                    </LocalizedClientLink>
+                                    <div className="flex flex-col justify-between flex-1">
+                                      <div className="flex flex-col flex-1">
+                                        <div className="flex items-start justify-between">
+                                          <div className="flex flex-col overflow-ellipsis whitespace-nowrap mr-4 w-[180px]">
+                                            <h3 className="text-base-regular overflow-hidden text-ellipsis">
+                                              <LocalizedClientLink
+                                                href={`/products/${item.product_handle}`}
+                                                data-testid="product-link"
+                                              >
+                                                {item.title}
+                                              </LocalizedClientLink>
+                                            </h3>
+                                            <LineItemOptions
+                                              variant={item.variant}
+                                              data-testid="cart-item-variant"
+                                              data-value={item.variant}
+                                            />
+                                            <span
+                                              data-testid="cart-item-quantity"
+                                              data-value={item.quantity}
+                                            >
+                                              Quantity: {item.quantity}
+                                            </span>
+                                          </div>
+                                          <div className="flex justify-end">
+                                            <LineItemPrice
+                                              item={item}
+                                              style="tight"
+                                              currencyCode={
+                                                cartState.currency_code
+                                              }
+                                            />
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <DeleteButton
+                                        id={item.id}
+                                        bundleInstanceId={bundleInstanceId}
+                                        className="mt-1"
+                                        data-testid="cart-item-remove-button"
+                                      >
+                                        Remove
+                                      </DeleteButton>
+                                    </div>
+                                  </div>
+                                )
+                              })}
                             </div>
                           </div>
-                          <DeleteButton
-                            id={item.id}
-                            className="mt-1"
-                            data-testid="cart-item-remove-button"
+                        ))}
+                        {sortedRegularItems.map((item) => {
+                          const metadata = item.metadata as Record<
+                            string,
+                            unknown
                           >
-                            Remove
-                          </DeleteButton>
-                        </div>
-                      </div>
-                    ))}
+                          const bundleInstanceId = metadata
+                            ?.bundle_instance_id as string | undefined
+
+                          return (
+                            <div
+                              className="grid grid-cols-[122px_1fr] gap-x-4"
+                              key={item.id}
+                              data-testid="cart-item"
+                            >
+                              <LocalizedClientLink
+                                href={`/products/${item.product_handle}`}
+                                className="w-24"
+                              >
+                                <Thumbnail
+                                  thumbnail={item.thumbnail}
+                                  images={item.variant?.product?.images}
+                                  size="square"
+                                />
+                              </LocalizedClientLink>
+                              <div className="flex flex-col justify-between flex-1">
+                                <div className="flex flex-col flex-1">
+                                  <div className="flex items-start justify-between">
+                                    <div className="flex flex-col overflow-ellipsis whitespace-nowrap mr-4 w-[180px]">
+                                      <h3 className="text-base-regular overflow-hidden text-ellipsis">
+                                        <LocalizedClientLink
+                                          href={`/products/${item.product_handle}`}
+                                          data-testid="product-link"
+                                        >
+                                          {item.title}
+                                        </LocalizedClientLink>
+                                      </h3>
+                                      <LineItemOptions
+                                        variant={item.variant}
+                                        data-testid="cart-item-variant"
+                                        data-value={item.variant}
+                                      />
+                                      <span
+                                        data-testid="cart-item-quantity"
+                                        data-value={item.quantity}
+                                      >
+                                        Quantity: {item.quantity}
+                                      </span>
+                                    </div>
+                                    <div className="flex justify-end">
+                                      <LineItemPrice
+                                        item={item}
+                                        style="tight"
+                                        currencyCode={cartState.currency_code}
+                                      />
+                                    </div>
+                                  </div>
+                                </div>
+                                <DeleteButton
+                                  id={item.id}
+                                  bundleInstanceId={bundleInstanceId}
+                                  className="mt-1"
+                                  data-testid="cart-item-remove-button"
+                                >
+                                  Remove
+                                </DeleteButton>
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </>
+                    )
+                  })()}
                 </div>
                 <div className="p-4 flex flex-col gap-y-4 text-small-regular">
                   <div className="flex items-center justify-between">

@@ -1,14 +1,17 @@
 import { deleteLineItem } from "@lib/data/cart"
+import { breakBundleInCart } from "@lib/data/bundles"
 import { Spinner, Trash } from "@medusajs/icons"
 import { clx } from "@medusajs/ui"
 import { useState } from "react"
 
 const DeleteButton = ({
   id,
+  bundleInstanceId,
   children,
   className,
 }: {
   id: string
+  bundleInstanceId?: string
   children?: React.ReactNode
   className?: string
 }) => {
@@ -16,9 +19,17 @@ const DeleteButton = ({
 
   const handleDelete = async (id: string) => {
     setIsDeleting(true)
-    await deleteLineItem(id).catch((err) => {
+    try {
+      if (bundleInstanceId) {
+        await breakBundleInCart(bundleInstanceId, id)
+      } else {
+        await deleteLineItem(id)
+      }
+    } catch {
       setIsDeleting(false)
-    })
+      return
+    }
+    setIsDeleting(false)
   }
 
   return (

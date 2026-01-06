@@ -14,6 +14,26 @@ type RemoveBundleRequestBody = {
   bundle_instance_id: string
 }
 
+const allocateBundleDiscount = (lineTotals: number[], savings: number) => {
+  const total = lineTotals.reduce((sum, value) => sum + value, 0)
+  if (!total || savings <= 0 || lineTotals.length === 0) {
+    return lineTotals.map(() => 0)
+  }
+
+  const normalizedSavings = Math.min(savings, total)
+  let allocated = 0
+
+  return lineTotals.map((lineTotal, index) => {
+    if (index === lineTotals.length - 1) {
+      return normalizedSavings - allocated
+    }
+
+    const amount = Math.floor((lineTotal / total) * normalizedSavings)
+    allocated += amount
+    return amount
+  })
+}
+
 /**
  * DELETE /store/cart/add-bundle
  * Remove a bundle from the cart by its instance ID
@@ -161,11 +181,10 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
       })
     }
 
-    // Calculate bundle pricing
-    const pricing = bundleService.calculateBundlePricing(bundle)
-
     // Generate a unique bundle instance ID (for grouping in cart)
     const bundleInstanceId = `${bundle_id}_${Date.now()}`
+
+    const badgeText = bundleService.getBadgeDisplayText(bundle.badge)
 
     // Prepare items for the add-to-cart workflow
     // Each item includes metadata for bundle grouping
@@ -178,17 +197,10 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
         bundle_name: bundle.name,
         bundle_item_index: index,
         bundle_total_items: bundle.items.length,
+        bundle_badge: bundle.badge,
+        bundle_badge_text: badgeText,
         product_title: item.product_title,
         variant_title: item.variant_title,
-        // Store pricing info on first item only (for display)
-        ...(index === 0
-          ? {
-              bundle_original_price: pricing.original_price,
-              bundle_sale_price: pricing.sale_price,
-              bundle_savings: pricing.savings,
-              bundle_savings_percent: pricing.savings_percent,
-            }
-          : {}),
       },
     }))
 
@@ -199,6 +211,92 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
         items: itemsToAdd,
       },
     })
+
+    const { data: [cartWithItems] } = await query.graph({
+      entity: "cart",
+      filters: { id: cart_id },
+      fields: ["id", "items.id", "items.unit_price", "items.quantity", "items.metadata"],
+    })
+
+    if (!cartWithItems) {
+      return res.status(404).json({
+        success: false,
+        error: "Cart not found after adding bundle",
+      })
+    }
+
+    const bundleItems = (cartWithItems.items || []).filter(
+      (item): item is NonNullable<typeof item> => {
+        if (!item) {
+          return false
+        }
+        const metadata = item.metadata as Record<string, unknown> | null
+        return metadata?.bundle_instance_id === bundleInstanceId
+      }
+    )
+
+    const lineTotals = bundleItems.map((item) => {
+      const unitPrice = Number(item.unit_price || 0)
+      const quantity = Number(item.quantity || 0)
+      return unitPrice * quantity
+    })
+
+    const componentTotalCents = lineTotals.reduce((sum, value) => sum + value, 0)
+    const pricing = bundleService.calculateBundlePricing(
+      bundle,
+      componentTotalCents
+    )
+
+    let bundleOriginalPrice = pricing.original_price
+    let bundleSalePrice = pricing.sale_price
+    let bundleSavings = pricing.savings
+    let bundleSavingsPercent = pricing.savings_percent
+
+    if (bundle.pricing_type === "fixed") {
+      bundleOriginalPrice = componentTotalCents
+      bundleSalePrice = pricing.sale_price
+      bundleSavings = Math.max(bundleOriginalPrice - bundleSalePrice, 0)
+      bundleSavingsPercent =
+        bundleOriginalPrice > 0
+          ? Math.round((bundleSavings / bundleOriginalPrice) * 100)
+          : 0
+    }
+
+    const bundleDiscountCode = `bundle:${bundleInstanceId}`
+    const allocations = allocateBundleDiscount(
+      lineTotals,
+      Math.max(0, bundleSavings)
+    )
+
+    const adjustments = bundleItems
+      .map((item, index) => ({
+        item_id: item.id,
+        amount: allocations[index],
+        code: bundleDiscountCode,
+        description: "Bundle discount",
+      }))
+      .filter((adjustment) => adjustment.amount > 0)
+
+    if (adjustments.length > 0) {
+      await cartModuleService.addLineItemAdjustments(cart_id, adjustments)
+    }
+
+    const updatedLineItems = bundleItems.map((item) => ({
+      id: item.id,
+      metadata: {
+        ...(item.metadata || {}),
+        bundle_original_price: bundleOriginalPrice,
+        bundle_sale_price: bundleSalePrice,
+        bundle_savings: bundleSavings,
+        bundle_savings_percent: bundleSavingsPercent,
+        bundle_badge: bundle.badge,
+        bundle_badge_text: badgeText,
+      },
+    }))
+
+    if (updatedLineItems.length > 0) {
+      await cartModuleService.updateLineItems(updatedLineItems)
+    }
 
     // Update cart metadata to track bundle discounts
     const existingBundles = (cart.metadata?.bundles as Array<{
@@ -217,9 +315,11 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
             bundle_id: bundle.id,
             instance_id: bundleInstanceId,
             name: bundle.name,
-            savings: pricing.savings,
-            original_price: pricing.original_price,
-            sale_price: pricing.sale_price,
+            savings: bundleSavings,
+            original_price: bundleOriginalPrice,
+            sale_price: bundleSalePrice,
+            badge: bundle.badge,
+            badge_text: badgeText,
           },
         ],
       },
@@ -231,10 +331,10 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
       bundle_instance_id: bundleInstanceId,
       items_added: bundle.items.length,
       bundle_pricing: {
-        original_price: pricing.original_price,
-        sale_price: pricing.sale_price,
-        savings: pricing.savings,
-        savings_percent: pricing.savings_percent,
+        original_price: bundleOriginalPrice,
+        sale_price: bundleSalePrice,
+        savings: bundleSavings,
+        savings_percent: bundleSavingsPercent,
       },
       message: `Bundle "${bundle.name}" added to cart`,
     })

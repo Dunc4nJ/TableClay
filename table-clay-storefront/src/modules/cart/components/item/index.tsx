@@ -31,6 +31,9 @@ const Item = ({
   const [updating, setUpdating] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  const metadata = item.metadata as Record<string, unknown> | null
+  const bundleInstanceId = metadata?.bundle_instance_id as string | undefined
+
   const changeQuantity = async (quantity: number) => {
     setError(null)
     setUpdating(true)
@@ -92,10 +95,17 @@ const Item = ({
         <Table.Cell>
           {isBundleItem ? (
             // Bundle items show quantity as text (not editable)
-            <div className="flex items-center">
+            <div className="flex flex-col gap-2">
               <Text className="text-ui-fg-subtle text-sm">
                 Qty: {item.quantity}
               </Text>
+              <DeleteButton
+                id={item.id}
+                bundleInstanceId={bundleInstanceId}
+                className="text-xs"
+              >
+                Remove item
+              </DeleteButton>
             </div>
           ) : (
             // Regular items have editable quantity and delete button

@@ -1,7 +1,8 @@
 "use server"
 
 import { sdk } from "@lib/config"
-import { getCacheOptions, getCacheTag } from "./cookies"
+import { revalidateTag } from "next/cache"
+import { getCacheOptions, getCacheTag, getCartId } from "./cookies"
 
 // Types for bundle data
 export type BundleItemVariant = {
@@ -164,6 +165,12 @@ export async function addBundleToCart(
       }
     )
 
+    const cartCacheTag = await getCacheTag("carts")
+    revalidateTag(cartCacheTag)
+
+    const fulfillmentCacheTag = await getCacheTag("fulfillment")
+    revalidateTag(fulfillmentCacheTag)
+
     return response
   } catch (error) {
     console.error("Error adding bundle to cart:", error)
@@ -201,12 +208,67 @@ export async function removeBundleFromCart(
       }
     )
 
+    const cartCacheTag = await getCacheTag("carts")
+    revalidateTag(cartCacheTag)
+
+    const fulfillmentCacheTag = await getCacheTag("fulfillment")
+    revalidateTag(fulfillmentCacheTag)
+
     return response
   } catch (error) {
     console.error("Error removing bundle from cart:", error)
     return {
       success: false,
       error: error instanceof Error ? error.message : "Failed to remove bundle from cart",
+    }
+  }
+}
+
+type BreakBundleResponse = {
+  success: boolean
+  message?: string
+  items_updated?: number
+  error?: string
+}
+
+/**
+ * Break a bundle by removing a single item and reverting bundle pricing.
+ */
+export async function breakBundleInCart(
+  bundleInstanceId: string,
+  lineItemId?: string
+): Promise<BreakBundleResponse> {
+  const cartId = await getCartId()
+
+  if (!cartId) {
+    throw new Error("Missing cart ID when breaking bundle")
+  }
+
+  try {
+    const response = await sdk.client.fetch<BreakBundleResponse>(
+      "/store/cart/break-bundle",
+      {
+        method: "POST",
+        body: {
+          cart_id: cartId,
+          bundle_instance_id: bundleInstanceId,
+          line_item_id: lineItemId,
+        },
+      }
+    )
+
+    const cartCacheTag = await getCacheTag("carts")
+    revalidateTag(cartCacheTag)
+
+    const fulfillmentCacheTag = await getCacheTag("fulfillment")
+    revalidateTag(fulfillmentCacheTag)
+
+    return response
+  } catch (error) {
+    console.error("Error breaking bundle:", error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to break bundle",
     }
   }
 }
