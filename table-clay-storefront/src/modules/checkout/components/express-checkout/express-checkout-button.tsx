@@ -286,7 +286,7 @@ const ExpressCheckoutButton: React.FC<ExpressCheckoutButtonProps> = ({
     },
     paymentMethods: {
       applePay: "auto",
-      googlePay: "auto",
+      googlePay: "always",
       link: "auto",
       amazonPay: "auto",
       paypal: "never",
