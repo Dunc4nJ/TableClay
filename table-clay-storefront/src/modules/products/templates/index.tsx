@@ -205,7 +205,7 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
                 </div>
                 <p className="text-ui-fg-subtle text-sm max-w-xl mx-auto">
                   Join over {displayStats.total_count.toLocaleString("en-US")}+ happy customers
-                  who have discovered the joy of handcrafted pottery.
+                  who have discovered the joy of handcrafted pottery through this product.
                 </p>
               </div>
 
