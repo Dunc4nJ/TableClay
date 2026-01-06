@@ -4,6 +4,7 @@ import { useState } from "react"
 import { HttpTypes } from "@medusajs/types"
 import ExpressCheckoutButton from "./express-checkout-button"
 import PaymentIcons from "@modules/products/components/payment-icons"
+import { isStripeLike } from "@lib/constants"
 
 interface ExpressCheckoutProps {
   cart: HttpTypes.StoreCart
@@ -15,7 +16,7 @@ const ExpressCheckout: React.FC<ExpressCheckoutProps> = ({ cart }) => {
 
   // Check if payment session exists with client_secret
   const paymentSession = cart.payment_collection?.payment_sessions?.find(
-    (s) => s.status === "pending"
+    (s) => s.status === "pending" && isStripeLike(s.provider_id)
   )
 
   const hasClientSecret = !!paymentSession?.data?.client_secret

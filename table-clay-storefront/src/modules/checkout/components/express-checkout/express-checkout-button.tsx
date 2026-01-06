@@ -14,6 +14,7 @@ import {
 import { useState, useCallback } from "react"
 import { HttpTypes } from "@medusajs/types"
 import { placeOrder, updateCart, setShippingMethod } from "@lib/data/cart"
+import { isStripeLike } from "@lib/constants"
 import { listCartShippingMethods } from "@lib/data/fulfillment"
 
 interface ExpressCheckoutButtonProps {
@@ -80,7 +81,7 @@ const ExpressCheckoutButton: React.FC<ExpressCheckoutButtonProps> = ({
 
   // Get client_secret from payment session
   const paymentSession = cart.payment_collection?.payment_sessions?.find(
-    (s) => s.status === "pending"
+    (s) => s.status === "pending" && isStripeLike(s.provider_id)
   )
   const clientSecret = paymentSession?.data?.client_secret as string | undefined
 
