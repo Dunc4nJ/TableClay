@@ -30,26 +30,37 @@ const ExpressCheckout: React.FC<ExpressCheckoutProps> = ({ cart }) => {
   }
 
   return (
-    <div className="bg-white pb-2">
-      <div className="flex flex-row items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-gray-900">Express checkout</h2>
+    <div className="rounded-2xl border border-cream-200 bg-cream-50/80 p-5 shadow-sm">
+      <div className="flex flex-row items-center justify-between">
+        <h2 className="text-lg font-semibold text-ui-fg-base">
+          Express checkout
+        </h2>
+        <span className="text-[0.65rem] uppercase tracking-[0.22em] text-ui-fg-subtle">
+          Fast pay
+        </span>
       </div>
 
-      {hasClientSecret && (
-        <ExpressCheckoutButton
-          cart={cart}
-          onAvailabilityChange={handleAvailabilityChange}
-        />
-      )}
+      <div className="mt-3 rounded-xl border border-cream-200 bg-white/70 p-2">
+        {hasClientSecret && (
+          <ExpressCheckoutButton
+            cart={cart}
+            onAvailabilityChange={handleAvailabilityChange}
+          />
+        )}
 
-      {showFallbackBadges && (
-        <div className="mt-3">
-          <PaymentIcons methods={["apple-pay", "google-pay"]} size="md" />
-          <p className="mt-2 text-xs text-gray-500 text-center">
-            Available on supported devices and browsers
-          </p>
-        </div>
-      )}
+        {showFallbackBadges && (
+          <div className="py-3">
+            <PaymentIcons methods={["apple-pay", "google-pay"]} size="md" />
+            <p className="mt-2 text-xs text-ui-fg-muted text-center">
+              Available on supported devices and browsers
+            </p>
+          </div>
+        )}
+      </div>
+
+      <p className="mt-3 text-xs text-ui-fg-muted text-center">
+        Secure, accelerated checkout for supported wallets
+      </p>
     </div>
   )
 }

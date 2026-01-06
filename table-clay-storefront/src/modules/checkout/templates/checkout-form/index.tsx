@@ -37,11 +37,11 @@ export default async function CheckoutForm({
 
       {/* OR Divider */}
       <div className="relative flex items-center py-6">
-        <div className="flex-grow border-t border-gray-300"></div>
-        <span className="flex-shrink mx-4 text-sm text-gray-500 uppercase tracking-wide">
+        <div className="flex-grow border-t border-cream-300"></div>
+        <span className="flex-shrink mx-4 text-xs text-ui-fg-subtle uppercase tracking-[0.2em]">
           or continue below
         </span>
-        <div className="flex-grow border-t border-gray-300"></div>
+        <div className="flex-grow border-t border-cream-300"></div>
       </div>
 
       {/* Contact & Delivery Section */}
