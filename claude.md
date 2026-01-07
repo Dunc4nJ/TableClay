@@ -72,6 +72,20 @@ If you need to track that code is written but unverified, add a comment to the b
 
 ---
 
+## Playwright Session Cleanup
+
+If Playwright reports `browser already in use`, run the cleanup script to release the locked browser profile. Always run it after finishing a Playwright verification as well.
+
+```bash
+./scripts/cleanup-playwright.sh
+```
+
+Notes:
+- Defaults to a 60s wait before checking. Pass a custom wait in seconds, e.g. `./scripts/cleanup-playwright.sh 10`.
+- Matches the MCP Chrome profile by default. Override with `PLAYWRIGHT_PATTERN="your-pattern"`.
+
+---
+
 ## Key Gotchas & Fixes
 
 ### 1. Admin Widget Crashes
