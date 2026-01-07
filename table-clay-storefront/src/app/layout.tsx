@@ -22,6 +22,9 @@ export const metadata: Metadata = {
     description: "Made by hand, made with care. Discover our collection of handcrafted ceramics.",
     type: "website",
   },
+  verification: {
+    google: "STFGWtUhNXIwZx4i8nE-pU66JQFqud4kwez1ymtPb8Y",
+  },
   icons: {
     icon: [
       { url: "/favicon.ico" },
