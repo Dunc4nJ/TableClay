@@ -78,19 +78,12 @@ const ExpressCheckoutButton: React.FC<ExpressCheckoutButtonProps> = ({
   const [hasCheckedAvailability, setHasCheckedAvailability] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
-  const [availableMethods, setAvailableMethods] =
-    useState<StripeExpressCheckoutElementReadyEvent["availablePaymentMethods"] | null>(
-      null
-    )
 
   // Get client_secret from payment session
   const paymentSession = cart.payment_collection?.payment_sessions?.find(
     (s) => s.status === "pending" && isStripeLike(s.provider_id)
   )
   const clientSecret = paymentSession?.data?.client_secret as string | undefined
-  const debugEnabled =
-    typeof window !== "undefined" &&
-    new URLSearchParams(window.location.search).has("ece_debug")
 
   // Called when Express Checkout Element is ready
   const onReady = useCallback(
@@ -101,7 +94,6 @@ const ExpressCheckoutButton: React.FC<ExpressCheckoutButtonProps> = ({
 
       setIsAvailable(!!hasExpressMethods)
       setHasCheckedAvailability(true)
-      setAvailableMethods(availablePaymentMethods || null)
       onAvailabilityChange?.(!!hasExpressMethods)
 
       if (!hasExpressMethods) {
@@ -331,12 +323,6 @@ const ExpressCheckoutButton: React.FC<ExpressCheckoutButtonProps> = ({
           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900"></div>
           <p className="text-ui-fg-muted text-sm">Processing payment...</p>
         </div>
-      )}
-
-      {debugEnabled && (
-        <pre className="mt-3 whitespace-pre-wrap break-words rounded-lg border border-cream-200 bg-white/70 p-2 text-[11px] text-ui-fg-muted">
-          {JSON.stringify(availableMethods, null, 2)}
-        </pre>
       )}
     </div>
   )
