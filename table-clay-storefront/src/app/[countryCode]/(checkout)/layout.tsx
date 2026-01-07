@@ -28,7 +28,7 @@ export default function CheckoutLayout({
             <Image
               src="/images/logo/table-clay-logo.jpeg"
               alt="Table Clay"
-              width={72}
+              width={170}
               height={72}
               className="rounded-full object-cover"
               priority
