@@ -9,7 +9,7 @@ export default function CheckoutLayout({
 }) {
   return (
     <div className="w-full bg-tc-cream relative min-h-screen">
-      <div className="h-16 bg-white border-b border-cream-300">
+      <div className="h-20 bg-white border-b border-cream-300">
         <nav className="flex h-full items-center content-container justify-between">
           <LocalizedClientLink
             href="/"
@@ -28,8 +28,8 @@ export default function CheckoutLayout({
             <Image
               src="/images/logo/table-clay-logo.jpeg"
               alt="Table Clay"
-              width={48}
-              height={48}
+              width={72}
+              height={72}
               className="rounded-full object-cover"
               priority
             />
