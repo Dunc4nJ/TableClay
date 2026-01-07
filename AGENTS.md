@@ -37,7 +37,8 @@ cd table-clay-storefront && yarn dev
 5. Verify backend changes using the Store API.
 6. Verify frontend changes by navigating to https://tableclay.com and confirming behavior.
 7. Only close the bead after verification succeeds. If verification fails, iterate and repeat this loop.
-
+8. When committing after validation, if unrelated files are modified, do not stop.
+   Stage only files relevant to the current bead, then commit and push.
 ---
 
 
