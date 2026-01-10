@@ -5,11 +5,11 @@ import LocalizedClientLink from "@modules/common/components/localized-client-lin
 
 // Collections for the footer
 const COLLECTIONS = [
-  { label: "Cloud Line", href: "/collections/cloud-line" },
-  { label: "Modern Line", href: "/collections/modern-line" },
-  { label: "Japanese Line", href: "/collections/japanese-line" },
-  { label: "Love Line", href: "/collections/love-line" },
-  { label: "Nature Line", href: "/collections/nature-line" },
+  { label: "Cloud Collection", href: "/collections/cloud-line" },
+  { label: "Modern Collection", href: "/collections/modern-line" },
+  { label: "Japanese Collection", href: "/collections/japanese-line" },
+  { label: "Love Collection", href: "/collections/love-line" },
+  { label: "Nature Collection", href: "/collections/nature-line" },
   { label: "Odd & Ends", href: "/collections/no-line" },
 ]
 

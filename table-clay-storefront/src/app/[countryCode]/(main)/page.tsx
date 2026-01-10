@@ -10,7 +10,7 @@ import { getRegion } from "@lib/data/regions"
 export const metadata: Metadata = {
   title: "Table Clay | Handcrafted Pottery & Ceramics",
   description:
-    "Discover our collection of handcrafted ceramic mugs, bowls, vases, and more. Each piece is made by hand with care. Shop Cloud Line, Modern Line, Japanese Line, and more.",
+    "Discover our collection of handcrafted ceramic mugs, bowls, vases, and more. Each piece is made by hand with care. Shop Cloud Collection, Modern Collection, Japanese Collection, and more.",
 }
 
 export default async function Home(props: {

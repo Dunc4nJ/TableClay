@@ -19,11 +19,11 @@ const MainMenuItems = {
 
 // Collections menu items
 const CollectionItems = {
-  "Cloud Line": "/collections/cloud-line",
-  "Modern Line": "/collections/modern-line",
-  "Japanese Line": "/collections/japanese-line",
-  "Love Line": "/collections/love-line",
-  "Nature Line": "/collections/nature-line",
+  "Cloud Collection": "/collections/cloud-line",
+  "Modern Collection": "/collections/modern-line",
+  "Japanese Collection": "/collections/japanese-line",
+  "Love Collection": "/collections/love-line",
+  "Nature Collection": "/collections/nature-line",
   "Odd & Ends": "/collections/no-line",
 }
 
