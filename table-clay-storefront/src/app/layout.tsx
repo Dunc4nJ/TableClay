@@ -21,6 +21,20 @@ export const metadata: Metadata = {
     title: "Table Clay | Handcrafted Ceramics",
     description: "Made by hand, made with care. Discover our collection of handcrafted ceramics.",
     type: "website",
+    images: [
+      {
+        url: "/opengraph-image.jpg",
+        width: 1600,
+        height: 900,
+        alt: "Table Clay - Handcrafted Ceramics",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Table Clay | Handcrafted Ceramics",
+    description: "Made by hand, made with care. Discover our collection of handcrafted ceramics.",
+    images: ["/twitter-image.jpg"],
   },
   verification: {
     google: "STFGWtUhNXIwZx4i8nE-pU66JQFqud4kwez1ymtPb8Y",
