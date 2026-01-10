@@ -23,7 +23,7 @@ type Params = {
 export default async function StorePage(props: Params) {
   const params = await props.params
   const searchParams = await props.searchParams
-  const { sortBy, page, collection } = searchParams
+  const { sortBy, collection } = searchParams
 
   // Fetch collections for the filter buttons
   const { collections } = await listCollections()
@@ -31,7 +31,6 @@ export default async function StorePage(props: Params) {
   return (
     <StoreTemplate
       sortBy={sortBy}
-      page={page}
       countryCode={params.countryCode}
       collections={collections}
       collectionId={collection || null}

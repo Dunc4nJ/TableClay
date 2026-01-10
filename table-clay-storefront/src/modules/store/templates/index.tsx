@@ -5,22 +5,19 @@ import SkeletonProductGrid from "@modules/skeletons/templates/skeleton-product-g
 import RefinementList from "@modules/store/components/refinement-list"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
 
-import PaginatedProducts from "./paginated-products"
+import InfiniteProductsWrapper from "./infinite-products-wrapper"
 
 const StoreTemplate = ({
   sortBy,
-  page,
   countryCode,
   collections,
   collectionId,
 }: {
   sortBy?: SortOptions
-  page?: string
   countryCode: string
   collections?: HttpTypes.StoreCollection[]
   collectionId?: string | null
 }) => {
-  const pageNumber = page ? parseInt(page) : 1
   const sort = sortBy || "created_at"
 
   // Find active collection title for the heading
@@ -46,9 +43,8 @@ const StoreTemplate = ({
           </h1>
         </div>
         <Suspense fallback={<SkeletonProductGrid />}>
-          <PaginatedProducts
+          <InfiniteProductsWrapper
             sortBy={sort}
-            page={pageNumber}
             countryCode={countryCode}
             collectionId={collectionId || undefined}
           />
