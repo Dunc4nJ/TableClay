@@ -1,0 +1,110 @@
+{
+  "edges": [
+    {
+      "from_file": "scripts/sync-product-research.py",
+      "from_func": "main",
+      "to_file": "scripts/sync-product-research.py",
+      "to_func": "resolve_product"
+    },
+    {
+      "from_file": "scripts/sync-product-research.py",
+      "from_func": "main",
+      "to_file": "scripts/sync-product-research.py",
+      "to_func": "build_product_index"
+    },
+    {
+      "from_file": "scripts/sync-product-research.py",
+      "from_func": "resolve_product",
+      "to_file": "scripts/sync-product-research.py",
+      "to_func": "normalize_name"
+    },
+    {
+      "from_file": "scripts/sync-product-research.py",
+      "from_func": "main",
+      "to_file": "scripts/sync-product-research.py",
+      "to_func": "extract_usd_price"
+    },
+    {
+      "from_file": "scripts/sync-product-research.py",
+      "from_func": "main",
+      "to_file": "scripts/sync-product-research.py",
+      "to_func": "load_csv_rows"
+    },
+    {
+      "from_file": "scripts/sync-product-research.py",
+      "from_func": "main",
+      "to_file": "scripts/sync-product-research.py",
+      "to_func": "http_json"
+    },
+    {
+      "from_file": "scripts/sync-product-research.py",
+      "from_func": "main",
+      "to_file": "scripts/sync-product-research.py",
+      "to_func": "parse_price_to_cents"
+    },
+    {
+      "from_file": "scripts/sync-product-research.py",
+      "from_func": "main",
+      "to_file": "scripts/sync-product-research.py",
+      "to_func": "stable_rating"
+    },
+    {
+      "from_file": "scripts/sync-product-research.py",
+      "from_func": "main",
+      "to_file": "scripts/sync-product-research.py",
+      "to_func": "update_variant_price"
+    },
+    {
+      "from_file": "scripts/sync-product-research.py",
+      "from_func": "main",
+      "to_file": "scripts/sync-product-research.py",
+      "to_func": "build_alias_map"
+    },
+    {
+      "from_file": "scripts/sync-product-research.py",
+      "from_func": "fetch_all_products",
+      "to_file": "scripts/sync-product-research.py",
+      "to_func": "http_json"
+    },
+    {
+      "from_file": "scripts/sync-product-research.py",
+      "from_func": "update_variant_price",
+      "to_file": "scripts/sync-product-research.py",
+      "to_func": "http_json"
+    },
+    {
+      "from_file": "scripts/sync-product-research.py",
+      "from_func": "<module>",
+      "to_file": "scripts/sync-product-research.py",
+      "to_func": "main"
+    },
+    {
+      "from_file": "scripts/sync-product-research.py",
+      "from_func": "upsert_review_stats",
+      "to_file": "scripts/sync-product-research.py",
+      "to_func": "http_json"
+    },
+    {
+      "from_file": "scripts/sync-product-research.py",
+      "from_func": "main",
+      "to_file": "scripts/sync-product-research.py",
+      "to_func": "upsert_review_stats"
+    },
+    {
+      "from_file": "scripts/sync-product-research.py",
+      "from_func": "build_alias_map",
+      "to_file": "scripts/sync-product-research.py",
+      "to_func": "normalize_name"
+    },
+    {
+      "from_file": "scripts/sync-product-research.py",
+      "from_func": "main",
+      "to_file": "scripts/sync-product-research.py",
+      "to_func": "fetch_all_products"
+    }
+  ],
+  "languages": [
+    "python"
+  ],
+  "timestamp": 1768450417.546335
+}

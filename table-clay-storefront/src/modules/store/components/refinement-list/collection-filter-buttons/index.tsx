@@ -62,6 +62,11 @@ const getCollectionTheme = (handle: string | undefined) => {
   return collectionThemes[handle] || defaultTheme
 }
 
+// Strip "Collection" suffix from titles for cleaner display
+const formatCollectionTitle = (title: string) => {
+  return title.replace(/\s*Collection$/i, "").trim()
+}
+
 // Animated gradient dot component
 const GradientDot = ({
   gradientClass,
@@ -208,15 +213,16 @@ const CollectionFilterButtons = ({
             isActive={!activeCollectionId}
           />
           <span className={clx(
-            "truncate",
             !activeCollectionId ? "text-white" : "text-ui-fg-base"
           )}>
             All
           </span>
         </AnimatedButton>
 
-        {/* Collection Buttons */}
-        {collections.map((collection) => {
+        {/* Collection Buttons (Odds & Ends excluded - available via top nav) */}
+        {collections
+          .filter((collection) => collection.handle !== "no-line")
+          .map((collection) => {
           const theme = getCollectionTheme(collection.handle)
           const isActive = activeCollectionId === collection.id
 
@@ -234,7 +240,7 @@ const CollectionFilterButtons = ({
                 gradientClass={theme.dotGradient}
                 isActive={isActive}
               />
-              <span className="truncate">{collection.title}</span>
+              <span>{formatCollectionTitle(collection.title)}</span>
             </AnimatedButton>
           )
         })}

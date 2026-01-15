@@ -238,6 +238,14 @@ modules: [
 
 ---
 
+## Event Subscribers
+
+| Subscriber | Location | Purpose |
+|------------|----------|---------|
+| `stripe-webhook-debug` | `table-clay-store/src/subscribers/stripe-webhook-debug.ts` | Logs Stripe webhook metadata (event type/id, signature presence, raw body size, session_id) and the derived payment action for diagnosis. Intended for short-term debugging. |
+
+---
+
 ## Environment Variables
 
 | Variable | Description |

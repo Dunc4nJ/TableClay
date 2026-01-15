@@ -10,14 +10,13 @@ import CartButton from "@modules/layout/components/cart-button"
 import SideMenu from "@modules/layout/components/side-menu"
 import NavDropdown from "@modules/layout/components/nav-dropdown"
 
-// Collections for the dropdown menu
+// Collections for the dropdown menu (Odds & Ends excluded - shown as top nav link instead)
 const COLLECTIONS = [
   { label: "Cloud Collection", href: "/collections/cloud-line" },
   { label: "Modern Collection", href: "/collections/modern-line" },
   { label: "Japanese Collection", href: "/collections/japanese-line" },
   { label: "Love Collection", href: "/collections/love-line" },
   { label: "Nature Collection", href: "/collections/nature-line" },
-  { label: "Odd & Ends", href: "/collections/no-line" },
 ]
 
 export default async function Nav() {
@@ -63,6 +62,12 @@ export default async function Nav() {
               className="text-stone-600 hover:text-brand-600 uppercase text-sm tracking-wider font-medium transition-colors"
             >
               Bowls
+            </LocalizedClientLink>
+            <LocalizedClientLink
+              href="/collections/no-line"
+              className="text-stone-600 hover:text-brand-600 uppercase text-sm tracking-wider font-medium transition-colors"
+            >
+              Odds & Ends
             </LocalizedClientLink>
           </div>
 

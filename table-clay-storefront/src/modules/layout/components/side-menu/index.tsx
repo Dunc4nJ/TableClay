@@ -17,14 +17,13 @@ const MainMenuItems = {
   "Shop All": "/store",
 }
 
-// Collections menu items
+// Collections menu items (Odds & Ends excluded - shown in Categories instead)
 const CollectionItems = {
   "Cloud Collection": "/collections/cloud-line",
   "Modern Collection": "/collections/modern-line",
   "Japanese Collection": "/collections/japanese-line",
   "Love Collection": "/collections/love-line",
   "Nature Collection": "/collections/nature-line",
-  "Odd & Ends": "/collections/no-line",
 }
 
 // Category menu items
@@ -32,7 +31,7 @@ const CategoryItems = {
   Mugs: "/categories/mugs",
   Vases: "/categories/vases",
   Bowls: "/categories/bowls",
-  "Odd & Ends": "/categories/odd-and-ends",
+  "Odds & Ends": "/collections/no-line",
 }
 
 // Account menu items

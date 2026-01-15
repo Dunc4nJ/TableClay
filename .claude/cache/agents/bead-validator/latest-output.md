@@ -1,0 +1,1 @@
+/Users/duncanjurman/Desktop/TableClay/.claude/cache/agents/bead-validator/PLAN-valiant-cuddling-goblet-output.md
