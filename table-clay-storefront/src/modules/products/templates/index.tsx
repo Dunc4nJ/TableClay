@@ -187,6 +187,11 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
         <BenefitsSection className="bg-transparent" />
       </section>
 
+      {/* Related Products - Client component with internal loading state */}
+      <div data-testid="related-products-container">
+        <RelatedProducts product={product} countryCode={countryCode} region={region} />
+      </div>
+
       {/* Reviews Section - Always shown with defaults */}
       {(() => {
         // Use API stats if available, otherwise use defaults
@@ -243,11 +248,6 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
           </div>
         )
       })()}
-
-      {/* Related Products - Client component with internal loading state */}
-      <div data-testid="related-products-container">
-        <RelatedProducts product={product} countryCode={countryCode} region={region} />
-      </div>
 
       {/* Sticky Cart Bar */}
       {/* Sticky cart is rendered inside ProductActions to stay in sync */}
