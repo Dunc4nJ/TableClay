@@ -17,6 +17,7 @@ import ProductPrice from "../product-price"
 import MobileActions from "./mobile-actions"
 import { useRouter } from "next/navigation"
 import StickyCartBar from "@modules/products/components/sticky-cart-bar"
+import { generateEventId, pushEcommerceEvent } from "@lib/analytics/events"
 
 const PUBLIC_BACKEND_URL =
   process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || ""
@@ -60,6 +61,7 @@ const formatPrice = (amount: number) => `$${(amount / 100).toFixed(2)}`
 
 export default function ProductActions({
   product,
+  region,
   disabled,
   bundles = [],
   bundleSettings,
@@ -238,6 +240,27 @@ export default function ProductActions({
         if (!result?.success) {
           throw new Error(result?.error || "Failed to add bundle to cart")
         }
+
+        const currency = (region?.currency_code || "USD").toUpperCase()
+        const bundlePrice = selectedBundle.sale_price ?? 0
+
+        pushEcommerceEvent({
+          event: "add_to_cart",
+          event_id: generateEventId(`add_to_cart_bundle_${selectedBundle.id}`),
+          ecommerce: {
+            currency,
+            value: bundlePrice / 100,
+            items: [
+              {
+                item_id: selectedBundle.id,
+                item_name: selectedBundle.name || "Bundle",
+                item_variant: "bundle",
+                price: bundlePrice / 100,
+                quantity: 1,
+              },
+            ],
+          },
+        })
       } else {
         // Standard variant flow (single item)
         if (!selectedVariant?.id) return null
@@ -246,6 +269,27 @@ export default function ProductActions({
           variantId: selectedVariant.id,
           quantity: 1,
           countryCode,
+        })
+
+        const currency = (region?.currency_code || "USD").toUpperCase()
+        const price = selectedVariant.calculated_price?.calculated_amount ?? 0
+
+        pushEcommerceEvent({
+          event: "add_to_cart",
+          event_id: generateEventId(`add_to_cart_${selectedVariant.id}`),
+          ecommerce: {
+            currency,
+            value: price / 100,
+            items: [
+              {
+                item_id: selectedVariant.id ?? product.id,
+                item_name: product.title || "Product",
+                item_variant: selectedVariant.title,
+                price: price / 100,
+                quantity: 1,
+              },
+            ],
+          },
         })
       }
 

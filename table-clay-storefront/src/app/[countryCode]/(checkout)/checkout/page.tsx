@@ -4,6 +4,7 @@ import { retrieveCustomer } from "@lib/data/customer"
 import PaymentWrapper from "@modules/checkout/components/payment-wrapper"
 import CheckoutForm from "@modules/checkout/templates/checkout-form"
 import CheckoutSummary from "@modules/checkout/templates/checkout-summary"
+import TrackInitiateCheckout from "@lib/analytics/track-checkout"
 import { Metadata } from "next"
 import { notFound } from "next/navigation"
 
@@ -62,6 +63,7 @@ export default async function Checkout() {
 
   return (
     <div className="bg-tc-cream">
+      <TrackInitiateCheckout cart={cart} />
       <div className="grid grid-cols-1 small:grid-cols-[minmax(0,1fr)_420px]">
         <section className="bg-tc-cream">
           <div className="content-container py-10 small:py-12">

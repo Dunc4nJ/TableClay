@@ -1,4 +1,5 @@
 import { getBaseURL } from "@lib/util/env"
+import GtmScript from "@lib/analytics/gtm"
 import { Metadata } from "next"
 import { Outfit } from "next/font/google"
 import "styles/globals.css"
@@ -58,6 +59,7 @@ export default function RootLayout(props: { children: React.ReactNode }) {
   return (
     <html lang="en" data-mode="light" className={outfit.variable}>
       <body className="font-sans antialiased">
+        <GtmScript />
         <main className="relative">{props.children}</main>
       </body>
     </html>

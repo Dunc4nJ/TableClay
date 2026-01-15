@@ -9,6 +9,7 @@ import ImageGallery from "@modules/products/components/image-gallery"
 import ProductInfo from "@modules/products/templates/product-info"
 import ProductActions from "@modules/products/components/product-actions"
 import RelatedProducts from "@modules/products/components/related-products"
+import TrackViewContent from "@lib/analytics/track-view-content"
 
 // New components
 import TrustBadges from "@modules/products/components/trust-badges"
@@ -94,6 +95,7 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
 
   return (
     <>
+      <TrackViewContent product={product} region={region} />
       {/* === ABOVE THE FOLD === */}
       <div className="bg-white">
         <div
