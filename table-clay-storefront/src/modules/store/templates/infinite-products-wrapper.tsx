@@ -26,6 +26,7 @@ export default async function InfiniteProductsWrapper({
   productsIds?: string[]
   countryCode: string
 }) {
+  const sort = sortBy || "featured"
   const queryParams: InfiniteProductsWrapperParams = {
     limit: PRODUCT_LIMIT,
   }
@@ -42,7 +43,7 @@ export default async function InfiniteProductsWrapper({
     queryParams["id"] = productsIds
   }
 
-  if (sortBy === "created_at") {
+  if (sort === "created_at") {
     queryParams["order"] = "created_at"
   }
 
@@ -51,8 +52,6 @@ export default async function InfiniteProductsWrapper({
   if (!region) {
     return null
   }
-
-  const sort = sortBy || "created_at"
 
   const {
     response: { products, count },

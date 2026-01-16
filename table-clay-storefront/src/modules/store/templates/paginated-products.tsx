@@ -29,6 +29,7 @@ export default async function PaginatedProducts({
   productsIds?: string[]
   countryCode: string
 }) {
+  const sort = sortBy || "featured"
   const queryParams: PaginatedProductsParams = {
     limit: 12,
   }
@@ -45,7 +46,7 @@ export default async function PaginatedProducts({
     queryParams["id"] = productsIds
   }
 
-  if (sortBy === "created_at") {
+  if (sort === "created_at") {
     queryParams["order"] = "created_at"
   }
 
@@ -60,7 +61,7 @@ export default async function PaginatedProducts({
   } = await listProductsWithSort({
     page,
     queryParams,
-    sortBy,
+    sortBy: sort,
     countryCode,
   })
 

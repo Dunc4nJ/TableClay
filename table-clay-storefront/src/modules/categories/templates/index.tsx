@@ -18,7 +18,7 @@ export default function CategoryTemplate({
   sortBy?: SortOptions
   countryCode: string
 }) {
-  const sort = sortBy || "created_at"
+  const sort = sortBy || "featured"
 
   if (!category || !countryCode) notFound()
 

@@ -200,7 +200,9 @@ src/lib/data/products.ts (listProducts, listProductsWithSort)
 Store Page & Product Pages
 ```
 
-**Caching:** Products revalidate every 60 seconds (ISR)
+**Featured ordering:** The default storefront sort is "Featured", using `/store/product-order` with new products prepended by `created_at`.
+
+**Caching:** Products and product order revalidate every 60 seconds (ISR)
 
 ### Collections
 ```
@@ -425,6 +427,7 @@ This ensures:
 |----------|---------|------|
 | `/store/products` | List products | Publishable Key |
 | `/store/products/:id` | Get product detail | Publishable Key |
+| `/store/product-order` | Featured product ordering | Publishable Key |
 | `/store/collections` | List collections | Publishable Key |
 | `/store/collections/:id` | Get collection | Publishable Key |
 | `/store/product-categories` | List categories | Publishable Key |

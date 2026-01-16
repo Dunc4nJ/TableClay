@@ -13,9 +13,36 @@ interface MinPricedProduct extends HttpTypes.StoreProduct {
  */
 export function sortProducts(
   products: HttpTypes.StoreProduct[],
-  sortBy: SortOptions
+  sortBy: SortOptions,
+  productOrder: string[] = []
 ): HttpTypes.StoreProduct[] {
-  let sortedProducts = products as MinPricedProduct[]
+  const sortedProducts = [...products] as MinPricedProduct[]
+
+  if (sortBy === "featured") {
+    const orderIndex = new Map(productOrder.map((id, index) => [id, index]))
+    const ordered: MinPricedProduct[] = []
+    const unlisted: MinPricedProduct[] = []
+
+    for (const product of sortedProducts) {
+      if (orderIndex.has(product.id)) {
+        ordered.push(product)
+      } else {
+        unlisted.push(product)
+      }
+    }
+
+    unlisted.sort((a, b) => {
+      const aTime = new Date(a.created_at ?? 0).getTime()
+      const bTime = new Date(b.created_at ?? 0).getTime()
+      return bTime - aTime
+    })
+
+    ordered.sort((a, b) => {
+      return (orderIndex.get(a.id) ?? 0) - (orderIndex.get(b.id) ?? 0)
+    })
+
+    return [...unlisted, ...ordered]
+  }
 
   if (["price_asc", "price_desc"].includes(sortBy)) {
     // Precompute the minimum price for each product

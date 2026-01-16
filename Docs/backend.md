@@ -116,6 +116,7 @@ The Table Clay backend is a **Medusa.js v2.12.3** e-commerce engine deployed to 
 
 **Key Features:**
 - Bundle promo settings (headline, subtext, badge text)
+- Curated product ordering for storefront Featured sorting
 - Flexible key-value storage for any setting type
 
 ---
@@ -134,6 +135,7 @@ The Table Clay backend is a **Medusa.js v2.12.3** e-commerce engine deployed to 
 | POST | `/store/newsletter/subscribe` | Subscribe to newsletter |
 | GET | `/store/newsletter/unsubscribe` | Unsubscribe from newsletter |
 | GET | `/store/settings` | Get bundle promo settings |
+| GET | `/store/product-order` | Get curated product order for Featured sorting |
 | GET | `/store/address-autocomplete?input=xxx` | Get address suggestions (Google Places) |
 | GET | `/store/address-autocomplete/details?place_id=xxx` | Get structured address from place_id |
 | GET | `/store/cart/:id/tip` | Get tip amount |
@@ -169,6 +171,8 @@ The Table Clay backend is a **Medusa.js v2.12.3** e-commerce engine deployed to 
 | GET | `/admin/newsletter/export` | Export subscribers CSV |
 | GET | `/admin/settings` | Get all settings |
 | PUT | `/admin/settings/:key` | Update setting |
+| GET | `/admin/product-order` | Get curated product order |
+| PUT | `/admin/product-order` | Update curated product order |
 
 ---
 
@@ -189,6 +193,7 @@ Custom admin UI pages under `/app`:
 | `/app/faqs/:id` | Edit FAQ |
 | `/app/newsletter` | Newsletter subscriber list |
 | `/app/settings` | Store settings (bundle promo) |
+| `/app/product-order` | Curate Featured product ordering |
 
 Custom admin widgets:
 

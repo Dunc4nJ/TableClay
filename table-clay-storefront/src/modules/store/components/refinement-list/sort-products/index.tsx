@@ -2,7 +2,7 @@
 
 import { clx } from "@medusajs/ui"
 
-export type SortOptions = "price_asc" | "price_desc" | "created_at"
+export type SortOptions = "featured" | "price_asc" | "price_desc" | "created_at"
 
 type SortProductsProps = {
   sortBy: SortOptions
@@ -11,6 +11,11 @@ type SortProductsProps = {
 }
 
 const sortOptions: { value: SortOptions; label: string; shortLabel: string }[] = [
+  {
+    value: "featured",
+    label: "Featured",
+    shortLabel: "Featured",
+  },
   {
     value: "created_at",
     label: "Latest",

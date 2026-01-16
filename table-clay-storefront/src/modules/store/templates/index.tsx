@@ -18,7 +18,7 @@ const StoreTemplate = ({
   collections?: HttpTypes.StoreCollection[]
   collectionId?: string | null
 }) => {
-  const sort = sortBy || "created_at"
+  const sort = sortBy || "featured"
 
   // Find active collection title for the heading
   const activeCollection = collectionId

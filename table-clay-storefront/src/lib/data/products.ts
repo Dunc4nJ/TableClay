@@ -2,6 +2,7 @@
 
 import { sdk } from "@lib/config"
 import { sortProducts } from "@lib/util/sort-products"
+import { getProductOrder } from "@lib/data/product-order"
 import { HttpTypes } from "@medusajs/types"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
 import { getAuthHeaders, getCacheOptions } from "./cookies"
@@ -94,7 +95,7 @@ export const listProducts = async ({
 export const listProductsWithSort = async ({
   page = 0,
   queryParams,
-  sortBy = "created_at",
+  sortBy = "featured",
   countryCode,
 }: {
   page?: number
@@ -108,9 +109,7 @@ export const listProductsWithSort = async ({
 }> => {
   const limit = queryParams?.limit || 12
 
-  const {
-    response: { products, count },
-  } = await listProducts({
+  const productsPromise = listProducts({
     pageParam: 0,
     queryParams: {
       ...queryParams,
@@ -118,6 +117,38 @@ export const listProductsWithSort = async ({
     },
     countryCode,
   })
+
+  if (sortBy === "featured") {
+    const [productsResult, productOrder] = await Promise.all([
+      productsPromise,
+      getProductOrder(),
+    ])
+
+    const {
+      response: { products, count },
+    } = productsResult
+
+    const sortedProducts = sortProducts(products, sortBy, productOrder)
+
+    const pageParam = (page - 1) * limit
+
+    const nextPage = count > pageParam + limit ? pageParam + limit : null
+
+    const paginatedProducts = sortedProducts.slice(pageParam, pageParam + limit)
+
+    return {
+      response: {
+        products: paginatedProducts,
+        count,
+      },
+      nextPage,
+      queryParams,
+    }
+  }
+
+  const {
+    response: { products, count },
+  } = await productsPromise
 
   const sortedProducts = sortProducts(products, sortBy)
 

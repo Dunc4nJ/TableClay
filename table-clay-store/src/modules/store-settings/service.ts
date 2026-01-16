@@ -16,6 +16,7 @@ export const SETTING_KEYS = {
   BUNDLE_HEADLINE: "bundle_headline",
   BUNDLE_PROMO_TEXT: "bundle_promo_text",
   BUNDLE_PROMO_ENABLED: "bundle_promo_enabled",
+  PRODUCT_ORDER: "product_order",
 } as const
 
 /**
