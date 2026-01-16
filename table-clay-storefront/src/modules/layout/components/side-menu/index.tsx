@@ -31,7 +31,7 @@ const CategoryItems = {
   Mugs: "/categories/mugs",
   Vases: "/categories/vases",
   Bowls: "/categories/bowls",
-  "Odds & Ends": "/collections/no-line",
+  "Odds & Ends": "/categories/odd-and-ends",
 }
 
 // Account menu items

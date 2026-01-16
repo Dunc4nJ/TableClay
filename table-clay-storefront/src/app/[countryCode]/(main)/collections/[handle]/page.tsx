@@ -34,13 +34,13 @@ export async function generateStaticParams() {
         .filter(Boolean) as string[]
   )
 
-  const collectionHandles = collections.map(
-    (collection: StoreCollection) => collection.handle
-  )
+  const collectionHandles = collections
+    .map((collection: StoreCollection) => collection.handle)
+    .filter((handle): handle is string => !!handle && handle !== "no-line")
 
   const staticParams = countryCodes
     ?.map((countryCode: string) =>
-      collectionHandles.map((handle: string | undefined) => ({
+      collectionHandles.map((handle: string) => ({
         countryCode,
         handle,
       }))

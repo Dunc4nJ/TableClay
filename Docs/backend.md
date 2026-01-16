@@ -243,6 +243,7 @@ modules: [
 | Subscriber | Location | Purpose |
 |------------|----------|---------|
 | `stripe-webhook-debug` | `table-clay-store/src/subscribers/stripe-webhook-debug.ts` | Logs Stripe webhook metadata (event type/id, signature presence, raw body size, session_id) and the derived payment action for diagnosis. Intended for short-term debugging. |
+| `product-collection-auto-assign` | `table-clay-store/src/subscribers/product-collection-auto-assign.ts` | Auto-assigns the `odd-and-ends` category when products are not in mugs/vases/bowls, and removes it when they are. |
 
 ---
 
@@ -422,6 +423,15 @@ railway ssh -- yarn medusa db:migrate
 
 ---
 
+## Maintenance Scripts
+
+```bash
+# Backfill Odds & Ends category assignments
+npx medusa exec ./src/scripts/backfill-odd-ends-category.ts
+```
+
+---
+
 ## Admin Dashboard Currency Fix
 
 The admin dashboard uses `patch-package` to fix price display issues (Medusa stores amounts in cents but the dashboard was displaying them as dollars).
@@ -469,7 +479,7 @@ The patch divides amounts by `10^decimalDigits` before formatting, correctly con
 
 ---
 
-*Last updated: January 6, 2026*
+*Last updated: January 16, 2026*
 *Medusa Version: 2.12.3*
 *Status: PRODUCTION READY*
 
@@ -479,6 +489,7 @@ The patch divides amounts by `10^decimalDigits` before formatting, correctly con
 
 | Date | Change |
 |------|--------|
+| Jan 16, 2026 | Odds & Ends category auto-assignment + backfill script |
 | Jan 6, 2026 | Added product review stats widget on product detail pages |
 | Jan 5, 2026 | Admin review updates now allow switching the associated product |
 | Jan 4, 2026 | Added Google Places API integration (address autocomplete endpoints) |

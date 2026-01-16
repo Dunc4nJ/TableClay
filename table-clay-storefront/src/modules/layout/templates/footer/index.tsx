@@ -3,14 +3,14 @@ import { Text } from "@medusajs/ui"
 import Image from "next/image"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 
-// Collections for the footer
+// Collections for the footer (Odds & Ends links to the category page)
 const COLLECTIONS = [
   { label: "Cloud Collection", href: "/collections/cloud-line" },
   { label: "Modern Collection", href: "/collections/modern-line" },
   { label: "Japanese Collection", href: "/collections/japanese-line" },
   { label: "Love Collection", href: "/collections/love-line" },
   { label: "Nature Collection", href: "/collections/nature-line" },
-  { label: "Odd & Ends", href: "/collections/no-line" },
+  { label: "Odd & Ends", href: "/categories/odd-and-ends" },
 ]
 
 export default async function Footer() {

@@ -137,6 +137,7 @@ Location: `src/app/[countryCode]/(main)/page.tsx`
 - Mugs → `/categories/mugs`
 - Vases → `/categories/vases`
 - Bowls → `/categories/bowls`
+- Odds & Ends → `/categories/odd-and-ends`
 - Account → `/account`
 - Cart → `/cart`
 
@@ -291,6 +292,9 @@ Collections have metadata stored in Medusa with:
 | vases | Vases | Triple Vase | 6 |
 | bowls | Bowls | Japanese 7.5" Bowl | 5 |
 | odd-and-ends | Odd & Ends | Small Round Pots | 6 |
+
+**Notes:**
+- Odds & Ends is a category; legacy `/collections/no-line` links redirect to `/categories/odd-and-ends`.
 
 ---
 
@@ -557,10 +561,11 @@ NEXT_PUBLIC_DEFAULT_REGION=us
 
 | Date | Change |
 |------|--------|
+| Jan 16, 2026 | Odds & Ends now routes to category with legacy `/collections/no-line` redirect |
 | Jan 2, 2026 | Added configurable bundle headline via store settings API |
 | Jan 2, 2026 | Fixed bundle items display to show product names instead of variant names |
 | Dec 30, 2024 | Initial documentation created |
 
 ---
 
-*Last updated: January 2, 2026*
+*Last updated: January 16, 2026*

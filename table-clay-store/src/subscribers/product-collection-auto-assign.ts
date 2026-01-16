@@ -1,48 +1,32 @@
-import type {
-  SubscriberArgs,
-  SubscriberConfig,
-} from "@medusajs/framework"
+import type { SubscriberArgs, SubscriberConfig } from "@medusajs/framework"
 import { Modules } from "@medusajs/framework/utils"
 
 /**
  * Product Collection Auto-Assign Subscriber
  *
- * Automatically assigns products to the "Odds & Ends" collection if they don't
+ * Automatically assigns products to the "Odds & Ends" category if they don't
  * have a main category (mugs, vases, or bowls).
  *
  * Logic:
- * - If product has NO main category → add to "no-line" collection
- * - If product HAS main category AND is in "no-line" → remove from it
+ * - If product has NO main category → add to "odd-and-ends" category
+ * - If product HAS main category AND is in "odd-and-ends" → remove it
  */
 
 // Category handles that indicate a product is properly categorized
 const MAIN_CATEGORY_HANDLES = ["mugs", "vases", "bowls"]
 
-// The "Odds & Ends" collection handle
-const ODDS_ENDS_COLLECTION_HANDLE = "no-line"
-
-type Category = { handle: string }
-type Collection = { id: string; handle: string }
+// The "Odds & Ends" category handle
+const ODDS_ENDS_CATEGORY_HANDLE = "odd-and-ends"
 
 export default async function productCollectionAutoAssign({
   event: { data },
   container,
 }: SubscriberArgs<{ id: string }>) {
   const productModuleService = container.resolve(Modules.PRODUCT)
-  const query = container.resolve("query")
 
   try {
-    // Fetch product with categories and collections
-    const { data: [product] } = await query.graph({
-      entity: "product",
-      fields: [
-        "id",
-        "title",
-        "categories.handle",
-        "collections.id",
-        "collections.handle",
-      ],
-      filters: { id: data.id },
+    const product = await productModuleService.retrieveProduct(data.id, {
+      relations: ["categories"],
     })
 
     if (!product) {
@@ -50,48 +34,57 @@ export default async function productCollectionAutoAssign({
       return
     }
 
-    const categoryHandles = ((product.categories || []) as Category[]).map((c) => c.handle)
-    const collections = (product.collections || []) as Collection[]
-    const collectionHandles = collections.map((c) => c.handle)
+    const categories = product.categories || []
+    const categoryHandles = categories.map((category) => category.handle)
+    const categoryIds = categories.map((category) => category.id)
 
     // Check if product has any main category
     const hasMainCategory = categoryHandles.some((h) =>
       MAIN_CATEGORY_HANDLES.includes(h)
     )
 
-    // Check if already in Odds & Ends collection
-    const isInOddsEnds = collectionHandles.includes(ODDS_ENDS_COLLECTION_HANDLE)
+    // Check if already in Odds & Ends category
+    const isInOddsEnds = categoryHandles.includes(ODDS_ENDS_CATEGORY_HANDLE)
 
     if (!hasMainCategory && !isInOddsEnds) {
       // Product is uncategorized and NOT in Odds & Ends - add it
+      const [oddsEndsCategory] =
+        await productModuleService.listProductCategories(
+          { handle: ODDS_ENDS_CATEGORY_HANDLE },
+          { select: ["id", "handle"] }
+        )
 
-      // Find the Odds & Ends collection ID
-      const { data: collectionsData } = await query.graph({
-        entity: "product_collection",
-        fields: ["id", "handle"],
-        filters: { handle: ODDS_ENDS_COLLECTION_HANDLE },
-      })
-
-      const oddsEndsCollection = collectionsData?.[0]
-
-      if (!oddsEndsCollection) {
-        console.error("[AutoAssign] Odds & Ends collection not found!")
+      if (!oddsEndsCategory) {
+        console.error("[AutoAssign] Odds & Ends category not found!")
         return
       }
 
-      // Add product to collection
+      const nextCategoryIds = Array.from(
+        new Set([...categoryIds, oddsEndsCategory.id])
+      )
+
       await productModuleService.updateProducts(data.id, {
-        collection_id: oddsEndsCollection.id,
+        category_ids: nextCategoryIds,
       })
 
-      console.log(`[AutoAssign] Added "${product.title}" to Odds & Ends collection`)
+      console.log(`[AutoAssign] Added "${product.title}" to Odds & Ends category`)
     } else if (hasMainCategory && isInOddsEnds) {
       // Product now has a main category but is still in Odds & Ends - remove it
+      const oddsEndsCategoryId = categories.find(
+        (category) => category.handle === ODDS_ENDS_CATEGORY_HANDLE
+      )?.id
+
+      if (!oddsEndsCategoryId) {
+        return
+      }
+
       await productModuleService.updateProducts(data.id, {
-        collection_id: null,
+        category_ids: categoryIds.filter((id) => id !== oddsEndsCategoryId),
       })
 
-      console.log(`[AutoAssign] Removed "${product.title}" from Odds & Ends (now categorized as ${categoryHandles.join(", ")})`)
+      console.log(
+        `[AutoAssign] Removed "${product.title}" from Odds & Ends (now categorized as ${categoryHandles.join(", ")})`
+      )
     }
   } catch (error) {
     console.error("[AutoAssign] Error processing product:", error)

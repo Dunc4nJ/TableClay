@@ -64,7 +64,7 @@ export default async function Nav() {
               Bowls
             </LocalizedClientLink>
             <LocalizedClientLink
-              href="/collections/no-line"
+              href="/categories/odd-and-ends"
               className="text-stone-600 hover:text-brand-600 uppercase text-sm tracking-wider font-medium transition-colors"
             >
               Odds & Ends
