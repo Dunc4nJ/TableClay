@@ -50,7 +50,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
       },
     },
     classes: {
-      base: "pt-3 pb-1 block w-full h-11 px-4 mt-0 bg-white border rounded-md appearance-none focus:outline-none focus:ring-0 focus:shadow-borders-interactive-with-active border-gray-300 hover:bg-gray-50 transition-all duration-300 ease-in-out",
+      base: "pt-3 pb-1 block w-full h-11 px-4 mt-0 bg-ui-bg-component border rounded-md appearance-none focus:outline-none focus:ring-0 focus:shadow-borders-interactive-with-active border-ui-border-base hover:bg-ui-bg-subtle transition-all duration-300 ease-in-out",
     },
   }), [])
 
@@ -101,8 +101,8 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
 
   if (!availablePaymentMethods?.length) {
     return (
-      <div className="p-4 bg-gray-50 rounded-lg text-center">
-        <p className="text-gray-500 text-sm">
+      <div className="p-4 bg-ui-bg-subtle rounded-lg text-center">
+        <p className="text-ui-fg-muted text-sm">
           No payment methods available. Please contact support.
         </p>
       </div>
@@ -112,7 +112,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
   return (
     <div>
       {/* Security Notice */}
-      <p className="text-sm text-gray-500 mb-4">
+      <p className="text-sm text-ui-fg-muted mb-4">
         All transactions are secure and encrypted.
       </p>
 
@@ -132,7 +132,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
                   "border rounded-lg transition-colors overflow-hidden",
                   {
                     "border-tc-terracotta ring-1 ring-tc-terracotta": isSelected,
-                    "border-gray-300": !isSelected,
+                    "border-ui-border-base": !isSelected,
                   }
                 )}
               >
@@ -143,13 +143,13 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
                     "flex items-center justify-between w-full p-4 cursor-pointer",
                     {
                       "bg-tc-cream": isSelected,
-                      "hover:bg-gray-50": !isSelected,
+                      "hover:bg-ui-bg-subtle": !isSelected,
                     }
                   )}
                 >
                   <div className="flex items-center gap-3">
                     <MedusaRadio checked={isSelected} />
-                    <span className="font-medium text-gray-900">
+                    <span className="font-medium text-ui-fg-base">
                       {paymentInfoMap[paymentMethod.id]?.title ||
                         (isStripe ? "Credit card" : paymentMethod.id)}
                     </span>
@@ -166,7 +166,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
                   <div className="px-4 pb-4 bg-tc-cream">
                     {stripeReady ? (
                       <div className="transition-all duration-150 ease-in-out">
-                        <Text className="txt-medium-plus text-gray-700 mb-2">
+                        <Text className="txt-medium-plus text-ui-fg-subtle mb-2">
                           Enter your card details:
                         </Text>
                         <CardElement
@@ -189,7 +189,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
                 {/* Other payment methods (non-stripe) */}
                 {!isStripe && isSelected && (
                   <div className="px-4 pb-4 bg-tc-cream">
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-ui-fg-subtle">
                       You will be redirected to {paymentInfoMap[paymentMethod.id]?.title || paymentMethod.id} to complete your purchase.
                     </p>
                   </div>

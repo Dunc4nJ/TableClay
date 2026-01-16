@@ -35,7 +35,7 @@ const StarRating = ({
         key={i}
         className={clx(
           sizeClasses[size],
-          isFilled ? "text-amber-400" : showEmpty ? "text-gray-200" : "hidden"
+          isFilled ? "text-amber-400" : showEmpty ? "text-cream-300" : "hidden"
         )}
         fill="currentColor"
         viewBox="0 0 20 20"

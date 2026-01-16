@@ -9,7 +9,7 @@ export default function CheckoutLayout({
 }) {
   return (
     <div className="w-full bg-tc-cream relative min-h-screen">
-      <div className="h-20 bg-white border-b border-cream-300">
+      <div className="h-20 bg-ui-bg-component border-b border-cream-300">
         <nav className="flex h-full items-center content-container justify-between">
           <LocalizedClientLink
             href="/"

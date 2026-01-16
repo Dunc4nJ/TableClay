@@ -40,10 +40,10 @@ export default async function Home(props: {
       {/* Section Intro - Visual break between hero and collections */}
       <section className="bg-cream-100 py-8 sm:py-10">
         <div className="content-container text-center">
-          <h2 className="font-display text-3xl sm:text-4xl text-stone-800 mb-4">
+          <h2 className="font-display text-3xl sm:text-4xl text-ui-fg-base mb-4">
             Explore Our Collections
           </h2>
-          <p className="text-stone-600 max-w-2xl mx-auto text-lg">
+          <p className="text-ui-fg-subtle max-w-2xl mx-auto text-lg">
             Each collection tells its own story, crafted with intention and care.
             Find the perfect pieces for your home.
           </p>

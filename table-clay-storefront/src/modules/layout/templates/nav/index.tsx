@@ -39,7 +39,7 @@ export default async function Nav() {
           <div className="hidden small:flex items-center gap-x-8 h-full flex-1 basis-0">
             <LocalizedClientLink
               href="/store"
-              className="text-stone-600 hover:text-brand-600 uppercase text-sm tracking-wider font-medium transition-colors"
+              className="text-ui-fg-subtle hover:text-brand-600 uppercase text-sm tracking-wider font-medium transition-colors"
               data-testid="nav-shop-link"
             >
               Shop All
@@ -47,25 +47,25 @@ export default async function Nav() {
             <NavDropdown label="Collections" items={COLLECTIONS} />
             <LocalizedClientLink
               href="/categories/mugs"
-              className="text-stone-600 hover:text-brand-600 uppercase text-sm tracking-wider font-medium transition-colors"
+              className="text-ui-fg-subtle hover:text-brand-600 uppercase text-sm tracking-wider font-medium transition-colors"
             >
               Mugs
             </LocalizedClientLink>
             <LocalizedClientLink
               href="/categories/vases"
-              className="text-stone-600 hover:text-brand-600 uppercase text-sm tracking-wider font-medium transition-colors"
+              className="text-ui-fg-subtle hover:text-brand-600 uppercase text-sm tracking-wider font-medium transition-colors"
             >
               Vases
             </LocalizedClientLink>
             <LocalizedClientLink
               href="/categories/bowls"
-              className="text-stone-600 hover:text-brand-600 uppercase text-sm tracking-wider font-medium transition-colors"
+              className="text-ui-fg-subtle hover:text-brand-600 uppercase text-sm tracking-wider font-medium transition-colors"
             >
               Bowls
             </LocalizedClientLink>
             <LocalizedClientLink
               href="/categories/odd-and-ends"
-              className="text-stone-600 hover:text-brand-600 uppercase text-sm tracking-wider font-medium transition-colors"
+              className="text-ui-fg-subtle hover:text-brand-600 uppercase text-sm tracking-wider font-medium transition-colors"
             >
               Odds & Ends
             </LocalizedClientLink>
@@ -95,7 +95,7 @@ export default async function Nav() {
           <div className="flex items-center gap-x-6 h-full flex-1 basis-0 justify-end">
             <div className="hidden small:flex items-center gap-x-6 h-full">
               <LocalizedClientLink
-                className="text-stone-600 hover:text-brand-600 uppercase text-sm tracking-wider font-medium transition-colors"
+                className="text-ui-fg-subtle hover:text-brand-600 uppercase text-sm tracking-wider font-medium transition-colors"
                 href="/account"
                 data-testid="nav-account-link"
               >
@@ -105,7 +105,7 @@ export default async function Nav() {
             <Suspense
               fallback={
                 <LocalizedClientLink
-                  className="text-stone-600 hover:text-brand-600 flex gap-2 uppercase text-sm tracking-wider font-medium transition-colors"
+                  className="text-ui-fg-subtle hover:text-brand-600 flex gap-2 uppercase text-sm tracking-wider font-medium transition-colors"
                   href="/cart"
                   data-testid="nav-cart-link"
                 >

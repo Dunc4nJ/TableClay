@@ -19,7 +19,7 @@ const ReviewCard = ({ review, className = "" }: ReviewCardProps) => {
   return (
     <article
       className={clx(
-        "bg-white border-b border-gray-100 py-6",
+        "bg-ui-bg-component border-b border-ui-border-base py-6",
         className
       )}
     >
@@ -72,7 +72,7 @@ const ReviewCard = ({ review, className = "" }: ReviewCardProps) => {
           {review.images.map((image) => (
             <div
               key={image.id}
-              className="relative w-20 h-20 rounded-md overflow-hidden border border-gray-200"
+              className="relative w-20 h-20 rounded-md overflow-hidden border border-ui-border-base"
             >
               <Image
                 src={image.url}

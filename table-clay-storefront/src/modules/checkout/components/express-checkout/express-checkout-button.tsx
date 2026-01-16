@@ -320,7 +320,7 @@ const ExpressCheckoutButton: React.FC<ExpressCheckoutButtonProps> = ({
 
       {isProcessing && (
         <div className="flex items-center justify-center gap-2 mt-2">
-          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900"></div>
+          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-tc-dark"></div>
           <p className="text-ui-fg-muted text-sm">Processing payment...</p>
         </div>
       )}

@@ -56,8 +56,8 @@ const SortProducts = ({
               "px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-150",
               "border active:scale-[0.97]",
               sortBy === option.value
-                ? "bg-stone-800 text-white border-stone-700 shadow-sm"
-                : "bg-white text-ui-fg-base border-ui-border-base hover:border-ui-border-strong hover:bg-stone-50"
+                ? "bg-brand-800 text-white border-brand-700 shadow-sm"
+                : "bg-ui-bg-component text-ui-fg-base border-ui-border-base hover:border-ui-border-strong hover:bg-cream-100"
             )}
             data-testid="sort-button"
             data-active={sortBy === option.value}

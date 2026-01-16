@@ -54,7 +54,7 @@ const StaticFormField: React.FC<StaticFormFieldProps> = ({
         htmlFor={name}
         className={`
           block text-sm font-medium mb-1.5
-          ${hasError ? "text-rose-500" : "text-gray-700"}
+          ${hasError ? "text-rose-500" : "text-ui-fg-subtle"}
         `}
       >
         {label}
@@ -76,7 +76,7 @@ const StaticFormField: React.FC<StaticFormFieldProps> = ({
           className={`
             block w-full h-11 px-4 py-2
             bg-ui-bg-field border rounded-md appearance-none
-            text-ui-fg-base placeholder:text-gray-400
+            text-ui-fg-base placeholder:text-ui-fg-muted
             focus:outline-none focus:ring-2 focus:ring-tc-terracotta focus:border-tc-terracotta
             hover:bg-ui-bg-field-hover
             transition-colors duration-150

@@ -43,7 +43,7 @@ function formatPrice(cents: number): string {
  */
 function BundleBadge({ text }: { text: string }) {
   return (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-black text-white text-xs font-medium rounded">
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-brand-900 text-white text-xs font-medium rounded">
       <span className="text-yellow-400">★</span>
       {text}
     </span>
@@ -75,13 +75,13 @@ function getItemDisplayName(item: BundleItem): string {
 
 function BundleItemsList({ items }: { items: BundleItem[] }) {
   return (
-    <div className="mt-2 pl-4 border-l-2 border-gray-200">
-      <div className="text-xs text-gray-500 mb-1">Includes:</div>
+    <div className="mt-2 pl-4 border-l-2 border-ui-border-base">
+      <div className="text-xs text-ui-fg-muted mb-1">Includes:</div>
       <ul className="space-y-0.5">
         {items.map((item, idx) => (
-          <li key={item.id || idx} className="text-xs text-gray-600">
+          <li key={item.id || idx} className="text-xs text-ui-fg-subtle">
             <div className="flex items-center gap-1">
-              <span className="text-gray-400">•</span>
+              <span className="text-ui-fg-muted">•</span>
               <span>
                 {item.quantity}x {getItemDisplayName(item)}
               </span>
@@ -121,19 +121,19 @@ export default function BundleSelector({
     : null
 
   return (
-    <div className="w-full border border-gray-300 rounded-lg p-4 bg-white">
+    <div className="w-full border border-ui-border-base rounded-lg p-4 bg-ui-bg-component">
       {/* Header with decorative lines */}
       <div className="flex items-center gap-3 mb-2">
-        <div className="flex-1 h-px bg-gray-300" />
-        <h3 className="text-lg font-semibold tracking-wide text-gray-900">
+        <div className="flex-1 h-px bg-cream-300" />
+        <h3 className="text-lg font-semibold tracking-wide text-ui-fg-base">
           {headline}
         </h3>
-        <div className="flex-1 h-px bg-gray-300" />
+        <div className="flex-1 h-px bg-cream-300" />
       </div>
 
       {/* Promo text banner - more prominent styling */}
       {promoText && (
-        <p className="text-center text-sm font-medium text-gray-800 mb-4">
+        <p className="text-center text-sm font-medium text-ui-fg-base mb-4">
           <span className="mr-1">🎉</span>
           {promoText}
         </p>
@@ -151,8 +151,8 @@ export default function BundleSelector({
               "w-full min-h-[60px] p-4 rounded-lg border transition-all text-left",
               "flex items-start gap-3",
               singleSelected
-                ? "border-gray-900 bg-gray-50"
-                : "border-gray-200 hover:border-gray-400",
+                ? "border-brand-600 bg-ui-bg-subtle"
+                : "border-ui-border-base hover:border-ui-border-strong",
               disabled && "opacity-50 cursor-not-allowed"
             )}
           >
@@ -160,11 +160,11 @@ export default function BundleSelector({
             <div
               className={clx(
                 "mt-1 w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0",
-                singleSelected ? "border-gray-900" : "border-gray-400"
+                singleSelected ? "border-brand-600" : "border-ui-border-strong"
               )}
             >
               {singleSelected && (
-                <div className="w-2.5 h-2.5 rounded-full bg-gray-900" />
+                <div className="w-2.5 h-2.5 rounded-full bg-brand-700" />
               )}
             </div>
 
@@ -172,11 +172,11 @@ export default function BundleSelector({
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1">
-                  <span className="font-medium text-gray-900">
+                  <span className="font-medium text-ui-fg-base">
                     {singleDisplayName}
                   </span>
                   {singleOption.variantTitle && (
-                    <p className="text-sm text-gray-600 mt-0.5">
+                    <p className="text-sm text-ui-fg-subtle mt-0.5">
                       {singleOption.variantTitle}
                     </p>
                   )}
@@ -184,11 +184,11 @@ export default function BundleSelector({
 
                 {/* Pricing */}
                 <div className="text-right flex-shrink-0">
-                  <div className="font-bold text-gray-900">
+                  <div className="font-bold text-ui-fg-base">
                     {formatPrice(singleOption.price)}
                   </div>
                   {singleOption.originalPrice && singleOption.originalPrice > singleOption.price && (
-                    <div className="text-sm text-gray-500 line-through">
+                    <div className="text-sm text-ui-fg-muted line-through">
                       {formatPrice(singleOption.originalPrice)}
                     </div>
                   )}
@@ -212,8 +212,8 @@ export default function BundleSelector({
                 "w-full min-h-[60px] p-4 rounded-lg border transition-all text-left",
                 "flex items-start gap-3",
                 isSelected
-                  ? "border-gray-900 bg-gray-50"
-                  : "border-gray-200 hover:border-gray-400",
+                  ? "border-brand-600 bg-ui-bg-subtle"
+                  : "border-ui-border-base hover:border-ui-border-strong",
                 disabled && "opacity-50 cursor-not-allowed"
               )}
             >
@@ -221,11 +221,11 @@ export default function BundleSelector({
               <div
                 className={clx(
                   "mt-1 w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0",
-                  isSelected ? "border-gray-900" : "border-gray-400"
+                  isSelected ? "border-brand-600" : "border-ui-border-strong"
                 )}
               >
                 {isSelected && (
-                  <div className="w-2.5 h-2.5 rounded-full bg-gray-900" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-brand-700" />
                 )}
               </div>
 
@@ -233,11 +233,11 @@ export default function BundleSelector({
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1">
-                    <span className="font-medium text-gray-900">
+                    <span className="font-medium text-ui-fg-base">
                       {bundle.name}
                     </span>
                     {bundle.description && (
-                      <p className="text-sm text-gray-600 mt-0.5">
+                      <p className="text-sm text-ui-fg-subtle mt-0.5">
                         {bundle.description}
                       </p>
                     )}
@@ -252,11 +252,11 @@ export default function BundleSelector({
 
                   {/* Pricing */}
                   <div className="text-right flex-shrink-0">
-                    <div className="font-bold text-gray-900">
+                    <div className="font-bold text-ui-fg-base">
                       {formatPrice(bundle.sale_price)}
                     </div>
                     {bundle.original_price > bundle.sale_price && (
-                      <div className="text-sm text-gray-500 line-through">
+                      <div className="text-sm text-ui-fg-muted line-through">
                         {formatPrice(bundle.original_price)}
                       </div>
                     )}

@@ -44,7 +44,7 @@ const FAQAccordion = ({
               return (
                 <div
                   key={faq.id}
-                  className="border-b border-gray-200 last:border-b-0"
+                  className="border-b border-ui-border-base last:border-b-0"
                 >
                   <button
                     onClick={() => toggleItem(faq.id)}

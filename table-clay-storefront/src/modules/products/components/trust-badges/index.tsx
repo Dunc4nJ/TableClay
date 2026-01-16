@@ -99,7 +99,7 @@ const TrustBadges = ({
           {/* ALL CAPS bold text */}
           <span
             className={clx(
-              "font-bold tracking-wide text-stone-700",
+              "font-bold tracking-wide text-ui-fg-subtle",
               currentSize.text
             )}
           >

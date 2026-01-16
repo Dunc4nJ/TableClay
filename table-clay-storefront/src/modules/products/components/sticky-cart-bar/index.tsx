@@ -57,7 +57,7 @@ const StickyCartBar = ({
     <div
       className={clx(
         "fixed bottom-0 left-0 right-0 z-50",
-        "bg-white border-t border-gray-200 shadow-lg",
+        "bg-ui-bg-component border-t border-ui-border-base shadow-lg",
         "transform transition-transform duration-300 ease-out",
         isVisible ? "translate-y-0" : "translate-y-full",
         className
@@ -68,7 +68,7 @@ const StickyCartBar = ({
           {/* Left: Product info */}
           <div className="flex items-center gap-3 flex-1 min-w-0">
             {thumbnail && (
-              <div className="relative w-12 h-12 flex-shrink-0 rounded overflow-hidden bg-gray-100">
+              <div className="relative w-12 h-12 flex-shrink-0 rounded overflow-hidden bg-ui-bg-subtle">
                 <Image
                   src={thumbnail}
                   alt={product.title || "Product"}
@@ -83,7 +83,7 @@ const StickyCartBar = ({
               <div className="flex items-center gap-2">
                 <span className="font-bold text-sm">{price}</span>
                 {originalPrice && originalPrice !== price && (
-                  <span className="text-xs text-gray-500 line-through">
+                  <span className="text-xs text-ui-fg-muted line-through">
                     {originalPrice}
                   </span>
                 )}
@@ -96,7 +96,7 @@ const StickyCartBar = ({
             onClick={onAddToCart}
             disabled={disabled || isLoading}
             isLoading={isLoading}
-            className="flex-shrink-0 h-12 bg-amber-500 hover:bg-amber-600 text-white px-6 border-0"
+            className="flex-shrink-0 h-12 bg-brand-700 hover:bg-brand-800 text-white px-6 border-0"
           >
             Add to Cart
           </Button>

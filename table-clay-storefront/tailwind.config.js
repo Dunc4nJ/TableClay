@@ -31,26 +31,25 @@ module.exports = {
           muted: '#5C4033',         // Secondary text
           accent: '#D4A574',        // Highlights
         },
-        // Table Clay brand colors - soft sky blue, handmade feel
-        // Primary brand color matches the badge logo
+        // Table Clay brand colors - warm clay browns
         brand: {
-          50: '#f0f7fa',   // Lightest blue (backgrounds)
-          100: '#e1eff5',  // Very light blue
-          200: '#c4dfeb',  // Light blue
-          300: '#a7cfe1',  // Soft blue
-          400: '#8abdd4',  // Medium blue
-          500: '#6daac7',  // PRIMARY - matches logo
-          600: '#5a9bba',  // Darker blue (hover)
-          700: '#4a8aa8',  // Dark blue
-          800: '#3a7896',  // Very dark blue
-          900: '#2a5a70',  // Near black blue
+          50: '#fbf4ed',
+          100: '#f6e6d7',
+          200: '#e9cbb2',
+          300: '#d9ac8c',
+          400: '#c08962',
+          500: '#8b4513',  // Primary clay brown
+          600: '#7a3c11',  // Hover
+          700: '#5c2e0c',
+          800: '#3f2108',
+          900: '#2c1810',
         },
         cream: {
-          50: '#fefefe',   // Pure white
-          100: '#fafaf8',  // Off-white
-          200: '#f5f5f3',  // Light cream (main bg)
-          300: '#eeede9',  // Cream
-          400: '#e5e3dd',  // Darker cream
+          50: '#fffdf9',
+          100: '#fbf7f2',
+          200: '#f5f0e8',
+          300: '#eadfd2',
+          400: '#dccbb9',
         },
         stone: {
           50: '#fafaf9',
@@ -118,8 +117,9 @@ module.exports = {
         "3xl": "2rem",
       },
       fontFamily: {
-        // Display font for headings - geometric sans-serif
+        // Display font for headings - warm serif
         display: [
+          "var(--font-display)",
           "var(--font-outfit)",
           "-apple-system",
           "BlinkMacSystemFont",

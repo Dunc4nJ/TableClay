@@ -56,7 +56,7 @@ const StaticSelectField: React.FC<StaticSelectFieldProps> = ({
         htmlFor={name}
         className={`
           block text-sm font-medium mb-1.5
-          ${hasError ? "text-rose-500" : "text-gray-700"}
+          ${hasError ? "text-rose-500" : "text-ui-fg-subtle"}
         `}
       >
         {label}
@@ -81,7 +81,7 @@ const StaticSelectField: React.FC<StaticSelectFieldProps> = ({
             transition-colors duration-150
             ${hasError ? "border-rose-500" : "border-ui-border-base"}
             ${disabled ? "opacity-50 cursor-not-allowed" : ""}
-            ${!hasValue ? "text-gray-400" : ""}
+            ${!hasValue ? "text-ui-fg-muted" : ""}
           `}
           data-testid={testId}
         >

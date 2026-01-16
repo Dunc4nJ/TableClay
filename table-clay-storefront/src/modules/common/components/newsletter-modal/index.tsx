@@ -118,7 +118,7 @@ export default function NewsletterModal({
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" />
+          <div className="fixed inset-0 bg-[#2c1810]/45 backdrop-blur-sm" />
         </Transition.Child>
 
         {/* Modal */}
@@ -137,7 +137,7 @@ export default function NewsletterModal({
                 {/* Close button */}
                 <button
                   onClick={handleClose}
-                  className="absolute top-4 right-4 p-2 text-stone-500 hover:text-stone-700 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500 rounded-full"
+                  className="absolute top-4 right-4 p-2 text-ui-fg-muted hover:text-ui-fg-base transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500 rounded-full"
                   aria-label="Close newsletter popup"
                 >
                   <X size={24} />
@@ -146,13 +146,13 @@ export default function NewsletterModal({
                 {!success ? (
                   <>
                     {/* Header */}
-                    <Dialog.Title className="text-4xl sm:text-5xl font-display font-semibold text-stone-800 mb-4">
+                    <Dialog.Title className="text-4xl sm:text-5xl font-display font-semibold text-ui-fg-base mb-4">
                       Free Shipping
                     </Dialog.Title>
 
-                    <Dialog.Description className="text-stone-600 text-base sm:text-lg mb-8 max-w-md mx-auto leading-relaxed">
+                    <Dialog.Description className="text-ui-fg-subtle text-base sm:text-lg mb-8 max-w-md mx-auto leading-relaxed">
                       New to Table Clay? Get{" "}
-                      <span className="font-semibold text-stone-800">
+                      <span className="font-semibold text-ui-fg-base">
                         free shipping on your first order
                       </span>{" "}
                       when you subscribe to our newsletter.
@@ -163,7 +163,7 @@ export default function NewsletterModal({
                       <div className="relative">
                         <label
                           htmlFor="newsletter-email"
-                          className="block text-xs font-medium uppercase tracking-wider text-stone-500 text-left mb-2"
+                          className="block text-xs font-medium uppercase tracking-wider text-ui-fg-muted text-left mb-2"
                         >
                           Email Address
                         </label>
@@ -175,7 +175,7 @@ export default function NewsletterModal({
                           placeholder="your@email.com"
                           required
                           disabled={isLoading}
-                          className="w-full px-4 py-3 text-stone-800 bg-white border border-stone-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent placeholder:text-stone-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="w-full px-4 py-3 text-ui-fg-base bg-ui-bg-component border border-ui-border-base rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent placeholder:text-ui-fg-muted disabled:opacity-50 disabled:cursor-not-allowed"
                           autoFocus
                         />
                       </div>
@@ -187,19 +187,19 @@ export default function NewsletterModal({
                       <button
                         type="submit"
                         disabled={isLoading || !email}
-                        className="w-full py-3 px-6 bg-stone-800 hover:bg-stone-900 text-white font-medium uppercase tracking-wider text-sm rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full py-3 px-6 bg-brand-800 hover:bg-brand-900 text-white font-medium uppercase tracking-wider text-sm rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {isLoading ? "Subscribing..." : "Continue"}
                       </button>
                     </form>
 
                     {/* Limited time message */}
-                    <p className="mt-6 text-xs text-stone-500 italic">
+                    <p className="mt-6 text-xs text-ui-fg-muted italic">
                       Limited time offer - subscribe today!
                     </p>
 
                     {/* Privacy note */}
-                    <p className="mt-4 text-xs text-stone-400">
+                    <p className="mt-4 text-xs text-ui-fg-muted">
                       By subscribing, you agree to receive marketing emails.
                       Unsubscribe anytime.
                     </p>
@@ -213,26 +213,26 @@ export default function NewsletterModal({
                       </span>
                     </div>
 
-                    <Dialog.Title className="text-3xl sm:text-4xl font-display font-semibold text-stone-800 mb-4">
+                    <Dialog.Title className="text-3xl sm:text-4xl font-display font-semibold text-ui-fg-base mb-4">
                       Welcome to Table Clay!
                     </Dialog.Title>
 
-                    <Dialog.Description className="text-stone-600 text-base mb-6 max-w-md mx-auto">
+                    <Dialog.Description className="text-ui-fg-subtle text-base mb-6 max-w-md mx-auto">
                       Check your email for your exclusive free shipping code.
                     </Dialog.Description>
 
                     {discountCode && (
-                      <div className="bg-white border-2 border-dashed border-brand-500 rounded-lg p-6 mb-6 max-w-xs mx-auto">
-                        <p className="text-xs uppercase tracking-wider text-stone-500 mb-2">
+                      <div className="bg-ui-bg-component border-2 border-dashed border-brand-500 rounded-lg p-6 mb-6 max-w-xs mx-auto">
+                        <p className="text-xs uppercase tracking-wider text-ui-fg-muted mb-2">
                           Your Free Shipping Code
                         </p>
-                        <p className="text-2xl font-bold tracking-widest text-stone-800">
+                        <p className="text-2xl font-bold tracking-widest text-ui-fg-base">
                           {discountCode}
                         </p>
                       </div>
                     )}
 
-                    <p className="text-sm text-stone-500">
+                    <p className="text-sm text-ui-fg-muted">
                       Use this code at checkout for free shipping on your first order!
                     </p>
 

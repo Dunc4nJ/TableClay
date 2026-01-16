@@ -53,7 +53,7 @@ const collectionThemes: Record<string, { gradient: string; dotGradient: string; 
 const defaultTheme = {
   gradient: "from-stone-100 to-stone-200",
   dotGradient: "from-stone-400 to-stone-500",
-  bgColor: "bg-stone-50",
+  bgColor: "bg-cream-100",
   borderGradient: "from-stone-400 via-stone-500 to-stone-400",
 }
 
@@ -183,7 +183,7 @@ const CollectionFilterButtons = ({
 }: CollectionFilterButtonsProps) => {
   const allButtonTheme = {
     gradient: "from-stone-800 to-stone-900",
-    bgColor: "bg-white",
+    bgColor: "bg-ui-bg-component",
     borderGradient: "from-stone-600 via-stone-800 to-stone-600",
     dotGradient: "from-stone-600 to-stone-800",
   }

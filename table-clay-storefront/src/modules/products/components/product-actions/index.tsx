@@ -43,7 +43,7 @@ const getAddToCartClasses = (isDisabled: boolean, isLoading: boolean) =>
   clx(
     ADD_TO_CART_BASE_CLASSES,
     isDisabled
-      ? "bg-gray-200 text-gray-500 cursor-not-allowed shadow-none"
+      ? "bg-ui-bg-subtle text-ui-fg-muted cursor-not-allowed shadow-none"
       : "bg-brand-500 hover:bg-brand-600 text-white shadow-md hover:shadow-lg",
     isLoading && "opacity-90 cursor-wait"
   )

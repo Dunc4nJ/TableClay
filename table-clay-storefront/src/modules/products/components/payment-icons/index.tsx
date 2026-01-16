@@ -82,7 +82,7 @@ const PaymentIcons = ({
         {methods.map((method) => (
           <div
             key={method}
-            className="bg-white rounded-md border border-gray-200 p-1 flex items-center justify-center shadow-sm overflow-hidden"
+            className="bg-ui-bg-component rounded-md border border-ui-border-base p-1 flex items-center justify-center shadow-sm overflow-hidden"
           >
             <Image
               src={PAYMENT_IMAGES[method]}

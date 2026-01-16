@@ -214,7 +214,7 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
         onClick={() => inputRef.current?.focus()}
         className={`
           block text-sm font-medium mb-1.5
-          ${hasError ? "text-rose-500" : "text-gray-700"}
+          ${hasError ? "text-rose-500" : "text-ui-fg-subtle"}
         `}
       >
         {label}
@@ -239,7 +239,7 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
           className={`
             block w-full h-11 px-4 pr-10 py-2
             bg-ui-bg-field border rounded-md appearance-none
-            text-ui-fg-base placeholder:text-gray-400
+            text-ui-fg-base placeholder:text-ui-fg-muted
             focus:outline-none focus:ring-2 focus:ring-tc-terracotta focus:border-tc-terracotta
             hover:bg-ui-bg-field-hover
             transition-colors duration-150
@@ -267,7 +267,7 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
       {showDropdown && suggestions.length > 0 && (
         <div
           ref={dropdownRef}
-          className="absolute z-50 left-0 right-0 mt-1 bg-white border border-ui-border-base rounded-md shadow-lg max-h-60 overflow-y-auto"
+          className="absolute z-50 left-0 right-0 mt-1 bg-ui-bg-component border border-ui-border-base rounded-md shadow-lg max-h-60 overflow-y-auto"
         >
           {suggestions.slice(0, 5).map((suggestion, index, arr) => (
             <button

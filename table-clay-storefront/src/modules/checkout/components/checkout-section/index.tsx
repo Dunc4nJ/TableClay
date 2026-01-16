@@ -22,12 +22,12 @@ const CheckoutSection: React.FC<CheckoutSectionProps> = ({
     <div
       className={clx(
         "py-6",
-        { "border-b border-gray-200": !noBorder },
+        { "border-b border-ui-border-base": !noBorder },
         className
       )}
     >
-      <h2 className="text-lg font-semibold text-gray-900 mb-1">{title}</h2>
-      {subtitle && <p className="text-sm text-gray-500 mb-4">{subtitle}</p>}
+      <h2 className="text-lg font-semibold text-ui-fg-base mb-1">{title}</h2>
+      {subtitle && <p className="text-sm text-ui-fg-muted mb-4">{subtitle}</p>}
       <div className="mt-4">{children}</div>
     </div>
   )

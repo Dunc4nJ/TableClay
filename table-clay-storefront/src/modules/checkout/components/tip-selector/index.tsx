@@ -103,7 +103,7 @@ const TipSelector: React.FC<TipSelectorProps> = ({ cart, onTipChange }) => {
   }
 
   return (
-    <div className="bg-gray-50 rounded-lg p-4">
+    <div className="bg-ui-bg-subtle rounded-lg p-4">
       {/* Enable/Disable Toggle */}
       <label className="flex items-center gap-3 cursor-pointer">
         <input
@@ -117,9 +117,9 @@ const TipSelector: React.FC<TipSelectorProps> = ({ cart, onTipChange }) => {
               onTipChange?.(0)
             }
           }}
-          className="w-4 h-4 text-tc-terracotta bg-white border-gray-300 rounded focus:ring-tc-terracotta"
+          className="w-4 h-4 text-tc-terracotta bg-ui-bg-component border-ui-border-base rounded focus:ring-tc-terracotta"
         />
-        <span className="text-sm text-gray-700">
+        <span className="text-sm text-ui-fg-subtle">
           Show your support for the team at Table Clay
         </span>
       </label>
@@ -137,14 +137,14 @@ const TipSelector: React.FC<TipSelectorProps> = ({ cart, onTipChange }) => {
                   "py-3 px-2 rounded border text-center transition-colors",
                   selectedPercentage === tip.value
                     ? "border-tc-terracotta bg-tc-cream ring-1 ring-tc-terracotta"
-                    : "border-gray-300 bg-white hover:border-gray-400"
+                    : "border-ui-border-base bg-ui-bg-component hover:border-ui-border-strong"
                 )}
               >
-                <div className="text-sm font-medium text-gray-900">
+                <div className="text-sm font-medium text-ui-fg-base">
                   {tip.label}
                 </div>
                 {tip.value > 0 && (
-                  <div className="text-xs text-gray-500">
+                  <div className="text-xs text-ui-fg-muted">
                     {formatPrice(calculateTipAmount(tip.value))}
                   </div>
                 )}
@@ -155,9 +155,9 @@ const TipSelector: React.FC<TipSelectorProps> = ({ cart, onTipChange }) => {
           {/* Custom Tip - stacks on mobile */}
           <div className="mt-4">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-sm text-gray-600 w-full sm:w-auto">Custom tip</span>
+              <span className="text-sm text-ui-fg-subtle w-full sm:w-auto">Custom tip</span>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-ui-fg-muted">
                   $
                 </span>
                 <input
@@ -166,20 +166,20 @@ const TipSelector: React.FC<TipSelectorProps> = ({ cart, onTipChange }) => {
                   value={customTip}
                   onChange={(e) => handleCustomTipChange(e.target.value)}
                   placeholder="0.00"
-                  className="w-24 pl-7 pr-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-tc-terracotta focus:border-tc-terracotta"
+                  className="w-24 pl-7 pr-3 py-2 border border-ui-border-base rounded text-sm focus:outline-none focus:ring-1 focus:ring-tc-terracotta focus:border-tc-terracotta"
                 />
               </div>
               <button
                 type="button"
                 onClick={decrementCustomTip}
-                className="w-10 h-10 flex items-center justify-center border border-gray-300 rounded bg-white hover:bg-gray-50 text-gray-600 touch-manipulation"
+                className="w-10 h-10 flex items-center justify-center border border-ui-border-base rounded bg-ui-bg-component hover:bg-ui-bg-subtle text-ui-fg-subtle touch-manipulation"
               >
                 −
               </button>
               <button
                 type="button"
                 onClick={incrementCustomTip}
-                className="w-10 h-10 flex items-center justify-center border border-gray-300 rounded bg-white hover:bg-gray-50 text-gray-600 touch-manipulation"
+                className="w-10 h-10 flex items-center justify-center border border-ui-border-base rounded bg-ui-bg-component hover:bg-ui-bg-subtle text-ui-fg-subtle touch-manipulation"
               >
                 +
               </button>
@@ -187,7 +187,7 @@ const TipSelector: React.FC<TipSelectorProps> = ({ cart, onTipChange }) => {
                 type="button"
                 onClick={handleCustomTipApply}
                 disabled={!customTip || parseFloat(customTip) <= 0}
-                className="px-4 py-2 border border-gray-300 rounded text-sm bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
+                className="px-4 py-2 border border-ui-border-base rounded text-sm bg-ui-bg-component hover:bg-ui-bg-subtle disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
               >
                 Add tip
               </button>
@@ -196,7 +196,7 @@ const TipSelector: React.FC<TipSelectorProps> = ({ cart, onTipChange }) => {
 
           {/* Loading State */}
           {isPending && (
-            <div className="mt-4 flex items-center gap-2 text-gray-500">
+            <div className="mt-4 flex items-center gap-2 text-ui-fg-muted">
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-tc-terracotta"></div>
               <span className="text-sm">Applying tip...</span>
             </div>
@@ -219,7 +219,7 @@ const TipSelector: React.FC<TipSelectorProps> = ({ cart, onTipChange }) => {
           )}
 
           {/* Thank you message */}
-          <p className="text-sm text-gray-500 mt-4">
+          <p className="text-sm text-ui-fg-muted mt-4">
             Thank you, we appreciate your support!
           </p>
         </>

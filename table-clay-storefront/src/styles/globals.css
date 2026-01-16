@@ -2,6 +2,56 @@
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 
+@layer base {
+  html[data-mode="light"] {
+    --bg-base: #f5f0e8;
+    --bg-base-pressed: #e6d6c6;
+    --bg-subtle: #f8f3ec;
+    --bg-subtle-hover: #f1e8dc;
+    --bg-subtle-pressed: #eadfd2;
+    --bg-component: #fffaf4;
+    --bg-component-hover: #f7eee4;
+    --bg-component-pressed: #f0e2d2;
+    --bg-field: #fffdf9;
+    --bg-field-hover: #f3e6d7;
+    --bg-field-component: #fffaf4;
+    --bg-field-component-hover: #f3e6d7;
+    --bg-base-hover: #efe5d8;
+    --bg-highlight: #f0e2d2;
+    --bg-highlight-hover: #e9d6c4;
+    --bg-disabled: #efe5d8;
+
+    --fg-base: #2c1810;
+    --fg-subtle: #5c4033;
+    --fg-muted: #a0826d;
+    --fg-disabled: #c2b2a4;
+    --fg-interactive: #8b4513;
+    --fg-interactive-hover: #7a3c11;
+    --fg-on-color: #ffffff;
+
+    --bg-interactive: #8b4513;
+    --border-base: #e5d6c8;
+    --border-strong: #d7c3b0;
+    --border-interactive: #8b4513;
+
+    --button-neutral: #fffaf4;
+    --button-neutral-hover: #f3e6d7;
+    --button-neutral-pressed: #ead9c8;
+    --button-inverted: #2c1810;
+    --button-inverted-hover: #3a2118;
+    --button-inverted-pressed: #24130d;
+    --bg-overlay: rgba(44, 24, 16, 0.4);
+  }
+
+  body {
+    background-color: var(--bg-base);
+    color: var(--fg-base);
+    background-image:
+      radial-gradient(1200px 600px at 10% -10%, rgba(212, 165, 116, 0.18), transparent 60%),
+      radial-gradient(900px 500px at 90% 0%, rgba(160, 130, 109, 0.12), transparent 55%);
+  }
+}
+
 @layer utilities {
   /* Chrome, Safari and Opera */
   .no-scrollbar::-webkit-scrollbar {
@@ -35,9 +85,9 @@
   select:-webkit-autofill,
   select:-webkit-autofill:hover,
   select:-webkit-autofill:focus {
-    border: 1px solid #212121;
-    -webkit-text-fill-color: #212121;
-    -webkit-box-shadow: 0 0 0px 1000px #fff inset;
+    border: 1px solid #2c1810;
+    -webkit-text-fill-color: #2c1810;
+    -webkit-box-shadow: 0 0 0px 1000px #fffdf9 inset;
     transition: background-color 5000s ease-in-out 0s;
   }
 
@@ -55,7 +105,7 @@
   }
 
   .contrast-btn {
-    @apply px-4 py-2 border border-black rounded-none hover:bg-black hover:text-white transition-colors duration-200 ease-in;
+    @apply px-4 py-2 border border-tc-dark rounded-none hover:bg-tc-dark hover:text-white transition-colors duration-200 ease-in;
   }
 
   .text-xsmall-regular {

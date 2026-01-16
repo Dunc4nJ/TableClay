@@ -85,7 +85,7 @@ const PaymentIcons: React.FC<PaymentIconsProps> = ({
       {showAll && (
         <>
           <DiscoverIcon />
-          <span className="text-xs text-gray-400 ml-1">+2</span>
+          <span className="text-xs text-ui-fg-muted ml-1">+2</span>
         </>
       )}
     </div>

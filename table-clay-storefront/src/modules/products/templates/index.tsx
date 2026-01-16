@@ -97,7 +97,7 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
     <>
       <TrackViewContent product={product} region={region} />
       {/* === ABOVE THE FOLD === */}
-      <div className="bg-white">
+      <div className="bg-ui-bg-component">
         <div
           className="content-container py-4 lg:py-8"
           data-testid="product-container"
@@ -138,7 +138,7 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
               <div className="hidden lg:flex justify-center">
                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-cream-100 border border-cream-300 rounded-full">
                   <span className="text-amber-600">✨</span>
-                  <span className="text-sm font-medium text-stone-600">
+                  <span className="text-sm font-medium text-ui-fg-subtle">
                     Handcrafted in small batches
                   </span>
                 </div>
@@ -166,7 +166,7 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
       </div>
 
       {/* === BELOW THE FOLD === */}
-      <div className="bg-white lg:hidden">
+      <div className="bg-ui-bg-component lg:hidden">
         <div className="content-container py-6 space-y-6">
           {faqs.length > 0 && <FAQAccordion faqs={faqs} />}
           <PaymentIcons size="md" />
@@ -174,7 +174,7 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
           <div className="flex justify-center">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-cream-100 border border-cream-300 rounded-full">
               <span className="text-amber-600">✨</span>
-              <span className="text-sm font-medium text-stone-600">
+              <span className="text-sm font-medium text-ui-fg-subtle">
                 Handcrafted in small batches
               </span>
             </div>
@@ -197,7 +197,7 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
         // Use API stats if available, otherwise use defaults
         const displayStats = reviewStats ?? DEFAULT_REVIEW_STATS
         return (
-          <div ref={reviewsSectionRef} className="bg-rose-50/30">
+          <div ref={reviewsSectionRef} className="bg-cream-100">
             <div className="content-container py-12 lg:py-16">
               {/* Stats Header */}
               <div className="text-center mb-8">
@@ -262,7 +262,7 @@ import Image from "next/image"
 
 const ReviewCard = ({ review }: { review: Review }) => {
   return (
-    <article className="bg-white border-b border-gray-100 py-6">
+    <article className="bg-ui-bg-component border-b border-ui-border-base py-6">
       {/* Header: Name, Date, Verified Badge */}
       <div className="flex items-start justify-between mb-3">
         <div>
@@ -306,7 +306,7 @@ const ReviewCard = ({ review }: { review: Review }) => {
           {review.images.map((image) => (
             <div
               key={image.id}
-              className="relative w-20 h-20 rounded-md overflow-hidden border border-gray-200"
+              className="relative w-20 h-20 rounded-md overflow-hidden border border-ui-border-base"
             >
               <Image
                 src={image.url}

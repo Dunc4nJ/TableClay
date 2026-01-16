@@ -221,8 +221,8 @@ export default function CartRecommendations({
         <div className="content-container">
           {/* Header skeleton */}
           <div className="text-center mb-8">
-            <div className="h-7 w-56 bg-gray-200 animate-pulse rounded mx-auto mb-2" />
-            <div className="h-4 w-72 bg-gray-100 animate-pulse rounded mx-auto" />
+            <div className="h-7 w-56 bg-cream-300 animate-pulse rounded mx-auto mb-2" />
+            <div className="h-4 w-72 bg-cream-200 animate-pulse rounded mx-auto" />
           </div>
           {/* Products skeleton - 3 columns */}
           <ul className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -306,7 +306,7 @@ export default function CartRecommendations({
                   disabled={isAdding || !inStock}
                   className={`mt-3 w-full h-10 rounded-lg font-medium text-sm transition-all duration-200 flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:ring-offset-2 ${
                     !inStock
-                      ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                      ? "bg-ui-bg-subtle text-ui-fg-muted cursor-not-allowed"
                       : "bg-brand-500 hover:bg-brand-600 text-white shadow-sm hover:shadow-md"
                   } ${isAdding ? "opacity-90 cursor-wait" : ""}`}
                   data-testid="add-to-cart-button"

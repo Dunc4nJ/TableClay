@@ -74,7 +74,7 @@ export default async function Checkout() {
             </div>
           </div>
         </section>
-        <aside className="bg-tc-cream small:bg-white small:border-l small:border-cream-300">
+        <aside className="bg-tc-cream small:bg-ui-bg-component small:border-l small:border-cream-300">
           <div className="content-container py-10 small:py-12">
             <div className="max-w-[420px] small:ml-auto">
               <CheckoutSummary cart={cart} />

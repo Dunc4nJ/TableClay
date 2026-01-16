@@ -60,7 +60,7 @@ const MainImage = ({
           className={clx(
             "absolute left-3 top-1/2 -translate-y-1/2 z-10",
             "w-10 h-10 rounded-full",
-            "bg-white/90 hover:bg-white",
+            "bg-cream-50/90 hover:bg-cream-50",
             "flex items-center justify-center",
             "shadow-md transition-all duration-200",
             "focus:outline-none focus:ring-2 focus:ring-ui-fg-base",
@@ -84,7 +84,7 @@ const MainImage = ({
           className={clx(
             "absolute right-3 top-1/2 -translate-y-1/2 z-10",
             "w-10 h-10 rounded-full",
-            "bg-white/90 hover:bg-white",
+            "bg-cream-50/90 hover:bg-cream-50",
             "flex items-center justify-center",
             "shadow-md transition-all duration-200",
             "focus:outline-none focus:ring-2 focus:ring-ui-fg-base",
@@ -102,7 +102,7 @@ const MainImage = ({
 
       {/* Image Counter */}
       {showArrows && (
-        <div className="absolute bottom-3 right-3 z-10 px-2 py-1 bg-black/60 rounded text-white text-xs">
+        <div className="absolute bottom-3 right-3 z-10 px-2 py-1 bg-[#2c1810]/60 rounded text-white text-xs">
           {currentIndex + 1} / {totalImages}
         </div>
       )}

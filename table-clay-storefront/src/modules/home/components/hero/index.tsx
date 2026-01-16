@@ -15,7 +15,7 @@ const Hero = () => {
       />
 
       {/* Overlay for better text readability */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/20 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-[#2c1810]/60 via-[#2c1810]/25 to-transparent" />
 
       {/* Content */}
       <div className="absolute inset-0 flex flex-col justify-end items-center text-center pb-20 px-6">
@@ -34,7 +34,7 @@ const Hero = () => {
           {/* CTA Button */}
           <LocalizedClientLink
             href="/store"
-            className="inline-block bg-black hover:bg-stone-800 text-white px-8 py-4 rounded-none uppercase text-sm tracking-wider font-medium transition-all duration-300"
+            className="inline-block bg-brand-700 hover:bg-brand-800 text-white px-8 py-4 rounded-none uppercase text-sm tracking-wider font-medium transition-all duration-300"
           >
             Shop Now
           </LocalizedClientLink>

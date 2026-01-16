@@ -34,7 +34,7 @@ export default async function Footer() {
                 className="rounded-full object-cover"
               />
             </LocalizedClientLink>
-            <p className="text-stone-500 text-sm max-w-xs">
+            <p className="text-ui-fg-muted text-sm max-w-xs">
               Made by hand, made with care. Each piece of pottery is crafted with love in our studio.
             </p>
           </div>
@@ -43,14 +43,14 @@ export default async function Footer() {
           <div className="text-small-regular gap-10 md:gap-x-16 grid grid-cols-2 sm:grid-cols-4">
             {/* Collections */}
             <div className="flex flex-col gap-y-3">
-              <span className="text-sm font-medium text-stone-800 uppercase tracking-wider">
+              <span className="text-sm font-medium text-ui-fg-base uppercase tracking-wider">
                 Collections
               </span>
               <ul className="grid grid-cols-1 gap-2">
                 {COLLECTIONS.map((collection) => (
                   <li key={collection.href}>
                     <LocalizedClientLink
-                      className="text-stone-500 hover:text-brand-600 text-sm transition-colors"
+                      className="text-ui-fg-muted hover:text-brand-600 text-sm transition-colors"
                       href={collection.href}
                     >
                       {collection.label}
@@ -63,7 +63,7 @@ export default async function Footer() {
             {/* Shop categories */}
             {productCategories && productCategories?.length > 0 && (
               <div className="flex flex-col gap-y-3">
-                <span className="text-sm font-medium text-stone-800 uppercase tracking-wider">
+                <span className="text-sm font-medium text-ui-fg-base uppercase tracking-wider">
                   Categories
                 </span>
                 <ul className="grid grid-cols-1 gap-2" data-testid="footer-categories">
@@ -74,7 +74,7 @@ export default async function Footer() {
                     return (
                       <li key={c.id}>
                         <LocalizedClientLink
-                          className="text-stone-500 hover:text-brand-600 text-sm transition-colors"
+                          className="text-ui-fg-muted hover:text-brand-600 text-sm transition-colors"
                           href={`/categories/${c.handle}`}
                           data-testid="category-link"
                         >
@@ -85,7 +85,7 @@ export default async function Footer() {
                   })}
                   <li>
                     <LocalizedClientLink
-                      className="text-stone-500 hover:text-brand-600 text-sm transition-colors"
+                      className="text-ui-fg-muted hover:text-brand-600 text-sm transition-colors"
                       href="/store"
                     >
                       All Products
@@ -97,13 +97,13 @@ export default async function Footer() {
 
             {/* About section */}
             <div className="flex flex-col gap-y-3">
-              <span className="text-sm font-medium text-stone-800 uppercase tracking-wider">
+              <span className="text-sm font-medium text-ui-fg-base uppercase tracking-wider">
                 About
               </span>
               <ul className="grid grid-cols-1 gap-y-2">
                 <li>
                   <LocalizedClientLink
-                    className="text-stone-500 hover:text-brand-600 text-sm transition-colors"
+                    className="text-ui-fg-muted hover:text-brand-600 text-sm transition-colors"
                     href="/about"
                   >
                     Our Story
@@ -111,7 +111,7 @@ export default async function Footer() {
                 </li>
                 <li>
                   <LocalizedClientLink
-                    className="text-stone-500 hover:text-brand-600 text-sm transition-colors"
+                    className="text-ui-fg-muted hover:text-brand-600 text-sm transition-colors"
                     href="/care"
                   >
                     Care Guide
@@ -119,7 +119,7 @@ export default async function Footer() {
                 </li>
                 <li>
                   <LocalizedClientLink
-                    className="text-stone-500 hover:text-brand-600 text-sm transition-colors"
+                    className="text-ui-fg-muted hover:text-brand-600 text-sm transition-colors"
                     href="/shipping"
                   >
                     Shipping & Returns
@@ -130,7 +130,7 @@ export default async function Footer() {
 
             {/* Connect section */}
             <div className="flex flex-col gap-y-3">
-              <span className="text-sm font-medium text-stone-800 uppercase tracking-wider">
+              <span className="text-sm font-medium text-ui-fg-base uppercase tracking-wider">
                 Connect
               </span>
               <ul className="grid grid-cols-1 gap-y-2">
@@ -139,7 +139,7 @@ export default async function Footer() {
                     href="https://instagram.com/tableclay"
                     target="_blank"
                     rel="noreferrer"
-                    className="text-stone-500 hover:text-brand-600 text-sm transition-colors"
+                    className="text-ui-fg-muted hover:text-brand-600 text-sm transition-colors"
                   >
                     Instagram
                   </a>
@@ -147,7 +147,7 @@ export default async function Footer() {
                 <li>
                   <a
                     href="mailto:hello@tableclay.com"
-                    className="text-stone-500 hover:text-brand-600 text-sm transition-colors"
+                    className="text-ui-fg-muted hover:text-brand-600 text-sm transition-colors"
                   >
                     Contact Us
                   </a>
@@ -159,7 +159,7 @@ export default async function Footer() {
 
         {/* Bottom bar */}
         <div className="flex w-full py-6 justify-between items-center border-t border-cream-300">
-          <Text className="text-stone-400 text-xs">
+          <Text className="text-ui-fg-muted text-xs">
             © {new Date().getFullYear()} Table Clay. Made by hand, made with care.
           </Text>
         </div>

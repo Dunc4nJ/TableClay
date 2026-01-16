@@ -23,7 +23,7 @@ const NavDropdown = ({ label, items }: NavDropdownProps) => {
       onMouseLeave={() => setIsOpen(false)}
     >
       <button
-        className="text-stone-600 hover:text-brand-600 uppercase text-sm tracking-wider font-medium transition-colors flex items-center gap-1"
+        className="text-ui-fg-subtle hover:text-brand-600 uppercase text-sm tracking-wider font-medium transition-colors flex items-center gap-1"
         aria-expanded={isOpen}
         aria-haspopup="true"
       >
@@ -47,12 +47,12 @@ const NavDropdown = ({ label, items }: NavDropdownProps) => {
             : "opacity-0 -translate-y-2 pointer-events-none"
         }`}
       >
-        <div className="bg-white rounded-lg shadow-lg border border-cream-300 py-2 min-w-[200px]">
+        <div className="bg-ui-bg-component rounded-lg shadow-lg border border-ui-border-base py-2 min-w-[200px]">
           {items.map((item) => (
             <LocalizedClientLink
               key={item.href}
               href={item.href}
-              className="block px-4 py-2 text-stone-600 hover:bg-cream-100 hover:text-brand-600 text-sm transition-colors"
+              className="block px-4 py-2 text-ui-fg-subtle hover:bg-ui-bg-subtle hover:text-brand-600 text-sm transition-colors"
             >
               {item.label}
             </LocalizedClientLink>

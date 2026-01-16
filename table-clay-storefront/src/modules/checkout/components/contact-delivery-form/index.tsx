@@ -434,8 +434,8 @@ const ContactDeliveryForm: React.FC<ContactDeliveryFormProps> = ({
 
       {/* Saved Addresses Selector */}
       {customer && addressesInRegion.length > 0 && (
-        <Container className="mb-4 flex flex-col gap-y-4 p-5 bg-gray-50 rounded-lg">
-          <p className="text-sm text-gray-600">
+        <Container className="mb-4 flex flex-col gap-y-4 p-5 bg-ui-bg-subtle rounded-lg">
+          <p className="text-sm text-ui-fg-subtle">
             {`Hi ${customer.first_name}, would you like to use a saved address?`}
           </p>
           <AddressSelect
@@ -607,8 +607,8 @@ const ContactDeliveryForm: React.FC<ContactDeliveryFormProps> = ({
                 transition-colors duration-200
                 ${
                   sameAsBilling
-                    ? "bg-black border-black"
-                    : "bg-white border-gray-300 group-hover:border-gray-400"
+                    ? "bg-brand-700 border-brand-700"
+                    : "bg-ui-bg-component border-ui-border-base group-hover:border-ui-border-strong"
                 }
               `}
             >
@@ -629,7 +629,7 @@ const ContactDeliveryForm: React.FC<ContactDeliveryFormProps> = ({
               )}
             </div>
           </div>
-          <span className="text-sm text-gray-700">
+          <span className="text-sm text-ui-fg-subtle">
             Use shipping address as billing address
           </span>
         </label>
@@ -637,8 +637,8 @@ const ContactDeliveryForm: React.FC<ContactDeliveryFormProps> = ({
 
       {/* Billing Address (if different) */}
       {!sameAsBilling && (
-        <div className="mt-6 pt-6 border-t border-gray-200">
-          <h3 className="text-base font-medium text-gray-900 mb-4">
+        <div className="mt-6 pt-6 border-t border-ui-border-base">
+          <h3 className="text-base font-medium text-ui-fg-base mb-4">
             Billing address
           </h3>
           <BillingAddress cart={cart} />

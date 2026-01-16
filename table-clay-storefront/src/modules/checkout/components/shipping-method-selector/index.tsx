@@ -126,8 +126,8 @@ const ShippingMethodSelector: React.FC<ShippingMethodSelectorProps> = ({
   // Show placeholder when no shipping address
   if (!hasShippingAddress) {
     return (
-      <div className="bg-gray-50 rounded-lg p-6 text-center">
-        <p className="text-gray-500 text-sm">
+      <div className="bg-ui-bg-subtle rounded-lg p-6 text-center">
+        <p className="text-ui-fg-muted text-sm">
           Enter your shipping address to view available shipping methods.
         </p>
       </div>
@@ -155,11 +155,11 @@ const ShippingMethodSelector: React.FC<ShippingMethodSelectorProps> = ({
               value={PICKUP_OPTION_ON}
               data-testid="delivery-option-radio"
               className={clx(
-                "flex items-center justify-between text-sm cursor-pointer py-4 border rounded-lg px-4 hover:border-gray-400 transition-colors",
+                "flex items-center justify-between text-sm cursor-pointer py-4 border rounded-lg px-4 hover:border-ui-border-strong transition-colors",
                 {
                   "border-tc-terracotta bg-tc-cream ring-1 ring-tc-terracotta":
                     showPickupOptions === PICKUP_OPTION_ON,
-                  "border-gray-300": showPickupOptions !== PICKUP_OPTION_ON,
+                  "border-ui-border-base": showPickupOptions !== PICKUP_OPTION_ON,
                 }
               )}
             >
@@ -167,7 +167,7 @@ const ShippingMethodSelector: React.FC<ShippingMethodSelectorProps> = ({
                 <MedusaRadio checked={showPickupOptions === PICKUP_OPTION_ON} />
                 <span className="font-medium">Pick up your order</span>
               </div>
-              <span className="text-gray-500">Free</span>
+              <span className="text-ui-fg-muted">Free</span>
             </Radio>
           </RadioGroup>
         </div>
@@ -199,9 +199,9 @@ const ShippingMethodSelector: React.FC<ShippingMethodSelectorProps> = ({
                     {
                       "border-tc-terracotta bg-tc-cream ring-1 ring-tc-terracotta":
                         option.id === shippingMethodId,
-                      "border-gray-300 hover:border-gray-400":
+                      "border-ui-border-base hover:border-ui-border-strong":
                         option.id !== shippingMethodId && !isDisabled,
-                      "border-gray-200 opacity-50 cursor-not-allowed":
+                      "border-ui-border-base opacity-50 cursor-not-allowed":
                         isDisabled,
                     }
                   )}
@@ -210,7 +210,7 @@ const ShippingMethodSelector: React.FC<ShippingMethodSelectorProps> = ({
                     <MedusaRadio checked={option.id === shippingMethodId} />
                     <span className="font-medium">{option.name}</span>
                   </div>
-                  <span className="text-gray-700 font-medium">
+                  <span className="text-ui-fg-subtle font-medium">
                     {option.price_type === "flat" ? (
                       convertToLocale({
                         amount: option.amount!,
@@ -237,7 +237,7 @@ const ShippingMethodSelector: React.FC<ShippingMethodSelectorProps> = ({
       {/* Pickup Store Selection */}
       {showPickupOptions === PICKUP_OPTION_ON && (
         <div className="mt-4">
-          <p className="text-sm text-gray-600 mb-3">Choose a store near you:</p>
+          <p className="text-sm text-ui-fg-subtle mb-3">Choose a store near you:</p>
           <RadioGroup
             value={shippingMethodId}
             onChange={(v) => {
@@ -256,10 +256,10 @@ const ShippingMethodSelector: React.FC<ShippingMethodSelectorProps> = ({
                     {
                       "border-tc-terracotta bg-tc-cream ring-1 ring-tc-terracotta":
                         option.id === shippingMethodId,
-                      "border-gray-300 hover:border-gray-400":
+                      "border-ui-border-base hover:border-ui-border-strong":
                         option.id !== shippingMethodId &&
                         !option.insufficient_inventory,
-                      "border-gray-200 opacity-50 cursor-not-allowed":
+                      "border-ui-border-base opacity-50 cursor-not-allowed":
                         option.insufficient_inventory,
                     }
                   )}
@@ -268,7 +268,7 @@ const ShippingMethodSelector: React.FC<ShippingMethodSelectorProps> = ({
                     <MedusaRadio checked={option.id === shippingMethodId} />
                     <div className="flex flex-col">
                       <span className="font-medium">{option.name}</span>
-                      <span className="text-gray-500 text-xs">
+                      <span className="text-ui-fg-muted text-xs">
                         {formatAddress(
                           (option as any).service_zone?.fulfillment_set?.location
                             ?.address as HttpTypes.StoreCartAddress
@@ -276,7 +276,7 @@ const ShippingMethodSelector: React.FC<ShippingMethodSelectorProps> = ({
                       </span>
                     </div>
                   </div>
-                  <span className="text-gray-700 font-medium">
+                  <span className="text-ui-fg-subtle font-medium">
                     {convertToLocale({
                       amount: option.amount!,
                       currency_code: cart?.currency_code,
@@ -291,7 +291,7 @@ const ShippingMethodSelector: React.FC<ShippingMethodSelectorProps> = ({
 
       {/* Loading indicator */}
       {isLoading && (
-        <div className="mt-4 flex items-center gap-2 text-gray-500">
+        <div className="mt-4 flex items-center gap-2 text-ui-fg-muted">
           <Loader className="animate-spin h-4 w-4" />
           <span className="text-sm">Updating shipping method...</span>
         </div>

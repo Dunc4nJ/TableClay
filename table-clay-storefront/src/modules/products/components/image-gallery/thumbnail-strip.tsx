@@ -40,7 +40,7 @@ const ThumbnailStrip = ({
               "focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500",
               index === currentIndex
                 ? "border-brand-500 ring-2 ring-brand-500/20 scale-105"
-                : "border-gray-200 hover:border-gray-300"
+                : "border-ui-border-base hover:border-ui-border-strong"
             )}
             aria-label={`View image ${index + 1}`}
             aria-current={index === currentIndex ? "true" : undefined}
@@ -62,13 +62,13 @@ const ThumbnailStrip = ({
             className={clx(
               "relative overflow-hidden rounded-lg",
               "w-14 h-14 sm:w-20 sm:h-20",
-              "border-2 border-gray-200 hover:border-gray-300",
-              "bg-gray-100 flex items-center justify-center",
+              "border-2 border-ui-border-base hover:border-ui-border-strong",
+              "bg-ui-bg-subtle flex items-center justify-center",
               "transition-all duration-200"
             )}
             aria-label={`View ${hiddenCount} more images`}
           >
-            <span className="text-sm font-medium text-gray-600">
+            <span className="text-sm font-medium text-ui-fg-subtle">
               +{hiddenCount}
             </span>
           </button>

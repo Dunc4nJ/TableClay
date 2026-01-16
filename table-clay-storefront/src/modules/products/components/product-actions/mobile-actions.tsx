@@ -31,7 +31,7 @@ const getMobileAddToCartClasses = (isDisabled: boolean, isLoading: boolean) =>
   clx(
     MOBILE_ADD_TO_CART_BASE_CLASSES,
     isDisabled
-      ? "bg-gray-200 text-gray-500 cursor-not-allowed shadow-none"
+      ? "bg-ui-bg-subtle text-ui-fg-muted cursor-not-allowed shadow-none"
       : "bg-brand-500 hover:bg-brand-600 text-white shadow-md hover:shadow-lg",
     isLoading && "opacity-90 cursor-wait"
   )
@@ -91,7 +91,7 @@ const MobileActions: React.FC<MobileActionsProps> = ({
           leaveTo="opacity-0"
         >
           <div
-            className="bg-white flex flex-col gap-y-3 justify-center items-center text-large-regular p-4 h-full w-full border-t border-gray-200"
+            className="bg-ui-bg-component flex flex-col gap-y-3 justify-center items-center text-large-regular p-4 h-full w-full border-t border-ui-border-base"
             data-testid="mobile-actions"
           >
             <div className="flex items-center gap-x-2">
@@ -162,7 +162,7 @@ const MobileActions: React.FC<MobileActionsProps> = ({
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
-            <div className="fixed inset-0 bg-gray-700 bg-opacity-75 backdrop-blur-sm" />
+            <div className="fixed inset-0 bg-[#2c1810]/70 backdrop-blur-sm" />
           </Transition.Child>
 
           <div className="fixed bottom-0 inset-x-0">
@@ -183,13 +183,13 @@ const MobileActions: React.FC<MobileActionsProps> = ({
                   <div className="w-full flex justify-end pr-6">
                     <button
                       onClick={close}
-                      className="bg-white w-12 h-12 rounded-full text-ui-fg-base flex justify-center items-center"
+                      className="bg-ui-bg-component w-12 h-12 rounded-full text-ui-fg-base flex justify-center items-center"
                       data-testid="close-modal-button"
                     >
                       <X />
                     </button>
                   </div>
-                  <div className="bg-white px-6 py-12">
+                  <div className="bg-ui-bg-component px-6 py-12">
                     {(product.variants?.length ?? 0) > 1 && (
                       <div className="flex flex-col gap-y-6">
                         {(product.options || []).map((option) => {

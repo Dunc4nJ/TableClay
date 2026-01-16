@@ -44,13 +44,13 @@ const CollectionShowcase = ({
         <div className="w-full small:w-1/2 bg-cream-200 flex items-center justify-center p-8 small:p-12 medium:p-16">
           <div className="max-w-md text-center">
             {/* Collection Title */}
-            <h2 className="font-display text-3xl small:text-4xl medium:text-5xl text-stone-800 mb-4">
+            <h2 className="font-display text-3xl small:text-4xl medium:text-5xl text-ui-fg-base mb-4">
               {collection.title}
             </h2>
 
             {/* Description */}
             {collection.description && (
-              <p className="text-stone-600 text-base small:text-lg mb-8 leading-relaxed">
+              <p className="text-ui-fg-subtle text-base small:text-lg mb-8 leading-relaxed">
                 {collection.description}
               </p>
             )}
@@ -58,7 +58,7 @@ const CollectionShowcase = ({
             {/* CTA Button */}
             <LocalizedClientLink
               href={`/collections/${collection.handle}`}
-              className="inline-block bg-black hover:bg-stone-800 text-white px-8 py-4 rounded-none uppercase text-sm tracking-wider font-medium transition-all duration-300"
+              className="inline-block bg-brand-700 hover:bg-brand-800 text-white px-8 py-4 rounded-none uppercase text-sm tracking-wider font-medium transition-all duration-300"
             >
               {ctaText}
             </LocalizedClientLink>

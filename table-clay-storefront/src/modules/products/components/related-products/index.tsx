@@ -155,8 +155,8 @@ export default function RelatedProducts({
         <div className="content-container">
           {/* Header skeleton */}
           <div className="text-center mb-10">
-            <div className="h-8 w-64 bg-gray-200 animate-pulse rounded mx-auto mb-3" />
-            <div className="h-5 w-80 bg-gray-100 animate-pulse rounded mx-auto" />
+            <div className="h-8 w-64 bg-cream-300 animate-pulse rounded mx-auto mb-3" />
+            <div className="h-5 w-80 bg-cream-200 animate-pulse rounded mx-auto" />
           </div>
           {/* Products skeleton - 3 columns */}
           <ul className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 max-w-4xl mx-auto">

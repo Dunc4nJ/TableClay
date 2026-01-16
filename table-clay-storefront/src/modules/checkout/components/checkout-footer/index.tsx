@@ -55,9 +55,9 @@ const CheckoutFooter: React.FC<CheckoutFooterProps> = ({ cart }) => {
   }
 
   return (
-    <div className="mt-8 pt-6 border-t border-gray-200">
+    <div className="mt-8 pt-6 border-t border-ui-border-base">
       {/* Security Badge */}
-      <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
+      <div className="flex items-center justify-between text-sm text-ui-fg-muted mb-4">
         <div className="flex items-center gap-2">
           <LockIcon />
           <span>Secure and encrypted</span>
@@ -81,7 +81,7 @@ const CheckoutFooter: React.FC<CheckoutFooterProps> = ({ cart }) => {
 
       {/* Missing info hints */}
       {!canPlaceOrder && (
-        <div className="mt-3 text-sm text-gray-500">
+        <div className="mt-3 text-sm text-ui-fg-muted">
           <p>Complete the following to place your order:</p>
           <ul className="list-disc list-inside mt-1 space-y-1">
             {!hasEmail && <li>Enter your email address</li>}

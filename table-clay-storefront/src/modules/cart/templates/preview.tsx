@@ -55,7 +55,7 @@ const ItemsPreviewTemplate = ({ cart }: ItemsTemplateProps) => {
                           {bundle.bundleName}
                         </Text>
                         {bundle.bundleBadgeText && (
-                          <span className="text-[0.6rem] font-semibold uppercase tracking-[0.08em] px-2 py-1 rounded-full bg-black text-white">
+                          <span className="text-[0.6rem] font-semibold uppercase tracking-[0.08em] px-2 py-1 rounded-full bg-brand-900 text-white">
                             {bundle.bundleBadgeText}
                           </span>
                         )}
