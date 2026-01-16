@@ -54,7 +54,7 @@ const CategoryNavigation = ({ categories }: CategoryNavigationProps) => {
   }
 
   return (
-    <section className="w-full bg-cream-100 py-12 small:py-16">
+    <section className="w-full bg-cream-100 py-6 small:py-8">
       <div className="content-container">
         {/* Category Grid - 2 cols mobile, 4 cols desktop */}
         <div className="grid grid-cols-2 small:grid-cols-4 gap-4 small:gap-6">

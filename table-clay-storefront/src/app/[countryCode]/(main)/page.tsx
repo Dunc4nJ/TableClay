@@ -38,7 +38,7 @@ export default async function Home(props: {
       <Hero />
 
       {/* Section Intro - Visual break between hero and collections */}
-      <section className="bg-cream-100 py-16 sm:py-20">
+      <section className="bg-cream-100 py-8 sm:py-10">
         <div className="content-container text-center">
           <h2 className="font-display text-3xl sm:text-4xl text-stone-800 mb-4">
             Explore Our Collections

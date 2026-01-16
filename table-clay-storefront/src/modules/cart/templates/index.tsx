@@ -2,6 +2,7 @@ import ItemsTemplate from "./items"
 import Summary from "./summary"
 import EmptyCartMessage from "../components/empty-cart-message"
 import SignInPrompt from "../components/sign-in-prompt"
+import CartRecommendations from "../components/cart-recommendations"
 import Divider from "@modules/common/components/divider"
 import { HttpTypes } from "@medusajs/types"
 
@@ -25,6 +26,12 @@ const CartTemplate = ({
                 </>
               )}
               <ItemsTemplate cart={cart} />
+              {cart.region && (
+                <>
+                  <Divider />
+                  <CartRecommendations cart={cart} region={cart.region} />
+                </>
+              )}
             </div>
             <div className="relative">
               <div className="flex flex-col gap-y-8 sticky top-12">
