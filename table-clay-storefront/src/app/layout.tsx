@@ -31,10 +31,10 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/opengraph-image.jpg",
-        width: 1600,
-        height: 900,
-        alt: "Table Clay - Handcrafted Ceramics",
+        url: "/images/hero/banner.png",
+        width: 3616,
+        height: 1184,
+        alt: "Table Clay hero banner",
       },
     ],
   },
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Table Clay | Handcrafted Ceramics",
     description: "Made by hand, made with care. Discover our collection of handcrafted ceramics.",
-    images: ["/twitter-image.jpg"],
+    images: ["/images/hero/banner.png"],
   },
   verification: {
     google: "STFGWtUhNXIwZx4i8nE-pU66JQFqud4kwez1ymtPb8Y",
