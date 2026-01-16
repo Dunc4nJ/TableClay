@@ -217,7 +217,7 @@ export default function CartRecommendations({
   // Loading state - show 3 skeletons
   if (isLoading) {
     return (
-      <section className="bg-cream-50 py-8 lg:py-12 rounded-lg mt-6">
+      <section className="bg-cream-50 py-8 lg:py-12 rounded-lg">
         <div className="content-container">
           {/* Header skeleton */}
           <div className="text-center mb-8">
@@ -243,7 +243,7 @@ export default function CartRecommendations({
   }
 
   return (
-    <section className="bg-cream-50 py-8 lg:py-12 rounded-lg mt-6">
+    <section className="bg-cream-50 py-8 lg:py-12 rounded-lg">
       <div className="content-container">
         {/* Header */}
         <div className="text-center mb-8">
