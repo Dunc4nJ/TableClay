@@ -219,7 +219,7 @@ modules: [
   // Redis Event Bus (production)
   { resolve: "@medusajs/medusa/event-bus-redis" },
 
-  // Stripe Payment Provider
+  // Stripe Payment Provider (auto-capture enabled)
   { resolve: "@medusajs/medusa/payment" },
 
   // S3 File Storage (conditional)

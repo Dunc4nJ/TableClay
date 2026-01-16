@@ -34,6 +34,8 @@ module.exports = defineConfig({
             options: {
               apiKey: process.env.STRIPE_API_KEY,
               webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
+              // Ensure PaymentIntents are captured automatically on successful confirmation.
+              capture: true,
             },
           },
         ],
