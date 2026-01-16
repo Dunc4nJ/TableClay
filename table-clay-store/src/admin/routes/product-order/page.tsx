@@ -128,18 +128,13 @@ const ProductOrderPage = () => {
       return
     }
 
-    if (!hasChanges) {
-      setInitialOrder(baseOrder)
-      setDraftOrder(baseOrder)
+    if (hasChanges) {
+      return
     }
-  }, [
-    baseOrder,
-    hasChanges,
-    isProductsLoading,
-    isOrderLoading,
-    productsError,
-    orderError,
-  ])
+
+    setInitialOrder(baseOrder)
+    setDraftOrder(baseOrder)
+  }, [baseOrder, isProductsLoading, isOrderLoading, productsError, orderError])
 
   const productMap = useMemo(() => {
     return new Map(publishedProducts.map((product) => [product.id, product]))
