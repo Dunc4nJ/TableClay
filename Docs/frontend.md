@@ -2,9 +2,9 @@
 
 ## Current State (January 2026)
 
-The Table Clay storefront is a Next.js 15 application with custom components for showcasing handmade pottery. The design uses a warm, earthy color palette with cream backgrounds and terracotta accents.
+The Table Clay storefront is a Next.js 15 application with custom components for showcasing handmade pottery. The design uses a warm clay palette inspired by the SendGrid email templates, with cream backgrounds, espresso text, and terracotta accents.
 
-**Latest Update:** PDP reviews show 3 items with a centered "Load more reviews" button and review stats now reflect admin-set counts/ratings per product.
+**Latest Update:** Added static pages for About, Care Guide, and Shipping & Returns, plus a full warm theme pass across storefront surfaces and typography.
 
 ---
 
@@ -12,9 +12,9 @@ The Table Clay storefront is a Next.js 15 application with custom components for
 
 | Environment | URL |
 |-------------|-----|
-| Production | https://table-clay-storefront.vercel.app |
+| Production | https://tableclay.com |
 | Preview (develop) | https://table-clay-storefront-git-develop-duncan-jurmans-projects.vercel.app |
-| Store Page | https://table-clay-storefront.vercel.app/us/store |
+| Store Page | https://tableclay.com/us/store |
 
 ---
 
@@ -33,30 +33,29 @@ yarn install
 
 ### Color Palette
 
-Defined in `tailwind.config.js`:
+Defined in `table-clay-storefront/tailwind.config.js` and CSS tokens in `table-clay-storefront/src/styles/globals.css`:
 
 ```javascript
 colors: {
-  cream: {
-    50: '#FFFDF7',
-    100: '#FDF8E8',   // Light cream - section backgrounds
-    200: '#F5EED6',   // Warm cream - card backgrounds
-    300: '#E8DCC4',   // Border cream
-  },
   brand: {
-    500: '#C4A484',   // Terracotta - primary buttons
-    600: '#B08968',   // Darker terracotta - hover states
+    500: "#8b4513", // Primary clay brown
+    600: "#7a3c11", // Hover
+    700: "#5c2e0c",
+    900: "#2c1810"
   },
-  stone: {
-    600: '#57534e',   // Text color
+  cream: {
+    100: "#fbf7f2",
+    200: "#f5f0e8",
+    300: "#eadfd2",
+    400: "#dccbb9"
   }
 }
 ```
 
 ### Typography
 
-- **Display Font:** `font-display` - DM Serif Display for headings
-- **Body Font:** DM Sans for body text
+- **Display Font:** `font-display` - Cormorant Garamond for headings
+- **Body Font:** Outfit for body text
 - **Navigation:** Uppercase, tracking-wider, font-medium
 
 ### Component Styling Patterns
@@ -178,12 +177,18 @@ const FEATURED_COLLECTIONS = ["cloud-line", "modern-line", "japanese-line"]
 - Location: `src/modules/layout/templates/footer/index.tsx`
 - Shop, Collections, Company columns
 - All 6 collection links displayed
+- Connect links: Instagram `@table.clay`, email `Emily@tableclay.com`
 
 ### 8. Product Detail Page (PDP)
 - Location: `src/modules/products/templates/index.tsx`
 - Reviews section renders the first 3 reviews by default
 - If more than 3 reviews exist, a centered "Load more reviews" button reveals 3 more per click
 - Review counts and average rating are sourced from ProductReviewStats
+
+### 9. Static Pages
+- About: `src/app/[countryCode]/(main)/about/page.tsx`
+- Care Guide: `src/app/[countryCode]/(main)/care/page.tsx`
+- Shipping & Returns: `src/app/[countryCode]/(main)/shipping/page.tsx`
 
 ---
 

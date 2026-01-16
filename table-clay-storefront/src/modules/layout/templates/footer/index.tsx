@@ -136,20 +136,20 @@ export default async function Footer() {
               <ul className="grid grid-cols-1 gap-y-2">
                 <li>
                   <a
-                    href="https://instagram.com/tableclay"
+                    href="https://instagram.com/table.clay"
                     target="_blank"
                     rel="noreferrer"
                     className="text-ui-fg-muted hover:text-brand-600 text-sm transition-colors"
                   >
-                    Instagram
+                    @table.clay
                   </a>
                 </li>
                 <li>
                   <a
-                    href="mailto:hello@tableclay.com"
+                    href="mailto:Emily@tableclay.com"
                     className="text-ui-fg-muted hover:text-brand-600 text-sm transition-colors"
                   >
-                    Contact Us
+                    Emily@tableclay.com
                   </a>
                 </li>
               </ul>
