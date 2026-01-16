@@ -1391,12 +1391,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@medusajs/icons@npm:2.12.2":
-  version: 2.12.2
-  resolution: "@medusajs/icons@npm:2.12.2"
+"@medusajs/icons@npm:2.12.5":
+  version: 2.12.5
+  resolution: "@medusajs/icons@npm:2.12.5"
   peerDependencies:
     react: ^18.3.1
-  checksum: 790f89b868f137d44830bbe13b83a51af149406b3db9850870482007405f058f5ba88a9a8abe5316d124fd14aa0285c1c4f558f2d78dabcb5f643d155ea9e34b
+  checksum: bcac8fb392003dbb1e4d95beb81df6cd3894b210dfb584a8f7fb12e006af92f1a025067a8b451e747e7701dad7314c6e515baa78cafa6747f3ea0a9f32c3bc99
   languageName: node
   linkType: hard
 
@@ -1439,14 +1439,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@medusajs/ui@npm:4.0.30":
-  version: 4.0.30
-  resolution: "@medusajs/ui@npm:4.0.30"
+"@medusajs/ui@npm:4.0.33":
+  version: 4.0.33
+  resolution: "@medusajs/ui@npm:4.0.33"
   dependencies:
     "@dnd-kit/core": ^6.1.0
     "@dnd-kit/sortable": ^8.0.0
     "@dnd-kit/utilities": ^3.2.2
-    "@medusajs/icons": 2.12.2
+    "@medusajs/icons": 2.12.5
     "@radix-ui/react-dialog": 1.1.4
     "@radix-ui/react-dismissable-layer": 1.1.4
     "@tanstack/react-table": 8.20.5
@@ -1464,7 +1464,7 @@ __metadata:
   peerDependencies:
     react: ^18.3.1
     react-dom: ^18.3.1
-  checksum: d87c6d14d6ca8e8e1d9fcfe4e4eade27df94f2439544b56bfe22803f73fcd1282345948d3c055a33436db674cbd624df8b1d5a00c0dd6ebfa2894f96c1a22701
+  checksum: 45701b942bd3ee135d8c31644e0fd6f0382c53c01d684ad43f04e17a479b6513c090c54e2b1b97e1003510524969339c56107b5b26cd48dbacdbfbe1f1f5a9f8
   languageName: node
   linkType: hard
 
@@ -11068,7 +11068,7 @@ __metadata:
     "@headlessui/react": ^2.2.0
     "@medusajs/js-sdk": latest
     "@medusajs/types": latest
-    "@medusajs/ui": 4.0.30
+    "@medusajs/ui": 4.0.33
     "@medusajs/ui-preset": latest
     "@radix-ui/react-accordion": ^1.2.1
     "@stripe/react-stripe-js": ^5.3.0
