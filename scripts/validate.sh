@@ -18,19 +18,20 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
 # Prefer real Node over Bun wrappers (Bun has incompatibilities with Jest/MikroORM)
-if [ -x /usr/bin/node ]; then
+if [ -x /usr/bin/nodejs ]; then
+    NODE_BIN="/usr/bin/nodejs"
+elif [ -x /usr/local/bin/nodejs ]; then
+    NODE_BIN="/usr/local/bin/nodejs"
+elif [ -x /usr/bin/node ]; then
     NODE_BIN="/usr/bin/node"
-    NPM_BIN="/usr/bin/npm"
-    NPX_BIN="/usr/bin/npx"
 elif [ -x /usr/local/bin/node ]; then
     NODE_BIN="/usr/local/bin/node"
-    NPM_BIN="/usr/local/bin/npm"
-    NPX_BIN="/usr/local/bin/npx"
 else
     NODE_BIN="$(command -v nodejs || command -v node)"
-    NPM_BIN="$(command -v npm)"
-    NPX_BIN="$(command -v npx)"
 fi
+
+NPM_BIN="$(command -v npm)"
+NPX_BIN="$(command -v npx)"
 
 if [ -z "$NODE_BIN" ] || [ -z "$NPM_BIN" ] || [ -z "$NPX_BIN" ]; then
     log_fail "Missing nodejs/node or npm/npx in PATH"
@@ -38,12 +39,16 @@ fi
 
 log_step "Using Node: $NODE_BIN ($(\"$NODE_BIN\" --version 2>/dev/null || echo 'unknown'))"
 
+NODE_SHIM_DIR="${ROOT_DIR}/.node-bin"
+mkdir -p "$NODE_SHIM_DIR"
+ln -sf "$NODE_BIN" "${NODE_SHIM_DIR}/node"
+
 run_npx() {
-    PATH="/usr/bin:/usr/local/bin:$PATH" "$NPX_BIN" "$@"
+    PATH="$NODE_SHIM_DIR:$PATH" "$NODE_BIN" "$NPX_BIN" "$@"
 }
 
 run_npm() {
-    PATH="/usr/bin:/usr/local/bin:$PATH" "$NPM_BIN" "$@"
+    PATH="$NODE_SHIM_DIR:$PATH" "$NODE_BIN" "$NPM_BIN" "$@"
 }
 
 # Backend validation

@@ -1,0 +1,15 @@
+diff --git a/node_modules/jest-runtime/build/index.js b/node_modules/jest-runtime/build/index.js
+index 01cb420..bf8cb22 100644
+--- a/node_modules/jest-runtime/build/index.js
++++ b/node_modules/jest-runtime/build/index.js
+@@ -1634,6 +1634,10 @@ class Runtime {
+     // should we implement the class ourselves?
+     class Module extends _module().default.Module {}
+     Object.entries(_module().default.Module).forEach(([key, value]) => {
++      const descriptor = Object.getOwnPropertyDescriptor(Module, key);
++      if (descriptor && descriptor.writable === false) {
++        return;
++      }
+       // @ts-expect-error: no index signature
+       Module[key] = value;
+     });

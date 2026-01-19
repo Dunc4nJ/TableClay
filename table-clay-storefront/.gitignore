@@ -55,3 +55,6 @@ dump.rdb
 /blob-report/
 /playwright/.cache/
 /playwright/.auth
+
+# Prevent accidental Pages Router files (this is an App Router project)
+/src/pages/
