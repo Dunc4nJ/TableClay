@@ -2,6 +2,7 @@
   "name": "table-clay-storefront",
   "version": "1.0.0",
   "private": true,
+  "packageManager": "yarn@1.22.22",
   "author": "Table Clay",
   "description": "Table Clay - Handmade Pottery Storefront",
   "keywords": [
