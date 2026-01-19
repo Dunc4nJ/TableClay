@@ -179,14 +179,25 @@ class ContentModuleService extends MedusaService({
       Modules.PRODUCT
     ] as IProductModuleService | undefined
 
-    if (productService && productIds.length > 0) {
-      const products = await productService.listProducts(
-        { id: productIds },
-        { select: ["id", "metadata", "sort_order"] }
-      )
+    if (
+      productService &&
+      typeof productService.listProducts === "function" &&
+      productIds.length > 0
+    ) {
+      try {
+        const products = await productService.listProducts(
+          { id: productIds },
+          { select: ["id", "metadata"] }
+        )
 
-      for (const product of products) {
-        productSortOrders.set(product.id, resolveProductSortOrder(product))
+        for (const product of products) {
+          productSortOrders.set(product.id, resolveProductSortOrder(product))
+        }
+      } catch (error) {
+        console.warn(
+          "[Content] Failed to resolve product sort order for featured reviews:",
+          error
+        )
       }
     }
 
