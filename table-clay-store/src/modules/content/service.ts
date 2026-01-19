@@ -1,5 +1,4 @@
-import type { IProductModuleService } from "@medusajs/framework/types"
-import { MedusaService, Modules } from "@medusajs/framework/utils"
+import { MedusaService } from "@medusajs/framework/utils"
 import { Review, ReviewImage, ProductReviewStats, FAQ } from "./models"
 
 // Type definitions for better type safety
@@ -143,64 +142,6 @@ class ContentModuleService extends MedusaService({
       return []
     }
 
-    const normalizeSortOrder = (value: unknown): number | null => {
-      if (typeof value === "number" && Number.isFinite(value)) {
-        return value
-      }
-
-      if (typeof value === "string") {
-        const parsed = Number(value)
-        return Number.isFinite(parsed) ? parsed : null
-      }
-
-      return null
-    }
-
-    const resolveProductSortOrder = (product: {
-      id: string
-      metadata?: Record<string, unknown> | null
-    }): number => {
-      const productRecord = product as Record<string, unknown>
-      const direct = normalizeSortOrder(productRecord.sort_order)
-      if (direct !== null) {
-        return direct
-      }
-
-      const metadataSort = normalizeSortOrder(product.metadata?.sort_order)
-      return metadataSort ?? Number.MAX_SAFE_INTEGER
-    }
-
-    const productIds = [...new Set(reviews.map((review) => review.product_id))]
-    const productSortOrders = new Map<string, number>()
-    const container = this as unknown as {
-      __container__?: Record<string, unknown>
-    }
-    const productService = container.__container__?.[
-      Modules.PRODUCT
-    ] as IProductModuleService | undefined
-
-    if (
-      productService &&
-      typeof productService.listProducts === "function" &&
-      productIds.length > 0
-    ) {
-      try {
-        const products = await productService.listProducts(
-          { id: productIds },
-          { select: ["id", "metadata"] }
-        )
-
-        for (const product of products) {
-          productSortOrders.set(product.id, resolveProductSortOrder(product))
-        }
-      } catch (error) {
-        console.warn(
-          "[Content] Failed to resolve product sort order for featured reviews:",
-          error
-        )
-      }
-    }
-
     // Fetch images for each review
     const reviewsWithImages = await Promise.all(
       reviews.map(async (review) => {
@@ -212,18 +153,9 @@ class ContentModuleService extends MedusaService({
       })
     )
 
-    return reviewsWithImages.sort((a, b) => {
-      const productSortA =
-        productSortOrders.get(a.product_id) ?? Number.MAX_SAFE_INTEGER
-      const productSortB =
-        productSortOrders.get(b.product_id) ?? Number.MAX_SAFE_INTEGER
-
-      if (productSortA !== productSortB) {
-        return productSortA - productSortB
-      }
-
-      return (a.sort_order ?? 0) - (b.sort_order ?? 0)
-    })
+    return reviewsWithImages.sort(
+      (a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0)
+    )
   }
 
   /**
