@@ -1,4 +1,5 @@
-import { MedusaService } from "@medusajs/framework/utils"
+import type { IProductModuleService } from "@medusajs/framework/types"
+import { MedusaService, Modules } from "@medusajs/framework/utils"
 import { Review, ReviewImage, ProductReviewStats, FAQ } from "./models"
 
 // Type definitions for better type safety
@@ -126,6 +127,92 @@ class ContentModuleService extends MedusaService({
     }
 
     return { reviews: reviewsWithImages, stats }
+  }
+
+  /**
+   * Get featured reviews (store API)
+   * Returns active 5-star reviews ordered by product sort order, then review sort order
+   */
+  async getFeaturedReviews(): Promise<ReviewRecord[]> {
+    const reviews = await this.listReviews(
+      { rating: 5, is_active: true },
+      { order: { sort_order: "ASC" } }
+    )
+
+    if (reviews.length === 0) {
+      return []
+    }
+
+    const normalizeSortOrder = (value: unknown): number | null => {
+      if (typeof value === "number" && Number.isFinite(value)) {
+        return value
+      }
+
+      if (typeof value === "string") {
+        const parsed = Number(value)
+        return Number.isFinite(parsed) ? parsed : null
+      }
+
+      return null
+    }
+
+    const resolveProductSortOrder = (product: {
+      id: string
+      metadata?: Record<string, unknown> | null
+    }): number => {
+      const productRecord = product as Record<string, unknown>
+      const direct = normalizeSortOrder(productRecord.sort_order)
+      if (direct !== null) {
+        return direct
+      }
+
+      const metadataSort = normalizeSortOrder(product.metadata?.sort_order)
+      return metadataSort ?? Number.MAX_SAFE_INTEGER
+    }
+
+    const productIds = [...new Set(reviews.map((review) => review.product_id))]
+    const productSortOrders = new Map<string, number>()
+    const container = this as unknown as {
+      __container__?: Record<string, unknown>
+    }
+    const productService = container.__container__?.[
+      Modules.PRODUCT
+    ] as IProductModuleService | undefined
+
+    if (productService && productIds.length > 0) {
+      const products = await productService.listProducts(
+        { id: productIds },
+        { select: ["id", "metadata", "sort_order"] }
+      )
+
+      for (const product of products) {
+        productSortOrders.set(product.id, resolveProductSortOrder(product))
+      }
+    }
+
+    // Fetch images for each review
+    const reviewsWithImages = await Promise.all(
+      reviews.map(async (review) => {
+        const images = await this.listReviewImages(
+          { review_id: review.id },
+          { order: { sort_order: "ASC" } }
+        )
+        return { ...review, images }
+      })
+    )
+
+    return reviewsWithImages.sort((a, b) => {
+      const productSortA =
+        productSortOrders.get(a.product_id) ?? Number.MAX_SAFE_INTEGER
+      const productSortB =
+        productSortOrders.get(b.product_id) ?? Number.MAX_SAFE_INTEGER
+
+      if (productSortA !== productSortB) {
+        return productSortA - productSortB
+      }
+
+      return (a.sort_order ?? 0) - (b.sort_order ?? 0)
+    })
   }
 
   /**

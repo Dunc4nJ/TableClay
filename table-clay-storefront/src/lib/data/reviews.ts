@@ -1,6 +1,6 @@
 "use server"
 
-import type { ProductReviewsResponse } from "./review-types"
+import type { ProductReviewsResponse, Review } from "./review-types"
 
 const BACKEND_URL =
   process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9000"
@@ -53,6 +53,36 @@ export async function getProductReviews(
   } catch (error) {
     console.error("Error fetching reviews:", error)
     return { reviews: [], stats: null }
+  }
+}
+
+/**
+ * Get featured reviews for homepage showcase
+ * Returns admin-curated 5-star reviews
+ */
+export async function getFeaturedReviews(): Promise<{ reviews: Review[] }> {
+  try {
+    const response = await fetch(`${BACKEND_URL}/store/reviews/featured`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "x-publishable-api-key": PUBLISHABLE_KEY,
+      },
+      next: {
+        revalidate: 60, // Cache for 60 seconds
+      },
+    })
+
+    if (!response.ok) {
+      console.error("Failed to fetch featured reviews:", response.status)
+      return { reviews: [] }
+    }
+
+    const data = await response.json()
+    return { reviews: data.reviews || [] }
+  } catch (error) {
+    console.error("Error fetching featured reviews:", error)
+    return { reviews: [] }
   }
 }
 
