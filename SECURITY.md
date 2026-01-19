@@ -21,7 +21,15 @@ If you discover a security issue, we appreciate your help in responsibly disclos
 Security fixes are provided for supported versions only. The supported version policy is maintained in release notes and repo-local docs.
 - If you are unsure whether a version is supported, report anyway.
 - If you can reproduce on the latest release line, include that in your report.
-- Supported release lines are tracked in: docs/SUPPORTED_VERSIONS.md (planned)
+- Supported release lines are tracked in: docs/SUPPORTED_VERSIONS.md
+
+## Security releases and backports
+When a report is confirmed, we will determine:
+- whether a **coordinated security release** is required,
+- which supported release lines require patches,
+- and whether mitigations/workarounds exist for unsupported versions.
+
+Backports are typically limited to supported release lines (see docs/SUPPORTED_VERSIONS.md).
 
 ## Scope
 
@@ -96,6 +104,10 @@ We aim to:
 
 If public disclosure is desired, we'll coordinate timing and attribution (unless you prefer anonymity).
 
+### Disclosure timeline (guideline)
+As a default guideline, we aim to coordinate disclosure within **~90 days** of a confirmed report.
+This may be faster for high-severity issues with straightforward fixes, or longer for issues requiring complex ecosystem coordination.
+
 ## Security advisories
 
 When applicable, we will use GitHub Security Advisories and/or release notes to inform users of:
@@ -104,6 +116,10 @@ When applicable, we will use GitHub Security Advisories and/or release notes to 
 - upgrade guidance,
 - and mitigations.
 
+## Bug bounty
+Unless explicitly stated otherwise, Medusa does not operate a paid bug bounty program for this repository.
+We still greatly appreciate responsible disclosures and will credit reporters when possible (unless anonymity is requested).
+
 ## Encryption (optional)
 
 If you prefer encrypted communication, include your public key in the initial email and request encrypted follow-ups.
@@ -111,9 +127,9 @@ Maintainers may also publish a PGP key fingerprint here in the future.
 
 ---
 
-## Security & operations roadmap
+## Security roadmap
 
-Planned documentation and automation improvements are tracked in: docs/security/ROADMAP.md (planned)
+Planned security and operational hardening work is tracked in: docs/security/ROADMAP.md
 
 Summary of planned deliverables:
 
@@ -122,11 +138,13 @@ Summary of planned deliverables:
 - docs/STABILITY.md - Stability tiers, compatibility promises, deprecation policy
 - docs/SUPPORTED_VERSIONS.md - Which release lines receive security fixes
 - docs/ARCHITECTURE.md - Module boundaries, contracts, transactions, events, workflows
+- docs/CONTRACTS.md - Contract definitions and compatibility enforcement
 - docs/OPERATIONS.md - Health checks, observability, runbooks, reliability patterns
 - docs/PERFORMANCE.md - Hot-path optimization, caching, common pitfalls
 - docs/RELEASING.md - Release checklist, SBOMs, provenance/attestations
 - docs/DEVELOPMENT.md - Local dev setup and contributor workflows
 - docs/TESTING.md - Test taxonomy, contract tests, CI expectations
+- docs/INCIDENT_RESPONSE.md - Incident response, postmortems, severity policy
 - docs/THREAT_MODEL.md - Assets, trust boundaries, threats and mitigations
 - docs/SECURITY_HARDENING.md - Secure development, supply chain, automated checks
 - docs/adr/ - Architecture decision records (template + index)

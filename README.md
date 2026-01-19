@@ -34,13 +34,27 @@
 </p>
 
 ## Quick links
-- Docs: https://docs.medusajs.com
+- Docs (API reference & guides): https://docs.medusajs.com
 - Learn (Getting Started): https://docs.medusajs.com/learn
 - Website: https://www.medusajs.com
 - Integrations: https://medusajs.com/integrations/
-- Releases: https://github.com/medusajs/medusa/releases
-- Discussions: https://github.com/medusajs/medusa/discussions
-- Repo-local docs (architecture, operations, contributor workflows): docs/README.md (planned)
+- Releases (tags + changelogs): https://github.com/medusajs/medusa/releases
+- Discussions (questions & proposals): https://github.com/medusajs/medusa/discussions
+- Repo-local docs (contributors/maintainers): docs/README.md
+- Stability & deprecations: docs/STABILITY.md
+- Supported versions (security fixes): docs/SUPPORTED_VERSIONS.md
+- Security policy (vulnerability reporting): SECURITY.md
+
+## Contents
+- [What is Medusa?](#what-is-medusa)
+- [Repository scope](#repository-scope)
+- [Repo-local documentation](#repo-local-documentation)
+- [Architecture at a glance](#architecture-at-a-glance)
+- [Branches, releases, and support](#branches-releases-and-support)
+- [Contributing](#contributing)
+- [Stability & support](#stability--support)
+- [Security](#security)
+- [License](#license)
 
 ## What is Medusa?
 
@@ -65,9 +79,23 @@ This repository contains Medusa's core framework and commerce modules.
 - Treat this repository as a dependency (or upstream), not as a project template.
 
 ### If you're contributing to core
-- Start here: docs/README.md (planned)
-- Development environment setup: docs/DEVELOPMENT.md (planned)
-- Testing strategy: docs/TESTING.md (planned)
+- Start here: docs/README.md
+- Development environment setup: docs/DEVELOPMENT.md
+- Testing strategy: docs/TESTING.md
+
+## Repo-local documentation
+This repository keeps **repo-local** docs focused on contributor/maintainer concerns (development, architecture boundaries, stability promises, operations, security hardening).
+
+Recommended reading order:
+1. docs/DEVELOPMENT.md
+2. docs/ARCHITECTURE.md
+3. docs/TESTING.md
+4. docs/STABILITY.md
+5. docs/OPERATIONS.md
+6. docs/PERFORMANCE.md
+7. docs/RELEASING.md
+8. docs/adr/README.md
+9. docs/security/ROADMAP.md
 
 ## Architecture at a glance
 
@@ -77,11 +105,12 @@ This repository follows a modular architecture designed to keep core commerce pr
 > - Architecture: https://docs.medusajs.com/learn/advanced-development/architecture/overview
 > - Commerce modules: https://docs.medusajs.com/resources/commerce-modules
 >
-> This repository also maintains repo-local documentation focused on contributor/maintainer concerns (planned):
+> This repository also maintains repo-local documentation focused on contributor/maintainer concerns:
 > - docs/README.md - Documentation index
 > - docs/ARCHITECTURE.md - Module boundaries, contracts, transactions
 > - docs/STABILITY.md - Stability tiers, compatibility promises
 > - docs/OPERATIONS.md - Health checks, observability, runbooks
+> - docs/PERFORMANCE.md - Hot-path optimization, caching, common pitfalls
 > - docs/RELEASING.md - Release process, SBOMs, provenance
 > - docs/adr/README.md - Architecture decision records
 
@@ -89,6 +118,12 @@ This repository follows a modular architecture designed to keep core commerce pr
 
 Visit the Learn docs to set up a Medusa application:
 - https://docs.medusajs.com/learn
+
+## Branches, releases, and support
+- **Production usage:** use tagged releases.
+- **Default branch:** may include ongoing work and can change without notice.
+- **Security fixes:** only provided for supported release lines (see docs/SUPPORTED_VERSIONS.md).
+- **Compatibility promises & deprecations:** see docs/STABILITY.md.
 
 ## Contributing
 
@@ -106,13 +141,13 @@ Planned project documentation (see docs/security/ROADMAP.md when available):
 
 ### Large changes (APIs, data, contracts)
 For changes that alter public APIs, module contracts, data migrations, or runtime behavior:
-- Add or update an ADR: docs/adr/README.md (planned)
-- Confirm stability/compatibility expectations: docs/STABILITY.md (planned)
-- Consider operational impact (observability, runbooks): docs/OPERATIONS.md (planned)
+- Add or update an ADR: docs/adr/README.md
+- Confirm stability/compatibility expectations: docs/STABILITY.md
+- Consider operational impact (observability, runbooks): docs/OPERATIONS.md
 
 ## Stability & support
-- Stability tiers and deprecation policy: docs/STABILITY.md (planned)
-- Supported release lines (security fixes): docs/SUPPORTED_VERSIONS.md (planned)
+- Stability tiers and deprecation policy: docs/STABILITY.md
+- Supported release lines (security fixes): docs/SUPPORTED_VERSIONS.md
 
 ## Security
 
