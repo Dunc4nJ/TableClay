@@ -131,7 +131,7 @@ export default function ProductActions({
     const originalPrice = variant.calculated_price.original_amount ?? price
 
     // Only show variant title if it's not generic
-    const genericTitles = ["standard", "default", "one size", "regular", "-"]
+    const genericTitles = ["standard", "default", "default variant", "one size", "regular", "-"]
     const variantTitle = variant.title && !genericTitles.includes(variant.title.toLowerCase())
       ? variant.title
       : undefined
