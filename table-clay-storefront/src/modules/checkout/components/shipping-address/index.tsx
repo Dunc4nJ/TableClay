@@ -3,7 +3,8 @@ import { Container } from "@medusajs/ui"
 import Checkbox from "@modules/common/components/checkbox"
 import Input from "@modules/common/components/input"
 import { mapKeys } from "lodash"
-import React, { useEffect, useMemo, useState } from "react"
+import React, { useEffect, useMemo, useState, useRef } from "react"
+import { identifyOmnisendContact } from "@lib/analytics/omnisend"
 import AddressSelect from "../address-select"
 import CountrySelect from "../country-select"
 
@@ -30,6 +31,8 @@ const ShippingAddress = ({
     "shipping_address.phone": cart?.shipping_address?.phone || "",
     email: cart?.email || "",
   })
+
+  const lastIdentifiedEmailRef = useRef<string>("")
 
   const countriesInRegion = useMemo(
     () => cart?.region?.countries?.map((c) => c.iso_2),
@@ -90,6 +93,16 @@ const ShippingAddress = ({
       ...formData,
       [e.target.name]: e.target.value,
     })
+  }
+
+  // Handle email blur to identify OmniSend contact
+  const handleEmailBlur = () => {
+    const email = formData.email?.trim()
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (email && emailRegex.test(email) && email !== lastIdentifiedEmailRef.current) {
+      lastIdentifiedEmailRef.current = email
+      identifyOmnisendContact(email)
+    }
   }
 
   return (
@@ -200,6 +213,7 @@ const ShippingAddress = ({
           autoComplete="email"
           value={formData.email}
           onChange={handleChange}
+          onBlur={handleEmailBlur}
           required
           data-testid="shipping-email-input"
         />

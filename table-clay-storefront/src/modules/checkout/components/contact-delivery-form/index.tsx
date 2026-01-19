@@ -21,6 +21,7 @@ import StaticSelectField from "../static-select-field"
 import { Container } from "@medusajs/ui"
 import { mapKeys, debounce } from "lodash"
 import { useRouter } from "next/navigation"
+import { identifyOmnisendContact } from "@lib/analytics/omnisend"
 
 // US State options for dropdown
 const US_STATES = [
@@ -136,6 +137,7 @@ const ContactDeliveryForm: React.FC<ContactDeliveryFormProps> = ({
   const [message, formAction] = useActionState(setAddresses, null)
   const [isSavingAddress, setIsSavingAddress] = useState(false)
   const lastSavedAddressRef = useRef<string>("")
+  const lastIdentifiedEmailRef = useRef<string>("")
 
   // Validation functions
   const validateEmail = (email: string): string | undefined => {
@@ -210,6 +212,15 @@ const ContactDeliveryForm: React.FC<ContactDeliveryFormProps> = ({
       ...prev,
       [shortName]: error,
     }))
+
+    // Identify OmniSend contact when email is valid and not already identified
+    if (fieldName === "email" && !error) {
+      const email = formData[fieldName]?.trim()
+      if (email && email !== lastIdentifiedEmailRef.current) {
+        lastIdentifiedEmailRef.current = email
+        identifyOmnisendContact(email)
+      }
+    }
   }
 
   // Check if minimum required address fields are filled for shipping lookup
