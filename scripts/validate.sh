@@ -17,6 +17,13 @@ COMPONENT=${1:-all}
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
+# Prefer system Node in PATH to avoid Bun's node shim
+if [ -x /usr/bin/node ] || [ -x /usr/bin/nodejs ]; then
+    export PATH="/usr/bin:$PATH"
+elif [ -x /usr/local/bin/node ] || [ -x /usr/local/bin/nodejs ]; then
+    export PATH="/usr/local/bin:$PATH"
+fi
+
 # Prefer real Node over Bun wrappers (Bun has incompatibilities with Jest/MikroORM)
 if [ -x /usr/bin/nodejs ]; then
     NODE_BIN="/usr/bin/nodejs"

@@ -69,6 +69,17 @@ If you need to track that code is written but unverified, add a comment to the b
 ./scripts/validate.sh quick  # Quick TypeScript check only
 ```
 
+## Build Environment (Node vs Bun)
+
+If Bun is installed, its `node` shim can break `npm run build`. This repo includes
+`.envrc` to prefer system Node. Run `direnv allow` once, or prefix commands:
+
+```bash
+PATH=/usr/bin:$PATH npm run build
+```
+
+`./scripts/validate.sh` already enforces system Node internally.
+
 ---
 
 ## Playwright Session Cleanup

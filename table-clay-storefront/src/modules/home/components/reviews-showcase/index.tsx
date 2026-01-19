@@ -78,6 +78,12 @@ export default function ReviewsShowcase({ reviews }: ReviewsShowcaseProps) {
 
   const currentReview = reviews[currentIndex]
   const displayDate = formatReviewDate(currentReview.display_date)
+  const enterClass = reduceMotion ? "" : "transition duration-500 ease-out"
+  const enterFromClass = reduceMotion ? "" : "opacity-0 translate-y-2"
+  const enterToClass = reduceMotion ? "" : "opacity-100 translate-y-0"
+  const leaveClass = reduceMotion ? "" : "transition duration-300 ease-in"
+  const leaveFromClass = reduceMotion ? "" : "opacity-100 translate-y-0"
+  const leaveToClass = reduceMotion ? "" : "opacity-0 -translate-y-2"
 
   return (
     <section className="bg-cream-100 py-12 sm:py-16">
@@ -98,13 +104,12 @@ export default function ReviewsShowcase({ reviews }: ReviewsShowcaseProps) {
               <Transition
                 appear
                 show={isVisible}
-                enter="transition duration-500 ease-out"
-                enterFrom="opacity-0 translate-y-2"
-                enterTo="opacity-100 translate-y-0"
-                leave="transition duration-300 ease-in"
-                leaveFrom="opacity-100 translate-y-0"
-                leaveTo="opacity-0 -translate-y-2"
-                className="motion-reduce:transition-none"
+                enter={enterClass}
+                enterFrom={enterFromClass}
+                enterTo={enterToClass}
+                leave={leaveClass}
+                leaveFrom={leaveFromClass}
+                leaveTo={leaveToClass}
               >
                 <div className="flex flex-col items-center gap-4" aria-live="polite">
                   <span
