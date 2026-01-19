@@ -30,6 +30,10 @@ dist/**
 
 **/tsconfig.tsbuildinfo
 
+# Local tooling
+.node-bin/
+.apr/
+
 # Cache File
 /packages/**/.cache
 

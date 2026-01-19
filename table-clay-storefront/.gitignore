@@ -58,3 +58,6 @@ dump.rdb
 
 # Prevent accidental Pages Router files (this is an App Router project)
 /src/pages/
+!/src/pages/
+!/src/pages/_app.tsx
+!/src/pages/_document.tsx
