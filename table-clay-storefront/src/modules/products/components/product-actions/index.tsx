@@ -18,6 +18,7 @@ import MobileActions from "./mobile-actions"
 import { useRouter } from "next/navigation"
 import StickyCartBar from "@modules/products/components/sticky-cart-bar"
 import { generateEventId, pushEcommerceEvent } from "@lib/analytics/events"
+import { trackOmnisendEvent } from "@lib/analytics/omnisend"
 
 const PUBLIC_BACKEND_URL =
   process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || ""
@@ -261,6 +262,15 @@ export default function ProductActions({
             ],
           },
         })
+
+        // OmniSend add to cart event for bundle
+        trackOmnisendEvent("$addedToCart", {
+          $value: bundlePrice / 100,
+          $productID: selectedBundle.id,
+          $title: selectedBundle.name || "Bundle",
+          $quantity: 1,
+          $productURL: typeof window !== "undefined" ? window.location.href : undefined,
+        })
       } else {
         // Standard variant flow (single item)
         if (!selectedVariant?.id) return null
@@ -290,6 +300,17 @@ export default function ProductActions({
               },
             ],
           },
+        })
+
+        // OmniSend add to cart event for single variant
+        trackOmnisendEvent("$addedToCart", {
+          $value: price / 100,
+          $productID: product.id,
+          $variantID: selectedVariant.id,
+          $title: product.title || "Product",
+          $quantity: 1,
+          $imageURL: product.thumbnail || undefined,
+          $productURL: typeof window !== "undefined" ? window.location.href : undefined,
         })
       }
 

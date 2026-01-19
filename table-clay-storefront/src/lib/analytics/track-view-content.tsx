@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef } from "react"
 import { useSearchParams } from "next/navigation"
 import { HttpTypes } from "@medusajs/types"
 import { generateEventId, pushEcommerceEvent } from "@lib/analytics/events"
+import { trackOmnisendEvent } from "@lib/analytics/omnisend"
 
 type TrackViewContentProps = {
   product: HttpTypes.StoreProduct
@@ -77,6 +78,16 @@ export default function TrackViewContent({
           },
         ],
       },
+    })
+
+    // OmniSend product viewed event
+    trackOmnisendEvent("$productViewed", {
+      $productID: product.id,
+      $variantID: variant?.id,
+      $title: product.title || "Product",
+      $price: price / 100,
+      $imageURL: product.thumbnail || undefined,
+      $productURL: typeof window !== "undefined" ? window.location.href : undefined,
     })
   }, [product, region?.currency_code, trackingKey, variant])
 

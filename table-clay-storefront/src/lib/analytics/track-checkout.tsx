@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react"
 import { HttpTypes } from "@medusajs/types"
 import { generateEventId, pushEcommerceEvent } from "@lib/analytics/events"
+import { trackOmnisendEvent } from "@lib/analytics/omnisend"
 
 type TrackInitiateCheckoutProps = {
   cart: HttpTypes.StoreCart
@@ -43,6 +44,13 @@ export default function TrackInitiateCheckout({
         value: (cart.total ?? 0) / 100,
         items,
       },
+    })
+
+    // OmniSend started checkout event
+    trackOmnisendEvent("$startedCheckout", {
+      $value: (cart.total ?? 0) / 100,
+      $currency: currency,
+      $abandonedCheckoutURL: typeof window !== "undefined" ? `${window.location.origin}/cart` : undefined,
     })
   }, [cart])
 
