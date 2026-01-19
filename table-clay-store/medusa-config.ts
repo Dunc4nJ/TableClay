@@ -69,21 +69,11 @@ module.exports = defineConfig({
         ],
       },
     }] : []),
-    // SendGrid Email Notifications
+    // Custom OmniSend Module for email automation
     {
-      resolve: "@medusajs/medusa/notification",
+      resolve: "./src/modules/omnisend",
       options: {
-        providers: [
-          {
-            resolve: "@medusajs/medusa/notification-sendgrid",
-            id: "sendgrid",
-            options: {
-              channels: ["email"],
-              api_key: process.env.SENDGRID_API_KEY,
-              from: process.env.SENDGRID_FROM || "orders@tableclay.com",
-            },
-          },
-        ],
+        api_key: process.env.OMNISEND_API_KEY,
       },
     },
     // Custom Newsletter Module for subscriber management
