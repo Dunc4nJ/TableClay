@@ -61,3 +61,4 @@ dump.rdb
 !/src/pages/
 !/src/pages/_app.tsx
 !/src/pages/_document.tsx
+.env*.local
