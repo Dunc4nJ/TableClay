@@ -9,6 +9,7 @@ import Footer from "@modules/layout/templates/footer"
 import Nav from "@modules/layout/templates/nav"
 import FreeShippingPriceNudge from "@modules/shipping/components/free-shipping-price-nudge"
 import NewsletterModal from "@modules/common/components/newsletter-modal"
+import DiscountRetrievalButton from "@modules/common/components/discount-retrieval-button"
 
 export const metadata: Metadata = {
   metadataBase: new URL(getBaseURL()),
@@ -43,6 +44,8 @@ export default async function PageLayout(props: { children: React.ReactNode }) {
       <Footer />
       {/* Newsletter signup popup - shows once per 30 days */}
       <NewsletterModal />
+      {/* Floating button to retrieve discount code after dismissing popup */}
+      <DiscountRetrievalButton />
     </>
   )
 }

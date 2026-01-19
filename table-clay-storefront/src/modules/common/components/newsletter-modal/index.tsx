@@ -6,13 +6,18 @@ import { useLocalStorageExpiry } from "@lib/hooks/use-local-storage"
 import { subscribeToNewsletter } from "@lib/data/newsletter"
 import X from "@modules/common/icons/x"
 
-const NEWSLETTER_DISMISSED_KEY = "tableclay_newsletter_dismissed"
-const NEWSLETTER_SUBSCRIBED_KEY = "tableclay_newsletter_subscribed"
+// Exported for use by floating discount retrieval widget
+export const NEWSLETTER_DISMISSED_KEY = "tableclay_newsletter_dismissed"
+export const NEWSLETTER_SUBSCRIBED_KEY = "tableclay_newsletter_subscribed"
 const DISMISS_DURATION_MS = 30 * 24 * 60 * 60 * 1000 // 30 days
 
 type NewsletterModalProps = {
   /** Delay before showing the modal (in ms) */
   showDelay?: number
+  /** Force modal to open immediately, bypassing localStorage checks and delay */
+  forceOpen?: boolean
+  /** Callback when modal closes (for external control) */
+  onClose?: () => void
 }
 
 /**
@@ -22,8 +27,10 @@ type NewsletterModalProps = {
  */
 export default function NewsletterModal({
   showDelay = 1500,
+  forceOpen = false,
+  onClose,
 }: NewsletterModalProps) {
-  const [isOpen, setIsOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(forceOpen)
   const [email, setEmail] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -42,9 +49,9 @@ export default function NewsletterModal({
     365 * 24 * 60 * 60 * 1000 // 1 year
   )
 
-  // Show modal after delay if not dismissed/subscribed
+  // Show modal after delay if not dismissed/subscribed (skip if forceOpen)
   useEffect(() => {
-    if (wasDismissed || wasSubscribed) {
+    if (forceOpen || wasDismissed || wasSubscribed) {
       return
     }
 
@@ -53,12 +60,16 @@ export default function NewsletterModal({
     }, showDelay)
 
     return () => clearTimeout(timer)
-  }, [showDelay, wasDismissed, wasSubscribed])
+  }, [showDelay, wasDismissed, wasSubscribed, forceOpen])
 
   const handleClose = useCallback(() => {
     setIsOpen(false)
-    markDismissed()
-  }, [markDismissed])
+    // Only mark dismissed on first close (not when reopened via forceOpen)
+    if (!forceOpen) {
+      markDismissed()
+    }
+    onClose?.()
+  }, [markDismissed, forceOpen, onClose])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -147,13 +158,13 @@ export default function NewsletterModal({
                   <>
                     {/* Header */}
                     <Dialog.Title className="text-4xl sm:text-5xl font-display font-semibold text-ui-fg-base mb-4">
-                      Free Shipping
+                      Free Shipping on $50+
                     </Dialog.Title>
 
                     <Dialog.Description className="text-ui-fg-subtle text-base sm:text-lg mb-8 max-w-md mx-auto leading-relaxed">
                       New to Table Clay? Get{" "}
                       <span className="font-semibold text-ui-fg-base">
-                        free shipping on your first order
+                        free shipping on orders $50+
                       </span>{" "}
                       when you subscribe to our newsletter.
                     </Dialog.Description>
@@ -233,7 +244,7 @@ export default function NewsletterModal({
                     )}
 
                     <p className="text-sm text-ui-fg-muted">
-                      Use this code at checkout for free shipping on your first order!
+                      Use this code at checkout for free shipping on orders $50 or more!
                     </p>
 
                     <button

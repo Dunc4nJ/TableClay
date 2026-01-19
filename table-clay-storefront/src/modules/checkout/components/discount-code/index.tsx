@@ -4,9 +4,15 @@ import { Badge, Heading, Input, Label, Text } from "@medusajs/ui"
 import React from "react"
 
 import { applyPromotions } from "@lib/data/cart"
+import {
+  FREE_SHIPPING_THRESHOLD,
+  getAmountToFreeShipping,
+  hasFreeShippingPromotion,
+} from "@lib/constants/free-shipping"
 import { convertToLocale } from "@lib/util/money"
 import { HttpTypes } from "@medusajs/types"
 import Trash from "@modules/common/icons/trash"
+import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import ErrorMessage from "../error-message"
 import { SubmitButton } from "../submit-button"
 
@@ -21,6 +27,12 @@ const DiscountCode: React.FC<DiscountCodeProps> = ({ cart }) => {
   const [errorMessage, setErrorMessage] = React.useState("")
 
   const { promotions = [] } = cart
+
+  // Check for free shipping threshold warning
+  const hasFreeShipping = hasFreeShippingPromotion(promotions)
+  const belowThreshold = (cart.item_total ?? 0) < FREE_SHIPPING_THRESHOLD
+  const showThresholdWarning = hasFreeShipping && belowThreshold
+  const amountNeeded = getAmountToFreeShipping(cart.item_total ?? 0)
   const removePromotionCode = async (code: string) => {
     const validPromotions = promotions.filter(
       (promotion) => promotion.code !== code
@@ -168,6 +180,28 @@ const DiscountCode: React.FC<DiscountCodeProps> = ({ cart }) => {
                   </div>
                 )
               })}
+
+              {/* Free shipping threshold warning */}
+              {showThresholdWarning && (
+                <div className="bg-amber-50 border border-amber-200 rounded-md p-3 mt-2">
+                  <p className="text-amber-800 text-sm">
+                    Add{" "}
+                    <span className="font-semibold">
+                      {convertToLocale({
+                        amount: amountNeeded,
+                        currency_code: cart.currency_code,
+                      })}
+                    </span>{" "}
+                    more to unlock free shipping with this code!
+                  </p>
+                  <LocalizedClientLink
+                    href="/store"
+                    className="text-amber-700 text-sm underline hover:text-amber-900"
+                  >
+                    Continue shopping
+                  </LocalizedClientLink>
+                </div>
+              )}
             </div>
           </div>
         )}

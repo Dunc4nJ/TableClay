@@ -1,6 +1,12 @@
 "use client"
 
 import { convertToLocale } from "@lib/util/money"
+import {
+  FREE_SHIPPING_THRESHOLD,
+  getAmountToFreeShipping,
+  hasFreeShippingPromotion,
+} from "@lib/constants/free-shipping"
+import { HttpTypes } from "@medusajs/types"
 import React from "react"
 
 // Default shipping cost (Standard Shipping = $5.00 = 500 cents)
@@ -17,9 +23,10 @@ type CartTotalsProps = {
     discount_subtotal?: number | null
     metadata?: Record<string, unknown> | null
   }
+  promotions?: HttpTypes.StorePromotion[]
 }
 
-const CartTotals: React.FC<CartTotalsProps> = ({ totals }) => {
+const CartTotals: React.FC<CartTotalsProps> = ({ totals, promotions = [] }) => {
   const {
     currency_code,
     total,
@@ -40,6 +47,12 @@ const CartTotals: React.FC<CartTotalsProps> = ({ totals }) => {
   const shippingAdjustment = (shipping_subtotal == null || shipping_subtotal === 0) ? DEFAULT_SHIPPING_COST : 0
   const totalWithTip = (total ?? 0) + tipAmount + shippingAdjustment
 
+  // Check for free shipping threshold warning
+  const hasFreeShipping = hasFreeShippingPromotion(promotions)
+  const belowThreshold = (item_subtotal ?? 0) < FREE_SHIPPING_THRESHOLD
+  const showThresholdWarning = hasFreeShipping && belowThreshold
+  const amountNeeded = getAmountToFreeShipping(item_subtotal ?? 0)
+
   return (
     <div>
       <div className="flex flex-col gap-y-2 txt-medium text-ui-fg-subtle ">
@@ -55,6 +68,15 @@ const CartTotals: React.FC<CartTotalsProps> = ({ totals }) => {
             {convertToLocale({ amount: displayShipping, currency_code })}
           </span>
         </div>
+        {showThresholdWarning && (
+          <div className="text-sm text-amber-700 bg-amber-50 px-2 py-1.5 rounded">
+            Add{" "}
+            <span className="font-medium">
+              {convertToLocale({ amount: amountNeeded, currency_code })}
+            </span>{" "}
+            more for free shipping
+          </div>
+        )}
         {!!discount_subtotal && (
           <div className="flex items-center justify-between">
             <span>Discount</span>
