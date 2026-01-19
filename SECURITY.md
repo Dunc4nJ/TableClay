@@ -131,6 +131,8 @@ Maintainers may also publish a PGP key fingerprint here in the future.
 
 Planned security and operational hardening work is tracked in: docs/security/ROADMAP.md
 
+Progress on these items may also be tracked via GitHub Issues with appropriate labels.
+
 Summary of planned deliverables:
 
 ### Documentation

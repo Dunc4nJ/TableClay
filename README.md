@@ -86,6 +86,8 @@ This repository contains Medusa's core framework and commerce modules.
 ## Repo-local documentation
 This repository keeps **repo-local** docs focused on contributor/maintainer concerns (development, architecture boundaries, stability promises, operations, security hardening).
 
+> **Note:** The following documents are being implemented. See SECURITY.md for the full roadmap.
+
 Recommended reading order:
 1. docs/DEVELOPMENT.md
 2. docs/ARCHITECTURE.md
