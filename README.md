@@ -1,169 +1,97 @@
-<p align="center">
-  <a href="https://www.medusajs.com">
-    <picture>
-      <source
-        media="(prefers-color-scheme: dark)"
-        srcset="https://user-images.githubusercontent.com/59018053/229103275-b5e482bb-4601-46e6-8142-244f531cebdb.svg"
-      >
-      <source
-        media="(prefers-color-scheme: light)"
-        srcset="https://user-images.githubusercontent.com/59018053/229103726-e5b529a3-9b3f-4970-8a1f-c6af37f087bf.svg"
-      >
-      <img
-        alt="Medusa logo"
-        src="https://user-images.githubusercontent.com/59018053/229103726-e5b529a3-9b3f-4970-8a1f-c6af37f087bf.svg"
-      >
-    </picture>
-  </a>
-</p>
+# TableClay
 
-<h1 align="center">Medusa</h1>
+TableClay is a full-stack commerce platform for a handmade pottery brand, built on Medusa v2 with a custom storefront and backend modules.
 
-<p align="center">Building blocks for digital commerce</p>
+## Production endpoints
+- Storefront: https://tableclay.com
+- Backend API: https://tableclay-production.up.railway.app
+- Admin Dashboard: https://tableclay-production.up.railway.app/app
+- Health Check: https://tableclay-production.up.railway.app/health
 
-<p align="center">
-  <a href="https://github.com/medusajs/medusa/blob/develop/LICENSE">
-    <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="Licensed under MIT" />
-  </a>
-  <a href="https://github.com/medusajs/medusa/blob/develop/CONTRIBUTING.md">
-    <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat" alt="PRs welcome" />
-  </a>
-  <a href="https://discord.gg/medusajs">
-    <img src="https://img.shields.io/badge/chat-on%20discord-7289DA.svg" alt="Discord" />
-  </a>
-</p>
+## System architecture
+```mermaid
+flowchart LR
+  User((Customer)) -->|Browse + Checkout| Storefront[Next.js Storefront\nVercel]
+  Storefront -->|Store API| Backend[Medusa v2 Backend\nRailway]
+  Backend --> Postgres[(PostgreSQL)]
+  Backend --> Redis[(Redis)]
+  Backend --> S3[(S3 Media Storage)]
+  Backend --> Stripe[(Stripe Payments)]
+  Storefront --> Omnisend[(Omnisend)]
+```
 
-## Quick links
-- Docs (API reference & guides): https://docs.medusajs.com
-- Learn (Getting Started): https://docs.medusajs.com/learn
-- Website: https://www.medusajs.com
-- Integrations: https://medusajs.com/integrations/
-- Releases (tags + changelogs): https://github.com/medusajs/medusa/releases
-- Discussions (questions & proposals): https://github.com/medusajs/medusa/discussions
-- Repo-local docs (contributors/maintainers): docs/README.md
-- Stability & deprecations: docs/STABILITY.md
-- Supported versions (security fixes): docs/SUPPORTED_VERSIONS.md
-- Security policy (vulnerability reporting): SECURITY.md
+## Deployment flow
+```mermaid
+flowchart TB
+  Dev[Developer] -->|git push develop| GitHub[GitHub: DuncanJurman/TableClay]
+  GitHub -->|deploy| Vercel[Vercel: Storefront]
+  GitHub -->|deploy| Railway[Railway: Medusa Backend]
+  Vercel --> StorefrontURL[tableclay.com]
+  Railway --> BackendURL[tableclay-production.up.railway.app]
+```
 
-## Contents
-- [What is Medusa?](#what-is-medusa)
-- [Repository scope](#repository-scope)
-- [Repo-local documentation](#repo-local-documentation)
-- [Architecture at a glance](#architecture-at-a-glance)
-- [Branches, releases, and support](#branches-releases-and-support)
-- [Contributing](#contributing)
-- [Stability & support](#stability--support)
-- [Security](#security)
-- [License](#license)
+## Repository layout
+- `table-clay-store/`: Medusa backend with custom modules and APIs.
+- `table-clay-storefront/`: Next.js storefront (App Router) deployed to Vercel.
+- `packages/`: Medusa core packages (upstream source).
+- `www/`: Docs and content site.
+- `Docs/`: Project-specific documentation and runbooks.
+- `scripts/`: Utilities and automation.
 
-## What is Medusa?
+## Package management
+We deliberately use different package managers per area to match deployment environments.
 
-Medusa is a commerce platform with a built-in framework for customization, designed to help you build custom commerce applications without reinventing core commerce logic.
+| Area | Path | Package manager | Lockfile | Notes |
+| --- | --- | --- | --- | --- |
+| Monorepo core + docs | `TableClay/` | Yarn 3 (Berry) | `yarn.lock` | Core Medusa packages + docs tooling. |
+| Backend | `TableClay/table-clay-store/` | Yarn 1.22.22 | `yarn.lock` | Dockerfile pins Yarn classic for patch-package. |
+| Storefront | `TableClay/table-clay-storefront/` | npm 9 | `package-lock.json` | Vercel uses `npm ci` for deterministic builds. |
 
-Use Medusa's framework and modules to support:
-- Advanced B2B or DTC stores
-- Marketplaces
-- Distributor platforms
-- PoS systems
-- Service businesses
-- Other solutions that need foundational commerce primitives
+Rules of thumb:
+- Do not run Yarn in `table-clay-storefront/`.
+- Do not regenerate `table-clay-store/` lockfile with npm.
+- Use `corepack` to activate the correct Yarn version where needed.
 
-All commerce modules are open-source and available on npm.
+## Local development
 
-## Repository scope
+### Storefront (Next.js)
+```bash
+cd TableClay/table-clay-storefront
+npm install
+npm run dev
+```
 
-This repository contains Medusa's core framework and commerce modules.
+Required env vars (see `table-clay-storefront/.env.example`):
+```env
+NEXT_PUBLIC_MEDUSA_BACKEND_URL=
+NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=
+NEXT_PUBLIC_BASE_URL=
+NEXT_PUBLIC_DEFAULT_REGION=us
+NEXT_PUBLIC_OMNISEND_BRAND_ID=
+```
 
-### If you're building a Medusa application
-- Start with the official Learn documentation.
-- Treat this repository as a dependency (or upstream), not as a project template.
+### Backend (Medusa)
+```bash
+cd TableClay/table-clay-store
+corepack prepare yarn@1.22.22 --activate
+yarn install
+yarn dev
+```
 
-### If you're contributing to core
-- Start here: docs/README.md
-- Development environment setup: docs/DEVELOPMENT.md
-- Testing strategy: docs/TESTING.md
+Key env vars (see `table-clay-store/.env.template`):
+```env
+DATABASE_URL=
+REDIS_URL=redis://localhost:6379
+JWT_SECRET=
+COOKIE_SECRET=
+OMNISEND_API_KEY=
+```
 
-## Repo-local documentation
-This repository keeps **repo-local** docs focused on contributor/maintainer concerns (development, architecture boundaries, stability promises, operations, security hardening).
+## Testing
+- Storefront: `npm run test:ci` and `npm run build`
+- Backend: `yarn test:unit` or `yarn test:ci`
 
-> **Note:** The following documents are being implemented. See SECURITY.md for the full roadmap.
-
-Recommended reading order:
-1. docs/DEVELOPMENT.md
-2. docs/ARCHITECTURE.md
-3. docs/TESTING.md
-4. docs/STABILITY.md
-5. docs/OPERATIONS.md
-6. docs/PERFORMANCE.md
-7. docs/RELEASING.md
-8. docs/adr/README.md
-9. docs/security/ROADMAP.md
-
-## Architecture at a glance
-
-This repository follows a modular architecture designed to keep core commerce primitives reusable while enabling customization through well-defined extension points.
-
-> The canonical, always-up-to-date deep-dive for building Medusa applications is in the official docs:
-> - Architecture: https://docs.medusajs.com/learn/advanced-development/architecture/overview
-> - Commerce modules: https://docs.medusajs.com/resources/commerce-modules
->
-> This repository also maintains repo-local documentation focused on contributor/maintainer concerns:
-> - docs/README.md - Documentation index
-> - docs/ARCHITECTURE.md - Module boundaries, contracts, transactions
-> - docs/STABILITY.md - Stability tiers, compatibility promises
-> - docs/OPERATIONS.md - Health checks, observability, runbooks
-> - docs/PERFORMANCE.md - Hot-path optimization, caching, common pitfalls
-> - docs/RELEASING.md - Release process, SBOMs, provenance
-> - docs/adr/README.md - Architecture decision records
-
-## Getting started
-
-Visit the Learn docs to set up a Medusa application:
-- https://docs.medusajs.com/learn
-
-## Branches, releases, and support
-- **Production usage:** use tagged releases.
-- **Default branch:** may include ongoing work and can change without notice.
-- **Security fixes:** only provided for supported release lines (see docs/SUPPORTED_VERSIONS.md).
-- **Compatibility promises & deprecations:** see docs/STABILITY.md.
-
-## Contributing
-
-Please see the contribution guide:
-- https://github.com/medusajs/medusa/blob/develop/CONTRIBUTING.md
-
-For community and support:
-- GitHub Discussions: https://github.com/medusajs/medusa/discussions
-- Discord: https://discord.gg/medusajs
-
-Planned project documentation (see docs/security/ROADMAP.md when available):
-- Code of Conduct
-- Support guide
-- Governance and maintainers
-
-### Large changes (APIs, data, contracts)
-For changes that alter public APIs, module contracts, data migrations, or runtime behavior:
-- Add or update an ADR: docs/adr/README.md
-- Confirm stability/compatibility expectations: docs/STABILITY.md
-- Consider operational impact (observability, runbooks): docs/OPERATIONS.md
-
-## Stability & support
-- Stability tiers and deprecation policy: docs/STABILITY.md
-- Supported release lines (security fixes): docs/SUPPORTED_VERSIONS.md
-
-## Security
-
-If you discover a security vulnerability, **do not open a public issue**.
-
-See [`SECURITY.md`](SECURITY.md) for reporting instructions and our disclosure process.
-
-## Other channels
-- Issues: https://github.com/medusajs/medusa/issues
-- Twitter: https://twitter.com/medusajs
-- LinkedIn: https://www.linkedin.com/company/medusajs
-- Blog: https://medusajs.com/blog/
-
-## License
-
-Licensed under the MIT License:
-- https://github.com/medusajs/medusa/blob/develop/LICENSE
+## Docs & runbooks
+- Backend details: `Docs/backend.md`
+- Storefront details: `Docs/frontend.md`
+- Project-wide instructions: `AGENTS.md`
