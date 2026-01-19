@@ -11,7 +11,8 @@ COPY package.json yarn.lock .yarnrc.yml ./
 COPY patches/ ./patches/
 
 # Install dependencies (postinstall runs patch-package)
-RUN corepack enable && corepack prepare yarn@3.2.1 --activate
+# Use Yarn classic to match the v1 lockfile format in this app.
+RUN corepack enable && corepack prepare yarn@1.22.22 --activate
 # Note: Not using --immutable to allow patch-package to modify node_modules
 RUN yarn install
 
