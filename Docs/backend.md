@@ -270,8 +270,9 @@ modules: [
 | `S3_BUCKET` | S3 bucket name |
 | `S3_REGION` | AWS region |
 | `S3_FILE_URL` | S3 file URL base |
-| `SENDGRID_API_KEY` | SendGrid API key |
-| `SENDGRID_FROM` | SendGrid sender email |
+| `OMNISEND_API_KEY` | OmniSend API key (replaces SendGrid) |
+| `SENDGRID_API_KEY` | Deprecated (legacy SendGrid) |
+| `SENDGRID_FROM` | Deprecated (legacy SendGrid sender email) |
 | `GOOGLE_PLACES_API_KEY` | Google Places API key (for address autocomplete) |
 
 ---
@@ -403,6 +404,10 @@ modules: [
 2. Run `./scripts/validate.sh all` (required before push)
 3. Commit and push to `develop` branch
 4. Railway auto-deploys from GitHub
+
+**Railway env vars (required):**
+- `OMNISEND_API_KEY` (OmniSend API key)
+- Remove legacy `SENDGRID_API_KEY` / `SENDGRID_FROM` if present
 
 ### Manual Commands
 

@@ -561,7 +561,11 @@ NEXT_PUBLIC_MEDUSA_BACKEND_URL=https://tableclay-production.up.railway.app
 NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=pk_a96d80b2210dda0c4d9eee3651311348ecf8c6329713ec7f021972390bdbb4b5
 NEXT_PUBLIC_BASE_URL=https://table-clay-storefront.vercel.app
 NEXT_PUBLIC_DEFAULT_REGION=us
+NEXT_PUBLIC_OMNISEND_BRAND_ID=your_omnisend_brand_id
 ```
+
+**Vercel env vars (required):**
+- `NEXT_PUBLIC_OMNISEND_BRAND_ID`
 
 ---
 
