@@ -7,6 +7,12 @@
 | Email (preferred) | security@medusajs.com |
 | GitHub | If enabled for this repo, use GitHub's **private vulnerability reporting** / Security Advisories |
 
+## TL;DR (how to report)
+- **Do not** open a public issue for security vulnerabilities.
+- Email **security@medusajs.com** (preferred), or use GitHub private vulnerability reporting if enabled.
+- Include a minimal reproduction, affected versions/commit, and impact.
+- **Do not include secrets, API keys, session tokens, or real customer data** in any report.
+
 At Medusa, we consider the security of our systems a top priority. However, vulnerabilities can still exist.
 If you discover a security issue, we appreciate your help in responsibly disclosing it so we can protect users and downstream projects.
 
@@ -15,6 +21,7 @@ If you discover a security issue, we appreciate your help in responsibly disclos
 Security fixes are provided for supported versions only. The supported version policy is maintained in release notes and repo-local docs.
 - If you are unsure whether a version is supported, report anyway.
 - If you can reproduce on the latest release line, include that in your report.
+- Supported release lines are tracked in: docs/SUPPORTED_VERSIONS.md (planned)
 
 ## Scope
 
@@ -25,7 +32,7 @@ Security fixes are provided for supported versions only. The supported version p
 
 ### Out of scope
 - Social engineering, phishing, or physical attacks
-- Denial of service (DoS) testing that impacts real users/infrastructure
+- Denial of service (DoS) testing that impacts real users/infrastructure (reports are welcome if demonstrated safely in a local/dev environment)
 - Spam or attacks against third-party applications/services
 - Reports lacking a reasonable security impact (e.g., "best practices" without exploitability)
 
@@ -38,6 +45,7 @@ Please:
 - Email your findings to **security@medusajs.com** (or use private GitHub reporting if enabled).
 - Do not take advantage of the issue beyond what is necessary to prove impact.
 - Do not disclose details publicly until we have coordinated a fix and disclosure timeline.
+- Avoid sending screenshots/logs that contain secrets, access tokens, or sensitive personal data. If unsure, redact first.
 
 ### What to include in a report
 
@@ -71,6 +79,13 @@ If you follow this policy:
 - We will handle your report with strict confidentiality
 - We will not share your personal details without permission
 
+## CVEs and advisories
+
+When applicable, we will coordinate:
+- GitHub Security Advisories and patched releases
+- CVE assignment (project- or CNA-dependent) and public disclosure timing
+- Reporter attribution (unless you prefer anonymity)
+
 ## Coordinated disclosure
 
 We aim to:
@@ -96,78 +111,35 @@ Maintainers may also publish a PGP key fingerprint here in the future.
 
 ---
 
-## Planned Improvements
+## Security & operations roadmap
 
-The following documentation and automation improvements are planned to strengthen security posture and operational maturity.
+Planned documentation and automation improvements are tracked in: docs/security/ROADMAP.md (planned)
 
-### Stability & Compatibility Policy
-Create `docs/STABILITY.md` defining:
-- Stability tiers (Stable, Beta, Alpha, Experimental, Deprecated)
-- Compatibility promises for each tier
-- What surfaces are covered (APIs, config, data migrations)
-- Deprecation process and guidance
+Summary of planned deliverables:
 
-### Architecture Documentation
-Create `docs/ARCHITECTURE.md` covering:
-- Module boundaries and contracts
-- Transaction boundaries and isolation
-- Reliable events and side effects (outbox pattern)
-- Idempotency requirements
-- Workflow orchestration patterns
-- Extension points and backward compatibility
-- Observability requirements
-- Architecture review checklist
+### Documentation
+- docs/README.md - Repository documentation index with reading order
+- docs/STABILITY.md - Stability tiers, compatibility promises, deprecation policy
+- docs/SUPPORTED_VERSIONS.md - Which release lines receive security fixes
+- docs/ARCHITECTURE.md - Module boundaries, contracts, transactions, events, workflows
+- docs/OPERATIONS.md - Health checks, observability, runbooks, reliability patterns
+- docs/PERFORMANCE.md - Hot-path optimization, caching, common pitfalls
+- docs/RELEASING.md - Release checklist, SBOMs, provenance/attestations
+- docs/DEVELOPMENT.md - Local dev setup and contributor workflows
+- docs/TESTING.md - Test taxonomy, contract tests, CI expectations
+- docs/THREAT_MODEL.md - Assets, trust boundaries, threats and mitigations
+- docs/SECURITY_HARDENING.md - Secure development, supply chain, automated checks
+- docs/adr/ - Architecture decision records (template + index)
+- docs/_template.md - Standard doc template (audience, status, owner, last reviewed)
 
-### Operations Guide
-Create `docs/OPERATIONS.md` covering:
-- Health checks (liveness/readiness)
-- Observability (structured logs, metrics, tracing)
-- Reliability patterns (idempotency, retry/backoff, circuit breakers)
-- Database operations and migration practices
-- Performance guidance and runbooks
-
-### Performance Guide
-Create `docs/PERFORMANCE.md` covering:
-- Hot-path optimization principles
-- Common pitfalls (N+1, unbounded lists, missing indexes)
-- Caching guidelines and invalidation
-- Performance review checklist
-
-### Threat Model
-Create `docs/THREAT_MODEL.md` covering:
-- Key assets (PII, payment state, inventory, credentials)
-- Trust boundaries (public HTTP, admin APIs, workers, integrations)
-- Common threats and mitigations
-
-### Security Hardening Guide
-Create `docs/SECURITY_HARDENING.md` covering:
-- Secure development practices
-- Supply chain security (pinned actions, SBOMs, provenance)
-- Automated security checks (CodeQL, dependency review, Scorecard)
-
-### Release Integrity
-Create `docs/RELEASING.md` covering:
-- Release checklist and artifact expectations
-- SBOM generation
-- Provenance and attestations
-
-### Security Automation
+### Automation & guardrails
 - GitHub issue template guardrails (disable blank issues, security contact link)
 - Bug report template with reproduction requirements
-- PR template with security checklist
-- CI workflow for build/test/lint
-- CodeQL analysis for security scanning
-- Dependency review on PRs
-- OSSF Scorecard workflow
-- Dependabot for dependency updates
+- PR template with security + testing + compatibility checklist
+- CI hardening (build/test/lint, CodeQL, dependency review, OSSF Scorecard, Dependabot)
+- Contract test suite for module boundaries (APIs/events/schemas)
+- API/schema diffing on PRs touching public surfaces
+- Performance regression benchmarks with CI thresholds
 
-### Community Documentation
-- CODE_OF_CONDUCT.md for community standards
-- SUPPORT.md for directing questions to appropriate channels
-- GOVERNANCE.md for decision-making process
-- MAINTAINERS.md for maintainer list and responsibilities
-
-### Architecture Decision Records
-Create `docs/adr/` directory with:
-- ADR template (0000-template.md)
-- Index of architectural decisions
+### Community & governance
+- CODE_OF_CONDUCT.md, SUPPORT.md, GOVERNANCE.md, MAINTAINERS.md
