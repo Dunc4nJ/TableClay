@@ -213,6 +213,26 @@ export default async function seedDemoData({ container }: ExecArgs) {
           code: "standard",
         },
         prices: [
+          { currency_code: "usd", amount: 500 },
+          { region_id: usRegion.id, amount: 500 },
+        ],
+        rules: [
+          { attribute: "enabled_in_store", value: "true", operator: "eq" },
+          { attribute: "is_return", value: "false", operator: "eq" },
+        ],
+      },
+      {
+        name: "Premium Shipping",
+        price_type: "flat",
+        provider_id: "manual_manual",
+        service_zone_id: fulfillmentSetResult.service_zones[0].id,
+        shipping_profile_id: shippingProfile.id,
+        type: {
+          label: "Premium",
+          description: "Ships in 2-3 business days",
+          code: "premium",
+        },
+        prices: [
           { currency_code: "usd", amount: 800 },
           { region_id: usRegion.id, amount: 800 },
         ],

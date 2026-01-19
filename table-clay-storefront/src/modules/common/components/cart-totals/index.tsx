@@ -3,6 +3,9 @@
 import { convertToLocale } from "@lib/util/money"
 import React from "react"
 
+// Default shipping cost (Standard Shipping = $5.00 = 500 cents)
+const DEFAULT_SHIPPING_COST = 500
+
 type CartTotalsProps = {
   totals: {
     total?: number | null
@@ -30,8 +33,12 @@ const CartTotals: React.FC<CartTotalsProps> = ({ totals }) => {
   // Get tip amount from cart metadata
   const tipAmount = (metadata?.tip_amount as number) || 0
 
-  // Calculate total including tip
-  const totalWithTip = (total ?? 0) + tipAmount
+  // Use default shipping cost if no shipping method selected
+  const displayShipping = shipping_subtotal ?? DEFAULT_SHIPPING_COST
+
+  // Calculate total including tip and default shipping if not already included
+  const shippingAdjustment = (shipping_subtotal == null || shipping_subtotal === 0) ? DEFAULT_SHIPPING_COST : 0
+  const totalWithTip = (total ?? 0) + tipAmount + shippingAdjustment
 
   return (
     <div>
@@ -44,8 +51,8 @@ const CartTotals: React.FC<CartTotalsProps> = ({ totals }) => {
         </div>
         <div className="flex items-center justify-between">
           <span>Shipping</span>
-          <span data-testid="cart-shipping" data-value={shipping_subtotal || 0}>
-            {convertToLocale({ amount: shipping_subtotal ?? 0, currency_code })}
+          <span data-testid="cart-shipping" data-value={displayShipping}>
+            {convertToLocale({ amount: displayShipping, currency_code })}
           </span>
         </div>
         {!!discount_subtotal && (
