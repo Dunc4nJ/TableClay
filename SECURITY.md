@@ -10,6 +10,12 @@
 At Medusa, we consider the security of our systems a top priority. However, vulnerabilities can still exist.
 If you discover a security issue, we appreciate your help in responsibly disclosing it so we can protect users and downstream projects.
 
+## Supported versions
+
+Security fixes are provided for supported versions only. The supported version policy is maintained in release notes and repo-local docs.
+- If you are unsure whether a version is supported, report anyway.
+- If you can reproduce on the latest release line, include that in your report.
+
 ## Scope
 
 ### In scope
@@ -47,9 +53,16 @@ To help us reproduce and fix quickly, include:
 What you can expect from us:
 - **Acknowledgement:** within **3 business days**
 - **Initial triage:** severity assessment and next steps as soon as feasible after acknowledgement
-- **Fix coordination:** we will share an estimated remediation timeline after triage
+- **Fix coordination:** we will share a remediation plan after triage (including whether a coordinated release is required)
 
 > Complex issues (or issues requiring coordinated releases) may take longer, but we will keep you informed.
+
+## Severity assessment
+
+We prioritize based on impact and exploitability. When useful, we may use CVSS as input, but we will always provide practical guidance:
+- Affected versions/surfaces
+- Exploit prerequisites
+- Mitigations and upgrade path
 
 ## Confidentiality and safe harbor
 
@@ -85,39 +98,76 @@ Maintainers may also publish a PGP key fingerprint here in the future.
 
 ## Planned Improvements
 
-The following documentation and automation improvements are planned to strengthen security posture and operational maturity:
+The following documentation and automation improvements are planned to strengthen security posture and operational maturity.
+
+### Stability & Compatibility Policy
+Create `docs/STABILITY.md` defining:
+- Stability tiers (Stable, Beta, Alpha, Experimental, Deprecated)
+- Compatibility promises for each tier
+- What surfaces are covered (APIs, config, data migrations)
+- Deprecation process and guidance
 
 ### Architecture Documentation
 Create `docs/ARCHITECTURE.md` covering:
-- Modular architecture principles (clear boundaries, extension points)
-- Domain invariants and transactional boundaries
+- Module boundaries and contracts
+- Transaction boundaries and isolation
+- Reliable events and side effects (outbox pattern)
+- Idempotency requirements
 - Workflow orchestration patterns
-- Idempotency and reliable event emission (outbox pattern)
-- Performance/scalability considerations (hot paths, caching, background work)
+- Extension points and backward compatibility
 - Observability requirements
+- Architecture review checklist
 
 ### Operations Guide
 Create `docs/OPERATIONS.md` covering:
 - Health checks (liveness/readiness)
 - Observability (structured logs, metrics, tracing)
-- Reliability patterns (idempotency, retry/backoff, async work)
-- Database migration practices
-- Performance guidance (avoiding N+1, caching, load testing)
+- Reliability patterns (idempotency, retry/backoff, circuit breakers)
+- Database operations and migration practices
+- Performance guidance and runbooks
 
-### Roadmap & Stability Tiers
-Create `docs/ROADMAP.md` with:
-- Stability tier definitions (Stable/Beta/Alpha)
-- Reliability & correctness priorities (idempotency, outbox, retry taxonomy)
-- Observability priorities (tracing, golden metrics)
-- Performance priorities (profiling, caching)
-- Security priorities (threat model, supply-chain hardening)
+### Performance Guide
+Create `docs/PERFORMANCE.md` covering:
+- Hot-path optimization principles
+- Common pitfalls (N+1, unbounded lists, missing indexes)
+- Caching guidelines and invalidation
+- Performance review checklist
+
+### Threat Model
+Create `docs/THREAT_MODEL.md` covering:
+- Key assets (PII, payment state, inventory, credentials)
+- Trust boundaries (public HTTP, admin APIs, workers, integrations)
+- Common threats and mitigations
+
+### Security Hardening Guide
+Create `docs/SECURITY_HARDENING.md` covering:
+- Secure development practices
+- Supply chain security (pinned actions, SBOMs, provenance)
+- Automated security checks (CodeQL, dependency review, Scorecard)
+
+### Release Integrity
+Create `docs/RELEASING.md` covering:
+- Release checklist and artifact expectations
+- SBOM generation
+- Provenance and attestations
 
 ### Security Automation
-- GitHub issue template guardrails to prevent public security disclosures
+- GitHub issue template guardrails (disable blank issues, security contact link)
+- Bug report template with reproduction requirements
+- PR template with security checklist
 - CI workflow for build/test/lint
 - CodeQL analysis for security scanning
+- Dependency review on PRs
+- OSSF Scorecard workflow
 - Dependabot for dependency updates
 
 ### Community Documentation
 - CODE_OF_CONDUCT.md for community standards
 - SUPPORT.md for directing questions to appropriate channels
+- GOVERNANCE.md for decision-making process
+- MAINTAINERS.md for maintainer list and responsibilities
+
+### Architecture Decision Records
+Create `docs/adr/` directory with:
+- ADR template (0000-template.md)
+- Index of architectural decisions

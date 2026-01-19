@@ -35,6 +35,7 @@
 
 ## Quick links
 - Docs: https://docs.medusajs.com
+- Learn (Getting Started): https://docs.medusajs.com/learn
 - Website: https://www.medusajs.com
 - Integrations: https://medusajs.com/integrations/
 - Releases: https://github.com/medusajs/medusa/releases
@@ -53,6 +54,13 @@ Use Medusa's framework and modules to support:
 - Other solutions that need foundational commerce primitives
 
 All commerce modules are open-source and available on npm.
+
+## Repository scope
+
+This repository contains Medusa's core framework and commerce modules.
+If you're looking to **build a Medusa application** (storefront, backend, integrations),
+start with the Learn docs. If you're looking to **contribute to core**, the planned
+repo-local documentation focuses on architecture, operations, and contributor workflows.
 
 ## Architecture at a glance
 
@@ -77,6 +85,11 @@ Please see the contribution guide:
 For community and support:
 - GitHub Discussions: https://github.com/medusajs/medusa/discussions
 - Discord: https://discord.gg/medusajs
+
+Planned project documentation (see SECURITY.md for details):
+- Code of Conduct
+- Support guide
+- Governance and maintainers
 
 ## Security
 
