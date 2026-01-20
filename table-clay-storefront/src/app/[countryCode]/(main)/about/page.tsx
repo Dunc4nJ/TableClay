@@ -20,7 +20,7 @@ export default function AboutPage() {
             A quiet love for clay, a studio with a wide journey
           </h1>
           <p className="mt-6 text-lg text-ui-fg-subtle max-w-2xl">
-            Table Clay began with Emily's love of ceramics and the calm ritual of
+            Table Clay began with Emily&apos;s love of ceramics and the calm ritual of
             shaping each piece by hand. What started small has grown into a
             studio of a dozen artisans, sharing new work at craft shows around
             the country.
@@ -70,7 +70,7 @@ export default function AboutPage() {
 
       <section className="content-container">
         <div className="rounded-3xl bg-brand-900 text-cream-100 p-8 sm:p-10 shadow-lg">
-          <h2 className="font-display text-3xl">See what we're making</h2>
+          <h2 className="font-display text-3xl">See what we&apos;re making</h2>
           <p className="mt-3 text-cream-100/80 text-lg max-w-2xl">
             Explore the latest collections and find the piece that feels like
             it was made for your table.

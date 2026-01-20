@@ -81,10 +81,6 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
   const [visibleReviewCount, setVisibleReviewCount] =
     useState(initialReviewCount)
 
-  if (!product || !product.id) {
-    return notFound()
-  }
-
   const scrollToReviews = () => {
     reviewsSectionRef.current?.scrollIntoView({ behavior: "smooth" })
   }
@@ -92,6 +88,10 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
   useEffect(() => {
     setVisibleReviewCount(initialReviewCount)
   }, [initialReviewCount, product?.id])
+
+  if (!product || !product.id) {
+    return notFound()
+  }
 
   return (
     <>
