@@ -231,8 +231,8 @@ export default function BundleSelector({
 
               {/* Bundle info */}
               <div className="flex-1 min-w-0">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1">
+                <div className="flex flex-wrap items-start gap-x-2 gap-y-2">
+                  <div className="flex-1 min-w-0 basis-full small:basis-auto">
                     <span className="font-medium text-ui-fg-base">
                       {bundle.name}
                     </span>
@@ -245,13 +245,13 @@ export default function BundleSelector({
 
                   {/* Badge - positioned inline with name */}
                   {bundle.badge_text && (
-                    <div className="flex-shrink-0 ml-2">
+                    <div className="flex-shrink-0 small:ml-2">
                       <BundleBadge text={bundle.badge_text} />
                     </div>
                   )}
 
                   {/* Pricing */}
-                  <div className="text-right flex-shrink-0">
+                  <div className="text-right flex-shrink-0 small:ml-auto">
                     <div className="font-bold text-ui-fg-base">
                       {formatPrice(bundle.sale_price)}
                     </div>
