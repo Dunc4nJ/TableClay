@@ -208,6 +208,25 @@ module.exports = {
           "0%": { transform: "translateY(-100%)" },
           "100%": { transform: "translateY(0)" },
         },
+        "pulse-ring": {
+          "0%": {
+            boxShadow: "0 0 0 0 rgba(139, 69, 19, 0.5)",
+          },
+          "70%": {
+            boxShadow: "0 0 0 10px rgba(139, 69, 19, 0)",
+          },
+          "100%": {
+            boxShadow: "0 0 0 0 rgba(139, 69, 19, 0)",
+          },
+        },
+        "bounce-subtle": {
+          "0%, 100%": {
+            transform: "translateY(0)",
+          },
+          "50%": {
+            transform: "translateY(-4px)",
+          },
+        },
       },
       animation: {
         "spin-slow": "spin 3s linear infinite",
@@ -224,6 +243,8 @@ module.exports = {
         enter: "enter 200ms ease-out",
         "slide-in": "slide-in 1.2s cubic-bezier(.41,.73,.51,1.02)",
         leave: "leave 150ms ease-in forwards",
+        "pulse-ring": "pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+        "bounce-subtle": "bounce-subtle 2s ease-in-out infinite",
       },
     },
   },
