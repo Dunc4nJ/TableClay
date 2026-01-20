@@ -19,11 +19,6 @@ export function isFreeShippingPromotion(
     return true
   }
 
-  // Check if the promotion type indicates shipping
-  if (promotion.type === "shipping") {
-    return true
-  }
-
   return false
 }
 
