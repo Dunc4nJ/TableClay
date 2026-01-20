@@ -139,11 +139,11 @@ export default function ReviewsShowcase({ reviews }: ReviewsShowcaseProps) {
 
                   {hasImages && (
                     <div className="w-full">
-                      <div className="mx-auto grid max-w-sm grid-cols-2 gap-3 sm:grid-cols-3">
+                      <div className="mx-auto flex max-w-sm flex-wrap justify-center gap-3">
                         {visibleImages.map((image, index) => (
                           <div
                             key={image.id}
-                            className="relative aspect-square overflow-hidden rounded-2xl border border-cream-200 bg-cream-100 shadow-sm"
+                            className="relative h-20 w-20 overflow-hidden rounded-2xl border border-cream-200 bg-cream-100 shadow-sm sm:h-24 sm:w-24"
                           >
                             <Image
                               src={image.url}
@@ -152,7 +152,7 @@ export default function ReviewsShowcase({ reviews }: ReviewsShowcaseProps) {
                                 `Review photo from ${currentReview.customer_name}`
                               }
                               fill
-                              sizes="(min-width: 640px) 140px, 40vw"
+                              sizes="(min-width: 640px) 96px, 80px"
                               className="object-cover"
                             />
                             {remainingImages > 0 &&
