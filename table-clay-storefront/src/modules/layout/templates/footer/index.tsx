@@ -141,7 +141,17 @@ export default async function Footer() {
                     rel="noreferrer"
                     className="text-ui-fg-muted hover:text-brand-600 text-sm transition-colors"
                   >
-                    @table.clay
+                    Instagram
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://tiktok.com/@table.clay"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-ui-fg-muted hover:text-brand-600 text-sm transition-colors"
+                  >
+                    TikTok
                   </a>
                 </li>
                 <li>
@@ -150,6 +160,14 @@ export default async function Footer() {
                     className="text-ui-fg-muted hover:text-brand-600 text-sm transition-colors"
                   >
                     Emily@tableclay.com
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="tel:+16467838398"
+                    className="text-ui-fg-muted hover:text-brand-600 text-sm transition-colors"
+                  >
+                    (646) 783-8398
                   </a>
                 </li>
               </ul>
