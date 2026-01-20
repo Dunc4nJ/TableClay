@@ -1,8 +1,8 @@
 #!/bin/bash
 # Quick validation script for TableClay changes
-# Usage: ./scripts/validate.sh [backend|frontend|all]
+# Usage: ./scripts/validate.sh [backend|frontend|quick|all]
 
-set -e
+set -euo pipefail
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -17,6 +17,25 @@ COMPONENT=${1:-all}
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
+is_bun_node() {
+    local candidate="$1"
+    local is_bun="false"
+    is_bun="$("$candidate" -p "typeof process.versions.bun !== 'undefined'" 2>/dev/null || true)"
+    [ "$is_bun" = "true" ]
+}
+
+find_real_node() {
+    local candidate
+    while IFS= read -r candidate; do
+        [ -x "$candidate" ] || continue
+        if ! is_bun_node "$candidate"; then
+            echo "$candidate"
+            return 0
+        fi
+    done < <(which -a node 2>/dev/null | awk '!seen[$0]++')
+    return 1
+}
+
 # Prefer system Node in PATH to avoid Bun's node shim
 if [ -x /usr/bin/node ] || [ -x /usr/bin/nodejs ]; then
     export PATH="/usr/bin:$PATH"
@@ -25,6 +44,7 @@ elif [ -x /usr/local/bin/node ] || [ -x /usr/local/bin/nodejs ]; then
 fi
 
 # Prefer real Node over Bun wrappers (Bun has incompatibilities with Jest/MikroORM)
+NODE_BIN=""
 if [ -x /usr/bin/nodejs ]; then
     NODE_BIN="/usr/bin/nodejs"
 elif [ -x /usr/local/bin/nodejs ]; then
@@ -34,11 +54,19 @@ elif [ -x /usr/bin/node ]; then
 elif [ -x /usr/local/bin/node ]; then
     NODE_BIN="/usr/local/bin/node"
 else
-    NODE_BIN="$(command -v nodejs || command -v node)"
+    NODE_BIN="$(command -v nodejs || command -v node || true)"
 fi
 
-NPM_BIN="$(command -v npm)"
-NPX_BIN="$(command -v npx)"
+if [ -n "$NODE_BIN" ] && is_bun_node "$NODE_BIN"; then
+    if real_node="$(find_real_node)"; then
+        NODE_BIN="$real_node"
+    else
+        log_fail "Bun's node shim detected and no real Node.js binary found"
+    fi
+fi
+
+NPM_BIN="$(command -v npm || true)"
+NPX_BIN="$(command -v npx || true)"
 
 if [ -z "$NODE_BIN" ] || [ -z "$NPM_BIN" ] || [ -z "$NPX_BIN" ]; then
     log_fail "Missing nodejs/node or npm/npx in PATH"
@@ -67,9 +95,9 @@ validate_backend() {
     log_step "TypeScript compilation..."
     run_npx tsc --noEmit && log_pass "TypeScript OK" || log_fail "TypeScript errors"
 
-    # Unit tests
+    # Unit tests (CI mode for stricter behavior)
     log_step "Running unit tests..."
-    TEST_TYPE=unit run_npm run test:unit --passWithNoTests && log_pass "Unit tests OK" || log_fail "Unit tests failed"
+    TEST_TYPE=unit run_npm run test:ci && log_pass "Unit tests OK" || log_fail "Unit tests failed"
 
     # Build check
     log_step "Build check..."
@@ -91,7 +119,15 @@ validate_frontend() {
     log_step "Cleaning Next.js build cache..."
     rm -rf .next
 
-    # Build check (skip Jest tests due to Bun/Jest incompatibility)
+    # Lint
+    log_step "Lint..."
+    run_npm run lint && log_pass "Lint OK" || log_fail "Lint failed"
+
+    # Unit tests (CI mode for stricter behavior)
+    log_step "Running unit tests..."
+    run_npm run test:ci && log_pass "Unit tests OK" || log_fail "Unit tests failed"
+
+    # Build check
     log_step "Build check..."
     run_npm run build:skip-tests && log_pass "Build OK" || log_fail "Build failed"
 
