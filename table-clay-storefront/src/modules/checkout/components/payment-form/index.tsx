@@ -11,7 +11,7 @@ import SkeletonCardDetails from "@modules/skeletons/components/skeleton-card-det
 import { CardElement } from "@stripe/react-stripe-js"
 import { StripeCardElementOptions } from "@stripe/stripe-js"
 import { StripeContext } from "../payment-wrapper/stripe-wrapper"
-import { useContext, useMemo, useState, useEffect } from "react"
+import { useContext, useMemo, useState, useEffect, useCallback } from "react"
 
 interface PaymentFormProps {
   cart: any
@@ -57,24 +57,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
   const paidByGiftcard =
     cart?.gift_cards && cart?.gift_cards?.length > 0 && cart?.total === 0
 
-  // Auto-select first payment method on mount
-  useEffect(() => {
-    if (!selectedPaymentMethod && availablePaymentMethods?.length) {
-      setPaymentMethod(availablePaymentMethods[0].id)
-    }
-  }, [availablePaymentMethods])
-
-  // Notify parent when payment is ready
-  useEffect(() => {
-    const isReady =
-      paidByGiftcard ||
-      (selectedPaymentMethod &&
-        (!isStripeLike(selectedPaymentMethod) || cardComplete))
-
-    onPaymentReady?.(isReady)
-  }, [selectedPaymentMethod, cardComplete, paidByGiftcard, onPaymentReady])
-
-  const setPaymentMethod = async (method: string) => {
+  const setPaymentMethod = useCallback(async (method: string) => {
     setError(null)
     setSelectedPaymentMethod(method)
 
@@ -87,7 +70,24 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
         setError(err.message || "Failed to initialize payment")
       }
     }
-  }
+  }, [cart])
+
+  // Auto-select first payment method on mount
+  useEffect(() => {
+    if (!selectedPaymentMethod && availablePaymentMethods?.length) {
+      setPaymentMethod(availablePaymentMethods[0].id)
+    }
+  }, [availablePaymentMethods, selectedPaymentMethod, setPaymentMethod])
+
+  // Notify parent when payment is ready
+  useEffect(() => {
+    const isReady =
+      paidByGiftcard ||
+      (selectedPaymentMethod &&
+        (!isStripeLike(selectedPaymentMethod) || cardComplete))
+
+    onPaymentReady?.(isReady)
+  }, [selectedPaymentMethod, cardComplete, paidByGiftcard, onPaymentReady])
 
   if (paidByGiftcard) {
     return (

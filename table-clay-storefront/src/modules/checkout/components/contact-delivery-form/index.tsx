@@ -347,43 +347,47 @@ const ContactDeliveryForm: React.FC<ContactDeliveryFormProps> = ({
     }))
   }
 
-  const setFormAddress = (
-    address?: HttpTypes.StoreCartAddress,
-    email?: string
-  ) => {
-    if (address) {
-      setFormData((prev) => ({
-        ...prev,
-        "shipping_address.first_name": address?.first_name || "",
-        "shipping_address.last_name": address?.last_name || "",
-        "shipping_address.address_1": address?.address_1 || "",
-        "shipping_address.company": address?.company || "",
-        "shipping_address.postal_code": address?.postal_code || "",
-        "shipping_address.city": address?.city || "",
-        "shipping_address.country_code": address?.country_code || "us",
-        "shipping_address.province": address?.province || "",
-        "shipping_address.phone": address?.phone || "",
-      }))
-    }
+  const setFormAddress = useCallback(
+    (address?: HttpTypes.StoreCartAddress, email?: string) => {
+      if (address) {
+        setFormData((prev) => ({
+          ...prev,
+          "shipping_address.first_name": address?.first_name || "",
+          "shipping_address.last_name": address?.last_name || "",
+          "shipping_address.address_1": address?.address_1 || "",
+          "shipping_address.company": address?.company || "",
+          "shipping_address.postal_code": address?.postal_code || "",
+          "shipping_address.city": address?.city || "",
+          "shipping_address.country_code": address?.country_code || "us",
+          "shipping_address.province": address?.province || "",
+          "shipping_address.phone": address?.phone || "",
+        }))
+      }
 
-    if (email) {
-      setFormData((prev) => ({
-        ...prev,
-        email: email,
-      }))
-    }
-  }
+      if (email) {
+        setFormData((prev) => ({
+          ...prev,
+          email: email,
+        }))
+      }
+    },
+    []
+  )
+
+  const hasCart = Boolean(cart)
+  const cartShippingAddress = cart?.shipping_address
+  const cartEmail = cart?.email
 
   // Auto-populate from cart/customer on mount
   useEffect(() => {
-    if (cart?.shipping_address) {
-      setFormAddress(cart.shipping_address, cart.email)
+    if (hasCart && cartShippingAddress) {
+      setFormAddress(cartShippingAddress, cartEmail)
     }
 
-    if (cart && !cart.email && customer?.email) {
+    if (hasCart && !cartEmail && customer?.email) {
       setFormAddress(undefined, customer.email)
     }
-  }, [cart?.id])
+  }, [hasCart, cartShippingAddress, cartEmail, customer?.email, setFormAddress])
 
   // Check if current country is US for state dropdown
   const isUS = formData["shipping_address.country_code"] === "us"

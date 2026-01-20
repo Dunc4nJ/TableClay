@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { HttpTypes } from "@medusajs/types"
 import { addToCart } from "@lib/data/cart"
 import { useParams, useRouter } from "next/navigation"
@@ -40,14 +40,22 @@ export default function CartRecommendations({
     typeof params?.countryCode === "string" ? params.countryCode : ""
 
   // Get collection IDs from cart items
-  const cartCollectionIds = cart.items
-    ?.map((item) => item.product?.collection_id)
-    .filter(Boolean) as string[]
+  const cartCollectionIds = useMemo(
+    () =>
+      (cart.items
+        ?.map((item) => item.product?.collection_id)
+        .filter(Boolean) as string[]) || [],
+    [cart.items]
+  )
 
   // Get product IDs already in cart (to exclude from recommendations)
-  const cartProductIds = cart.items
-    ?.map((item) => item.product_id)
-    .filter(Boolean) as string[]
+  const cartProductIds = useMemo(
+    () =>
+      (cart.items
+        ?.map((item) => item.product_id)
+        .filter(Boolean) as string[]) || [],
+    [cart.items]
+  )
 
   useEffect(() => {
     async function fetchCartRecommendations() {
@@ -192,7 +200,7 @@ export default function CartRecommendations({
     if (cart?.id && region?.id) {
       fetchCartRecommendations()
     }
-  }, [cart?.id, region?.id, JSON.stringify(cartProductIds), JSON.stringify(cartCollectionIds)])
+  }, [cart?.id, region?.id, cartProductIds, cartCollectionIds])
 
   // Handle adding product to cart
   const handleAddToCart = async (product: HttpTypes.StoreProduct) => {

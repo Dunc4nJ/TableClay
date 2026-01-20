@@ -197,7 +197,7 @@ export default function ProductActions({
       ? pathname + "?" + params.toString()
       : "?" + params.toString()
     router.replace(target)
-  }, [selectedVariant, isValidVariant])
+  }, [selectedVariant, isValidVariant, pathname, router, searchParams])
 
   // check if the selected variant is in stock
   const inStock = useMemo(() => {

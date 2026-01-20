@@ -33,9 +33,10 @@ const TipSelector: React.FC<TipSelectorProps> = ({ cart, onTipChange }) => {
   const subtotal = cart.subtotal || 0
   const currencyCode = cart.currency_code || "usd"
 
-  const calculateTipAmount = (percentage: number) => {
-    return Math.round(subtotal * percentage)
-  }
+  const calculateTipAmount = useCallback(
+    (percentage: number) => Math.round(subtotal * percentage),
+    [subtotal]
+  )
 
   const formatPrice = (amount: number) => {
     return convertToLocale({
@@ -62,7 +63,7 @@ const TipSelector: React.FC<TipSelectorProps> = ({ cart, onTipChange }) => {
         }
       })
     },
-    [subtotal, cart.id, onTipChange]
+    [cart.id, onTipChange, calculateTipAmount]
   )
 
   const handleCustomTipChange = (value: string) => {
