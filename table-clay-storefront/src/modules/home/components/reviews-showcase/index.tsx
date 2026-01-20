@@ -1,6 +1,7 @@
 "use client"
 
 import { Transition } from "@headlessui/react"
+import Image from "next/image"
 import { useCallback, useEffect, useRef, useState } from "react"
 import StarRating from "@modules/products/components/reviews-section/star-rating"
 import { formatReviewDate } from "@lib/data/review-types"
@@ -78,6 +79,7 @@ export default function ReviewsShowcase({ reviews }: ReviewsShowcaseProps) {
 
   const currentReview = reviews[currentIndex]
   const displayDate = formatReviewDate(currentReview.display_date)
+  const reviewImages = currentReview.images ?? []
   const enterClass = reduceMotion ? "" : "transition duration-500 ease-out"
   const enterFromClass = reduceMotion ? "" : "opacity-0 translate-y-2"
   const enterToClass = reduceMotion ? "" : "opacity-100 translate-y-0"
@@ -124,6 +126,30 @@ export default function ReviewsShowcase({ reviews }: ReviewsShowcaseProps) {
                   <p className="text-lg sm:text-xl text-ui-fg-base leading-relaxed">
                     {currentReview.content}
                   </p>
+
+                  {reviewImages.length > 0 && (
+                    <div className="w-full">
+                      <div className="mx-auto grid max-w-md grid-cols-2 gap-3 sm:grid-cols-3">
+                        {reviewImages.map((image) => (
+                          <div
+                            key={image.id}
+                            className="relative aspect-square overflow-hidden rounded-2xl border border-cream-200 bg-cream-100 shadow-sm"
+                          >
+                            <Image
+                              src={image.url}
+                              alt={
+                                image.alt_text ||
+                                `Review photo from ${currentReview.customer_name}`
+                              }
+                              fill
+                              sizes="(min-width: 640px) 96px, 80px"
+                              className="object-cover"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   <div className="flex flex-wrap items-center justify-center gap-2 text-sm text-ui-fg-subtle">
                     <span className="font-medium text-ui-fg-base">
