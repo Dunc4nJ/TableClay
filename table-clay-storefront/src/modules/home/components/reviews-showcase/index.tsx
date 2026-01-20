@@ -79,7 +79,12 @@ export default function ReviewsShowcase({ reviews }: ReviewsShowcaseProps) {
 
   const currentReview = reviews[currentIndex]
   const displayDate = formatReviewDate(currentReview.display_date)
-  const reviewImages = currentReview.images ?? []
+  const reviewImages = (currentReview.images ?? []).filter(
+    (image) => image?.url
+  )
+  const hasImages = reviewImages.length > 0
+  const visibleImages = reviewImages.slice(0, 3)
+  const remainingImages = reviewImages.length - visibleImages.length
   const enterClass = reduceMotion ? "" : "transition duration-500 ease-out"
   const enterFromClass = reduceMotion ? "" : "opacity-0 translate-y-2"
   const enterToClass = reduceMotion ? "" : "opacity-100 translate-y-0"
@@ -113,7 +118,12 @@ export default function ReviewsShowcase({ reviews }: ReviewsShowcaseProps) {
                 leaveFrom={leaveFromClass}
                 leaveTo={leaveToClass}
               >
-                <div className="flex flex-col items-center gap-4" aria-live="polite">
+                <div
+                  className={`flex flex-col items-center ${
+                    hasImages ? "gap-5" : "gap-4"
+                  }`}
+                  aria-live="polite"
+                >
                   <span
                     className="text-5xl sm:text-6xl text-cream-300 leading-none"
                     aria-hidden="true"
@@ -127,10 +137,10 @@ export default function ReviewsShowcase({ reviews }: ReviewsShowcaseProps) {
                     {currentReview.content}
                   </p>
 
-                  {reviewImages.length > 0 && (
+                  {hasImages && (
                     <div className="w-full">
-                      <div className="mx-auto grid max-w-md grid-cols-2 gap-3 sm:grid-cols-3">
-                        {reviewImages.map((image) => (
+                      <div className="mx-auto grid max-w-sm grid-cols-2 gap-3 sm:grid-cols-3">
+                        {visibleImages.map((image, index) => (
                           <div
                             key={image.id}
                             className="relative aspect-square overflow-hidden rounded-2xl border border-cream-200 bg-cream-100 shadow-sm"
@@ -138,13 +148,19 @@ export default function ReviewsShowcase({ reviews }: ReviewsShowcaseProps) {
                             <Image
                               src={image.url}
                               alt={
-                                image.alt_text ||
+                                image.alt_text?.trim() ||
                                 `Review photo from ${currentReview.customer_name}`
                               }
                               fill
-                              sizes="(min-width: 640px) 96px, 80px"
+                              sizes="(min-width: 640px) 140px, 40vw"
                               className="object-cover"
                             />
+                            {remainingImages > 0 &&
+                            index === visibleImages.length - 1 ? (
+                              <span className="absolute inset-0 flex items-center justify-center bg-cream-900/50 text-sm font-medium text-white">
+                                +{remainingImages}
+                              </span>
+                            ) : null}
                           </div>
                         ))}
                       </div>
