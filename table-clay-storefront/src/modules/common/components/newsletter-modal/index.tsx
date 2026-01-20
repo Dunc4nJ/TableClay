@@ -4,6 +4,7 @@ import { Dialog, Transition } from "@headlessui/react"
 import { Fragment, useState, useEffect, useCallback, useRef } from "react"
 import { useLocalStorageExpiry } from "@lib/hooks/use-local-storage"
 import { subscribeToNewsletter } from "@lib/data/newsletter"
+import { CheckCircleSolid } from "@medusajs/icons"
 import X from "@modules/common/icons/x"
 
 // Exported for use by floating discount retrieval widget
@@ -39,6 +40,7 @@ export default function NewsletterModal({
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const [discountCode, setDiscountCode] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
   const wasOpenRef = useRef(false)
 
   // Check if previously dismissed (within 30 days)
@@ -81,6 +83,27 @@ export default function NewsletterModal({
     }
     onClose?.()
   }, [markDismissed, forceOpen, onClose])
+
+  const handleCopyCode = useCallback(async () => {
+    if (!discountCode) return
+    try {
+      await navigator.clipboard.writeText(discountCode)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      // Fallback for older browsers
+      const textArea = document.createElement("textarea")
+      textArea.value = discountCode
+      textArea.style.position = "fixed"
+      textArea.style.opacity = "0"
+      document.body.appendChild(textArea)
+      textArea.select()
+      document.execCommand("copy")
+      document.body.removeChild(textArea)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }
+  }, [discountCode])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -248,9 +271,41 @@ export default function NewsletterModal({
                         <p className="text-xs uppercase tracking-wider text-ui-fg-muted mb-2">
                           Your Free Shipping Code
                         </p>
-                        <p className="text-2xl font-bold tracking-widest text-ui-fg-base">
+                        <p className="text-2xl font-bold tracking-widest text-ui-fg-base mb-4">
                           {discountCode}
                         </p>
+                        <button
+                          onClick={handleCopyCode}
+                          className={`w-full py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2 ${
+                            copied
+                              ? "bg-green-100 text-green-700 border border-green-300"
+                              : "bg-brand-600 hover:bg-brand-700 text-white"
+                          }`}
+                        >
+                          {copied ? (
+                            <>
+                              <CheckCircleSolid className="w-4 h-4" />
+                              Copied!
+                            </>
+                          ) : (
+                            <>
+                              <svg
+                                className="w-4 h-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                                />
+                              </svg>
+                              Copy Code
+                            </>
+                          )}
+                        </button>
                       </div>
                     )}
 
