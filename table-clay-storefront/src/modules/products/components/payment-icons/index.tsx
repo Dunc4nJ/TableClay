@@ -10,7 +10,6 @@ type PaymentMethod =
   | "apple-pay"
   | "google-pay"
   | "paypal"
-  | "klarna"
   | "maestro"
 
 interface PaymentIconsProps {
@@ -26,7 +25,6 @@ const DEFAULT_METHODS: PaymentMethod[] = [
   "apple-pay",
   "google-pay",
   "paypal",
-  "klarna",
   "maestro",
 ]
 
@@ -40,7 +38,6 @@ const PAYMENT_IMAGES: Record<PaymentMethod, string> = {
   "apple-pay": "/images/payment-icons/Apple_Pay.png",
   "google-pay": "/images/payment-icons/Google_Pay.png",
   paypal: "/images/payment-icons/PayPal.png",
-  klarna: "/images/payment-icons/Klarna.png",
   maestro: "/images/payment-icons/Card_1.png",
 }
 
@@ -54,7 +51,6 @@ const PAYMENT_NAMES: Record<PaymentMethod, string> = {
   "apple-pay": "Apple Pay",
   "google-pay": "Google Pay",
   paypal: "PayPal",
-  klarna: "Klarna",
   maestro: "Maestro",
 }
 
