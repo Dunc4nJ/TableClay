@@ -12,7 +12,7 @@ export const FREE_SHIPPING_THRESHOLD = 5000
 export function isFreeShippingPromotion(
   promotion: HttpTypes.StorePromotion
 ): boolean {
-  const appMethod = promotion.application_method as Record<string, unknown> | undefined
+  const appMethod = promotion.application_method
 
   // Check if the promotion targets shipping methods
   if (appMethod?.target_type === "shipping_methods") {
@@ -20,7 +20,7 @@ export function isFreeShippingPromotion(
   }
 
   // Check if the promotion type indicates shipping
-  if ((promotion as Record<string, unknown>).type === "shipping") {
+  if (promotion.type === "shipping") {
     return true
   }
 

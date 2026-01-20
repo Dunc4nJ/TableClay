@@ -10,6 +10,8 @@ type SubscribeRequestBody = {
   source?: "popup" | "footer" | "checkout"
 }
 
+const FREE_SHIPPING_MINIMUM = 5000
+
 /**
  * POST /store/newsletter/subscribe
  * Subscribe to newsletter and receive a free shipping discount code
@@ -67,6 +69,13 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
             value: 100,
             max_quantity: 1, // One-time use per order
           },
+          rules: [
+            {
+              attribute: "cart.item_total",
+              operator: "gte",
+              values: `${FREE_SHIPPING_MINIMUM}`,
+            },
+          ],
         })
 
         console.log(

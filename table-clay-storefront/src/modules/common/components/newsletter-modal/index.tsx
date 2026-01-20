@@ -1,7 +1,7 @@
 "use client"
 
 import { Dialog, Transition } from "@headlessui/react"
-import { Fragment, useState, useEffect, useCallback } from "react"
+import { Fragment, useState, useEffect, useCallback, useRef } from "react"
 import { useLocalStorageExpiry } from "@lib/hooks/use-local-storage"
 import { subscribeToNewsletter } from "@lib/data/newsletter"
 import X from "@modules/common/icons/x"
@@ -16,6 +16,8 @@ type NewsletterModalProps = {
   showDelay?: number
   /** Force modal to open immediately, bypassing localStorage checks and delay */
   forceOpen?: boolean
+  /** Callback when modal opens (for external control) */
+  onOpen?: () => void
   /** Callback when modal closes (for external control) */
   onClose?: () => void
 }
@@ -28,6 +30,7 @@ type NewsletterModalProps = {
 export default function NewsletterModal({
   showDelay = 1500,
   forceOpen = false,
+  onOpen,
   onClose,
 }: NewsletterModalProps) {
   const [isOpen, setIsOpen] = useState(forceOpen)
@@ -36,6 +39,7 @@ export default function NewsletterModal({
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const [discountCode, setDiscountCode] = useState<string | null>(null)
+  const wasOpenRef = useRef(false)
 
   // Check if previously dismissed (within 30 days)
   const [wasDismissed, markDismissed] = useLocalStorageExpiry(
@@ -61,6 +65,13 @@ export default function NewsletterModal({
 
     return () => clearTimeout(timer)
   }, [showDelay, wasDismissed, wasSubscribed, forceOpen])
+
+  useEffect(() => {
+    if (isOpen && !wasOpenRef.current) {
+      onOpen?.()
+    }
+    wasOpenRef.current = isOpen
+  }, [isOpen, onOpen])
 
   const handleClose = useCallback(() => {
     setIsOpen(false)
