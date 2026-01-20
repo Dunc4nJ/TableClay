@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import dynamic from "next/dynamic"
 import { useLocalStorageExpiry } from "@lib/hooks/use-local-storage"
 import {
@@ -52,6 +52,10 @@ export default function DiscountRetrievalButton() {
   const [showModal, setShowModal] = useState(false)
   const [mounted, setMounted] = useState(false)
 
+  // Track if modal was opened - keeps it mounted until explicitly closed
+  // This prevents unmounting during subscription flow
+  const modalWasOpenedRef = useRef(false)
+
   // Check localStorage states (same durations as newsletter modal)
   const [wasDismissed] = useLocalStorageExpiry(
     NEWSLETTER_DISMISSED_KEY,
@@ -67,29 +71,53 @@ export default function DiscountRetrievalButton() {
     setMounted(true)
   }, [])
 
-  // Don't render during SSR or if conditions not met
-  // Show only if: dismissed (recently) AND NOT subscribed
-  if (!mounted || !wasDismissed || wasSubscribed) {
+  // Track when modal is opened
+  useEffect(() => {
+    if (showModal) {
+      modalWasOpenedRef.current = true
+    }
+  }, [showModal])
+
+  const handleOpenModal = () => {
+    setShowModal(true)
+  }
+
+  const handleCloseModal = () => {
+    setShowModal(false)
+    modalWasOpenedRef.current = false
+  }
+
+  // Determine if button should be visible
+  // Hide button if: not mounted, not dismissed, or already subscribed (and modal not open)
+  const shouldShowButton = mounted && wasDismissed && !wasSubscribed
+
+  // Keep modal mounted if it was opened, even if wasSubscribed changes
+  // This allows user to see and copy their discount code
+  const shouldRenderModal = showModal || modalWasOpenedRef.current
+
+  // Don't render anything during SSR
+  if (!mounted) {
     return null
   }
 
   return (
     <>
-      <button
-        onClick={() => setShowModal(true)}
-        className="fixed bottom-5 right-5 z-20 w-14 h-14 rounded-full bg-brand-800 hover:bg-brand-900 text-white shadow-lg grid place-items-center transition-colors duration-200 hover:scale-105 animate-pulse-ring"
-        aria-label="Get discount code"
-        title="Get your free shipping code"
-        style={{
-          // Ensure perfect centering with explicit grid
-          display: "grid",
-          placeItems: "center",
-        }}
-      >
-        <GiftIcon className="w-6 h-6" />
-      </button>
-      {showModal && (
-        <NewsletterModal forceOpen onClose={() => setShowModal(false)} />
+      {shouldShowButton && (
+        <button
+          onClick={handleOpenModal}
+          className="fixed bottom-5 right-5 z-20 w-14 h-14 rounded-full bg-brand-800 hover:bg-brand-900 text-white shadow-lg grid place-items-center transition-colors duration-200 hover:scale-105 animate-pulse-ring"
+          aria-label="Get discount code"
+          title="Get your free shipping code"
+          style={{
+            display: "grid",
+            placeItems: "center",
+          }}
+        >
+          <GiftIcon className="w-6 h-6" />
+        </button>
+      )}
+      {shouldRenderModal && (
+        <NewsletterModal forceOpen={showModal} onClose={handleCloseModal} />
       )}
     </>
   )

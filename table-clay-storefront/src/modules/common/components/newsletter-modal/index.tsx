@@ -55,6 +55,11 @@ export default function NewsletterModal({
     365 * 24 * 60 * 60 * 1000 // 1 year
   )
 
+  // Sync isOpen with forceOpen prop changes (for external control)
+  useEffect(() => {
+    setIsOpen(forceOpen)
+  }, [forceOpen])
+
   // Show modal after delay if not dismissed/subscribed (skip if forceOpen)
   useEffect(() => {
     if (forceOpen || wasDismissed || wasSubscribed) {
@@ -120,10 +125,8 @@ export default function NewsletterModal({
         setSuccess(true)
         setDiscountCode(result.subscriber?.discount_code || null)
         markSubscribed()
-        // Auto-close after showing success
-        setTimeout(() => {
-          setIsOpen(false)
-        }, 5000)
+        // Modal stays open so user can see and copy their code
+        // User must explicitly close via X button or "Start Shopping"
       } else {
         setError(result.message || "Something went wrong. Please try again.")
       }
