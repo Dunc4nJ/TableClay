@@ -41,8 +41,6 @@ export default async function Home(props: {
       {/* Hero Banner */}
       <Hero />
 
-      <PotteryWheelHero />
-
       {/* Section Intro - Visual break between hero and collections */}
       <section className="bg-cream-100 py-8 sm:py-10">
         <div className="content-container text-center">
@@ -55,6 +53,8 @@ export default async function Home(props: {
           </p>
         </div>
       </section>
+
+      <PotteryWheelHero />
 
       {/* Featured Collections - Split Screen Showcases */}
       {collections && collections.length > 0 && (
