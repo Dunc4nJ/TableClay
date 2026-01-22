@@ -28,6 +28,7 @@ const CollectionItems = {
 
 // Category menu items
 const CategoryItems = {
+  "Pottery Wheel": "/categories/pottery-wheel",
   Mugs: "/categories/mugs",
   Vases: "/categories/vases",
   Bowls: "/categories/bowls",

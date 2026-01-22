@@ -46,6 +46,12 @@ export default async function Nav() {
             </LocalizedClientLink>
             <NavDropdown label="Collections" items={COLLECTIONS} />
             <LocalizedClientLink
+              href="/categories/pottery-wheel"
+              className="text-ui-fg-subtle hover:text-brand-600 uppercase text-sm tracking-wider font-medium transition-colors"
+            >
+              Pottery Wheel
+            </LocalizedClientLink>
+            <LocalizedClientLink
               href="/categories/mugs"
               className="text-ui-fg-subtle hover:text-brand-600 uppercase text-sm tracking-wider font-medium transition-colors"
             >
