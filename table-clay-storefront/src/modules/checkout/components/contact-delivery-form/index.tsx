@@ -592,7 +592,8 @@ const ContactDeliveryForm: React.FC<ContactDeliveryFormProps> = ({
       <div className="mb-4">
         <StaticFormField
           name="shipping_address.phone"
-          label="Phone (optional)"
+          label="Phone"
+          helperText="Recommended for delivery updates and notifications"
           type="tel"
           value={formData["shipping_address.phone"] || ""}
           onChange={handleChange}

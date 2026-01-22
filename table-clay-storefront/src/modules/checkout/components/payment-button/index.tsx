@@ -1,7 +1,8 @@
 "use client"
 
+import { getAllTrackingData } from "@lib/analytics/tracking-cookies"
 import { isManual, isStripeLike } from "@lib/constants"
-import { placeOrder } from "@lib/data/cart"
+import { placeOrder, saveTrackingMetadata } from "@lib/data/cart"
 import { HttpTypes } from "@medusajs/types"
 import { Button } from "@medusajs/ui"
 import { useElements, useStripe } from "@stripe/react-stripe-js"
@@ -37,10 +38,38 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
       )
     case isManual(paymentSession?.provider_id):
       return (
-        <ManualTestPaymentButton notReady={notReady} data-testid={dataTestId} />
+        <ManualTestPaymentButton
+          cart={cart}
+          notReady={notReady}
+          data-testid={dataTestId}
+        />
       )
     default:
       return <Button disabled>Select a payment method</Button>
+  }
+}
+
+const captureTrackingMetadata = async (cartId?: string | null) => {
+  if (!cartId) {
+    return
+  }
+
+  try {
+    const trackingData = getAllTrackingData()
+    await saveTrackingMetadata(cartId, trackingData)
+
+    if (typeof window !== "undefined") {
+      try {
+        window.sessionStorage.setItem(
+          "purchase_event_id",
+          trackingData.event_id
+        )
+      } catch {
+        return
+      }
+    }
+  } catch (error) {
+    console.error("Tracking capture failed:", error)
   }
 }
 
@@ -57,6 +86,7 @@ const StripePaymentButton = ({
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const onPaymentCompleted = async () => {
+    await captureTrackingMetadata(cart?.id)
     await placeOrder()
       .catch((err) => {
         setErrorMessage(err.message)
@@ -151,11 +181,18 @@ const StripePaymentButton = ({
   )
 }
 
-const ManualTestPaymentButton = ({ notReady }: { notReady: boolean }) => {
+const ManualTestPaymentButton = ({
+  cart,
+  notReady,
+}: {
+  cart: HttpTypes.StoreCart
+  notReady: boolean
+}) => {
   const [submitting, setSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const onPaymentCompleted = async () => {
+    await captureTrackingMetadata(cart?.id)
     await placeOrder()
       .catch((err) => {
         setErrorMessage(err.message)

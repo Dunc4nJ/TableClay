@@ -6,12 +6,6 @@ const FALLBACK_CONFIG: Record<
   string,
   { image: string; description: string; order: number }
 > = {
-  "cloud-line": {
-    image: "/images/collections/cloud-line.png",
-    description:
-      "Whimsical cloud-shaped ceramics in sky blue and sunset pink. Each piece brings a touch of dreamy elegance to your table.",
-    order: 1,
-  },
   "modern-line": {
     image: "/images/collections/modern-line.png",
     description:
@@ -27,7 +21,7 @@ const FALLBACK_CONFIG: Record<
 }
 
 // Featured collection handles in display order
-const FEATURED_HANDLES = ["cloud-line", "modern-line", "japanese-line"]
+const FEATURED_HANDLES = ["modern-line", "japanese-line"]
 
 interface CollectionShowcasesProps {
   collections: HttpTypes.StoreCollection[]

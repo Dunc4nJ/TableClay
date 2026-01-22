@@ -1,4 +1,5 @@
 import crypto from "crypto"
+import { hashForTracking, normalizePhone } from "../utils/tracking-hash"
 
 type MetaPurchaseItem = {
   id: string
@@ -10,6 +11,11 @@ type MetaPurchaseEventInput = {
   eventId: string
   orderId: string
   email: string
+  phone?: string | null
+  fbp?: string | null
+  fbc?: string | null
+  clientIp?: string | null
+  userAgent?: string | null
   currency: string
   value: number
   items: MetaPurchaseItem[]
@@ -38,6 +44,31 @@ export const sendMetaPurchaseEvent = async (
   const url = `https://graph.facebook.com/${META_API_VERSION}/${pixelId}/events?access_token=${accessToken}`
   const eventTime = input.eventTime ?? Math.floor(Date.now() / 1000)
 
+  const hashedPhone = hashForTracking(normalizePhone(input.phone ?? null))
+  const userData: Record<string, string> = {
+    em: hashEmail(input.email),
+  }
+
+  if (hashedPhone) {
+    userData.ph = hashedPhone
+  }
+
+  if (input.fbp) {
+    userData.fbp = input.fbp
+  }
+
+  if (input.fbc) {
+    userData.fbc = input.fbc
+  }
+
+  if (input.clientIp) {
+    userData.client_ip_address = input.clientIp
+  }
+
+  if (input.userAgent) {
+    userData.client_user_agent = input.userAgent
+  }
+
   const payload = {
     data: [
       {
@@ -46,9 +77,7 @@ export const sendMetaPurchaseEvent = async (
         event_id: input.eventId,
         action_source: "website",
         event_source_url: input.eventSourceUrl,
-        user_data: {
-          em: hashEmail(input.email),
-        },
+        user_data: userData,
         custom_data: {
           currency: input.currency,
           value: input.value,

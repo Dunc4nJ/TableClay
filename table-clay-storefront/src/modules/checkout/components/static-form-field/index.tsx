@@ -17,6 +17,7 @@ interface StaticFormFieldProps {
   disabled?: boolean
   autoComplete?: string
   testId?: string
+  helperText?: string
 }
 
 /**
@@ -44,8 +45,10 @@ const StaticFormField: React.FC<StaticFormFieldProps> = ({
   disabled = false,
   autoComplete,
   testId,
+  helperText,
 }) => {
   const hasError = touched && Boolean(error)
+  const helperTextId = helperText ? `${name}-helper` : undefined
 
   return (
     <div className="w-full">
@@ -73,6 +76,7 @@ const StaticFormField: React.FC<StaticFormFieldProps> = ({
           placeholder={placeholder}
           autoComplete={autoComplete}
           disabled={disabled}
+          aria-describedby={helperTextId}
           className={`
             block w-full h-11 px-4 py-2
             bg-ui-bg-field border rounded-md appearance-none
@@ -94,6 +98,12 @@ const StaticFormField: React.FC<StaticFormFieldProps> = ({
           </div>
         )}
       </div>
+
+      {helperText && (
+        <p id={helperTextId} className="mt-1 text-xs text-ui-fg-subtle">
+          {helperText}
+        </p>
+      )}
 
       {/* Error message */}
       {hasError && (

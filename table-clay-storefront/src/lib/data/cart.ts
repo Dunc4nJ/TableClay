@@ -284,6 +284,45 @@ export async function initiatePaymentSession(
     .catch(medusaError)
 }
 
+type TrackingMetadataPayload = {
+  event_id: string
+  _fbp?: string
+  _fbc?: string
+  ttclid?: string
+  _ttp?: string
+  client_user_agent?: string
+}
+
+export async function saveTrackingMetadata(
+  cartId: string,
+  metadata: TrackingMetadataPayload
+): Promise<boolean> {
+  if (!cartId) {
+    return false
+  }
+
+  try {
+    const headers = {
+      ...(await getAuthHeaders()),
+      "Content-Type": "application/json",
+    }
+
+    const response = await sdk.client.fetch<{ success: boolean }>(
+      `/store/cart/${cartId}/tracking`,
+      {
+        method: "POST",
+        body: metadata,
+        headers,
+      }
+    )
+
+    return response?.success === true
+  } catch (error) {
+    console.error("Failed to save tracking metadata:", error)
+    return false
+  }
+}
+
 export async function applyPromotions(codes: string[]) {
   const cartId = await getCartId()
 

@@ -9,6 +9,7 @@ type TrackPurchaseProps = {
 }
 
 const STORAGE_KEY = "tracked_purchases"
+const PURCHASE_EVENT_ID_KEY = "purchase_event_id"
 
 const getOrderCoupon = (order: HttpTypes.StoreOrder) => {
   const promotions = (order as { promotions?: Array<{ code?: string }> })
@@ -39,6 +40,18 @@ const setTrackedOrders = (orders: string[]) => {
   }
 }
 
+const getPurchaseEventId = () => {
+  try {
+    const eventId = sessionStorage.getItem(PURCHASE_EVENT_ID_KEY)
+    if (eventId) {
+      sessionStorage.removeItem(PURCHASE_EVENT_ID_KEY)
+    }
+    return eventId
+  } catch {
+    return null
+  }
+}
+
 export default function TrackPurchase({ order }: TrackPurchaseProps) {
   useEffect(() => {
     if (!order?.id) {
@@ -61,9 +74,11 @@ export default function TrackPurchase({ order }: TrackPurchaseProps) {
     const currency = (order.currency_code || "USD").toUpperCase()
     const coupon = getOrderCoupon(order)
 
+    const eventId = getPurchaseEventId()
+
     pushEcommerceEvent({
       event: "purchase",
-      event_id: `purchase_${order.id}`,
+      event_id: eventId || undefined,
       ecommerce: {
         transaction_id: order.id,
         currency,

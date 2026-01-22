@@ -1,6 +1,7 @@
 import { Metadata } from "next"
 
 import Hero from "@modules/home/components/hero"
+import PotteryWheelHero from "@modules/home/components/pottery-wheel-hero"
 import CollectionShowcases from "@modules/home/components/collection-showcases"
 import CategoryNavigation from "@modules/home/components/category-navigation"
 import ReviewsShowcase from "@modules/home/components/reviews-showcase"
@@ -39,6 +40,8 @@ export default async function Home(props: {
     <>
       {/* Hero Banner */}
       <Hero />
+
+      <PotteryWheelHero />
 
       {/* Section Intro - Visual break between hero and collections */}
       <section className="bg-cream-100 py-8 sm:py-10">
