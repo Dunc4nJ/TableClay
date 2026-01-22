@@ -19,8 +19,8 @@ export default function PotteryWheelHero() {
 
         <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
 
-        <div className="absolute bottom-8 right-8 md:bottom-12 md:right-16 lg:bottom-16 lg:right-24">
-          <span className="inline-block rounded-full bg-[#B86F52] px-8 py-4 text-lg font-medium text-white shadow-lg transition-all duration-300 group-hover:scale-105 group-hover:bg-[#A65D42] group-hover:shadow-xl md:text-xl">
+        <div className="absolute bottom-6 right-6 md:bottom-12 md:right-16 lg:bottom-16 lg:right-24">
+          <span className="inline-block rounded-full bg-[#B86F52] px-5 py-3 text-base font-medium text-white shadow-lg transition-all duration-300 group-hover:scale-105 group-hover:bg-[#A65D42] group-hover:shadow-xl md:px-8 md:py-4 md:text-lg lg:text-xl">
             Start Creating
           </span>
         </div>
