@@ -4,12 +4,21 @@ import LocalizedClientLink from "@modules/common/components/localized-client-lin
 const Hero = () => {
   return (
     <div className="relative w-full h-[85vh] min-h-[600px]">
-      {/* Background Image */}
+      {/* Desktop Background Image - hidden on mobile */}
       <Image
         src="/images/hero/banner.png"
         alt="Table Clay handcrafted pottery collection"
         fill
-        className="object-cover object-center"
+        className="object-cover object-center hidden small:block"
+        priority
+        quality={90}
+      />
+      {/* Mobile Background Image - hidden on desktop */}
+      <Image
+        src="/images/hero/banner-mobile.png"
+        alt="Table Clay handcrafted pottery collection"
+        fill
+        className="object-cover object-center block small:hidden"
         priority
         quality={90}
       />

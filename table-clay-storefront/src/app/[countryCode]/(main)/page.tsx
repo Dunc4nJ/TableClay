@@ -56,6 +56,12 @@ export default async function Home(props: {
 
       <PotteryWheelHero />
 
+      {/* Mobile-only decorative stripe between pottery wheel and collections */}
+      <div
+        className="h-2.5 w-full bg-brand-500 small:hidden"
+        aria-hidden="true"
+      />
+
       {/* Featured Collections - Split Screen Showcases */}
       {collections && collections.length > 0 && (
         <CollectionShowcases collections={collections} />
