@@ -6,7 +6,7 @@ export default function PotteryWheelHero() {
     <section className="relative w-full">
       <LocalizedClientLink
         href="/products/mini-wheel"
-        className="group relative block w-full aspect-[29/16] overflow-hidden"
+        className="group relative block w-full aspect-[16/10] overflow-hidden"
       >
         <Image
           src="/images/hero/pottery-wheel.png"
