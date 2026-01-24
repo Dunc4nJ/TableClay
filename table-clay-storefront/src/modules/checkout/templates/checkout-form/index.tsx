@@ -6,7 +6,6 @@ import CheckoutFooter from "@modules/checkout/components/checkout-footer"
 import ExpressCheckout from "@modules/checkout/components/express-checkout"
 import ContactDeliveryForm from "@modules/checkout/components/contact-delivery-form"
 import ShippingMethodSelector from "@modules/checkout/components/shipping-method-selector"
-import PaymentSessionGuard from "@modules/checkout/components/payment-session-guard"
 import PaymentWrapper from "@modules/checkout/components/payment-wrapper"
 import PaymentForm from "@modules/checkout/components/payment-form"
 import TipSelector from "@modules/checkout/components/tip-selector"
@@ -26,12 +25,11 @@ export default async function CheckoutForm({
   const paymentMethods = await listCartPaymentMethods(cart.region?.id ?? "")
 
   if (!shippingMethods || !paymentMethods) {
-    return null
+      return null
   }
 
   return (
     <div className="w-full">
-      <PaymentSessionGuard cart={cart} paymentMethods={paymentMethods} />
       {/* Express Checkout at TOP */}
       <ExpressCheckout cart={cart} />
 

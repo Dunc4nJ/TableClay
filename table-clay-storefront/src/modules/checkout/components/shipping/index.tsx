@@ -1,7 +1,7 @@
 "use client"
 
 import { Radio, RadioGroup } from "@headlessui/react"
-import { initiatePaymentSession, setShippingMethod } from "@lib/data/cart"
+import { setShippingMethod } from "@lib/data/cart"
 import { calculatePriceForShippingOption } from "@lib/data/fulfillment"
 import { convertToLocale } from "@lib/util/money"
 import { CheckCircleSolid, Loader } from "@medusajs/icons"
@@ -125,24 +125,9 @@ const Shipping: React.FC<ShippingProps> = ({
     router.push(target, { scroll: false })
   }
 
-  const handleSubmit = async () => {
-    // Auto-initiate Stripe payment session for Express Checkout
-    // This ensures client_secret is available when Express Checkout renders
-    // Provider ID is "pp_stripe" based on medusa-config.ts id: "stripe"
-    try {
-      await initiatePaymentSession(cart, {
-        provider_id: "pp_stripe",
-      })
-      console.log("[Shipping] Payment session initiated for Express Checkout")
-    } catch (err) {
-      // Non-blocking - Express Checkout is optional enhancement
-      console.error("Failed to initiate payment session:", err)
-    }
-
-    // Navigate to payment step and refresh to get updated cart with payment session
+  const handleSubmit = () => {
     const target = pathname ? `${pathname}?step=payment` : "?step=payment"
     router.push(target, { scroll: false })
-    router.refresh()
   }
 
   const handleSetShippingMethod = async (
