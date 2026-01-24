@@ -98,6 +98,9 @@ export default async function metaCapiHandler({
     const eventId = metadataEventId || `purchase_${order.id}`
     const eventSourceUrl = `https://tableclay.com/us/order/${order.id}/confirmed`
 
+    // TODO: Remove testEventCode after verifying CAPI works in production
+    const testEventCode = process.env.META_TEST_EVENT_CODE || null
+
     await sendMetaPurchaseEvent({
       eventId,
       orderId: order.id,
@@ -115,6 +118,7 @@ export default async function metaCapiHandler({
       value: (order.total ?? 0) / 100,
       items,
       eventSourceUrl,
+      testEventCode,
     })
 
     console.log(

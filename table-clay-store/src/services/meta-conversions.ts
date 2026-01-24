@@ -21,6 +21,7 @@ type MetaPurchaseEventInput = {
   items: MetaPurchaseItem[]
   eventSourceUrl: string
   eventTime?: number
+  testEventCode?: string | null
 }
 
 const META_API_VERSION = "v19.0"
@@ -69,7 +70,7 @@ export const sendMetaPurchaseEvent = async (
     userData.client_user_agent = input.userAgent
   }
 
-  const payload = {
+  const payload: Record<string, unknown> = {
     data: [
       {
         event_name: "Purchase",
@@ -88,6 +89,16 @@ export const sendMetaPurchaseEvent = async (
       },
     ],
   }
+
+  if (input.testEventCode) {
+    payload.test_event_code = input.testEventCode
+  }
+
+  // Log user_data keys for debugging
+  const userDataKeys = Object.keys(userData)
+  console.log(
+    `[Meta CAPI] Sending Purchase for order ${input.orderId} with user_data keys: ${userDataKeys.join(", ")} | event_id: ${input.eventId}`
+  )
 
   const response = await fetch(url, {
     method: "POST",
