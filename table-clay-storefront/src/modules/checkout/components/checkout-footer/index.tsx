@@ -1,13 +1,21 @@
 "use client"
 
+import { getAllTrackingData } from "@lib/analytics/tracking-cookies"
+import { isManual, isStripeLike } from "@lib/constants"
+import { placeOrder, saveTrackingMetadata } from "@lib/data/cart"
 import { HttpTypes } from "@medusajs/types"
 import { Button } from "@medusajs/ui"
+import { useElements, useStripe } from "@stripe/react-stripe-js"
 import { useState } from "react"
-import { placeOrder } from "@lib/data/cart"
 import ErrorMessage from "@modules/checkout/components/error-message"
 
 interface CheckoutFooterProps {
   cart: HttpTypes.StoreCart
+}
+
+type CartWithGiftCards = HttpTypes.StoreCart & {
+  gift_cards?: unknown[]
+  total?: number | null
 }
 
 const LockIcon = () => (
@@ -28,28 +36,138 @@ const LockIcon = () => (
 const CheckoutFooter: React.FC<CheckoutFooterProps> = ({ cart }) => {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const stripe = useStripe()
+  const elements = useElements()
 
   // Check if all required info is present
   const hasEmail = !!cart.email
   const hasShippingAddress = !!cart.shipping_address?.address_1
   const hasShippingMethod = (cart.shipping_methods?.length ?? 0) > 0
-  const hasPaymentMethod =
-    !!cart.payment_collection?.payment_sessions?.length &&
-    cart.payment_collection?.payment_sessions?.some(
-      (s) => s.status === "pending"
-    )
+  const cartWithGiftCards = cart as CartWithGiftCards
+  const paidByGiftcard =
+    (cartWithGiftCards.gift_cards?.length ?? 0) > 0 &&
+    cartWithGiftCards.total === 0
+
+  const pendingSession = cart.payment_collection?.payment_sessions?.find(
+    (s) => s.status === "pending"
+  )
+  const hasPaymentMethod = paidByGiftcard || !!pendingSession
 
   const canPlaceOrder =
     hasEmail && hasShippingAddress && hasShippingMethod && hasPaymentMethod
+
+  const captureTrackingMetadata = async (cartId?: string | null) => {
+    if (!cartId) {
+      return
+    }
+
+    try {
+      const trackingData = getAllTrackingData()
+      await saveTrackingMetadata(cartId, trackingData)
+
+      if (typeof window !== "undefined") {
+        try {
+          window.sessionStorage.setItem(
+            "purchase_event_id",
+            trackingData.event_id
+          )
+        } catch {
+          return
+        }
+      }
+    } catch (err) {
+      console.error("Tracking capture failed:", err)
+    }
+  }
+
+  const finalizeOrder = async () => {
+    await captureTrackingMetadata(cart?.id)
+    await placeOrder()
+  }
 
   const handlePlaceOrder = async () => {
     setIsLoading(true)
     setError(null)
 
     try {
-      await placeOrder()
+      if (paidByGiftcard) {
+        await finalizeOrder()
+        return
+      }
+
+      if (pendingSession && isStripeLike(pendingSession.provider_id)) {
+        if (!stripe || !elements) {
+          setError("Payment system not ready. Please refresh and try again.")
+          return
+        }
+
+        const card = elements.getElement("card")
+        if (!card) {
+          setError("Please enter your card details before placing the order.")
+          return
+        }
+
+        const { error: stripeError, paymentIntent } =
+          await stripe.confirmCardPayment(
+            pendingSession?.data?.client_secret as string,
+            {
+              payment_method: {
+                card,
+                billing_details: {
+                  name:
+                    cart.billing_address?.first_name +
+                    " " +
+                    cart.billing_address?.last_name,
+                  address: {
+                    city: cart.billing_address?.city ?? undefined,
+                    country: cart.billing_address?.country_code ?? undefined,
+                    line1: cart.billing_address?.address_1 ?? undefined,
+                    line2: cart.billing_address?.address_2 ?? undefined,
+                    postal_code: cart.billing_address?.postal_code ?? undefined,
+                    state: cart.billing_address?.province ?? undefined,
+                  },
+                  email: cart.email,
+                  phone: cart.billing_address?.phone ?? undefined,
+                },
+              },
+            }
+          )
+
+        if (stripeError) {
+          const pi = stripeError.payment_intent
+          if (
+            (pi && pi.status === "requires_capture") ||
+            (pi && pi.status === "succeeded")
+          ) {
+            await finalizeOrder()
+            return
+          }
+
+          setError(stripeError.message || "Payment failed. Please try again.")
+          return
+        }
+
+        if (
+          (paymentIntent && paymentIntent.status === "requires_capture") ||
+          paymentIntent?.status === "succeeded"
+        ) {
+          await finalizeOrder()
+          return
+        }
+
+        setError("Payment was not completed. Please try again.")
+        return
+      }
+
+      if (pendingSession && isManual(pendingSession.provider_id)) {
+        await finalizeOrder()
+        return
+      }
+
+      await finalizeOrder()
     } catch (err: any) {
       setError(err.message || "Failed to place order")
+    } finally {
       setIsLoading(false)
     }
   }

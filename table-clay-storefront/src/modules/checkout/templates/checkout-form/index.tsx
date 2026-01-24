@@ -55,20 +55,20 @@ export default async function CheckoutForm({
         />
       </CheckoutSection>
 
-      {/* Payment Section */}
-      <CheckoutSection title="Payment">
-        <PaymentWrapper cart={cart}>
+      <PaymentWrapper cart={cart}>
+        {/* Payment Section */}
+        <CheckoutSection title="Payment">
           <PaymentForm cart={cart} availablePaymentMethods={paymentMethods} />
-        </PaymentWrapper>
-      </CheckoutSection>
+        </CheckoutSection>
 
-      {/* Add Tip Section */}
-      <CheckoutSection title="Add a tip" noBorder>
-        <TipSelector cart={cart} />
-      </CheckoutSection>
+        {/* Add Tip Section */}
+        <CheckoutSection title="Add a tip" noBorder>
+          <TipSelector cart={cart} />
+        </CheckoutSection>
 
-      {/* Checkout Footer with Pay Button */}
-      <CheckoutFooter cart={cart} />
+        {/* Checkout Footer with Pay Button */}
+        <CheckoutFooter cart={cart} />
+      </PaymentWrapper>
     </div>
   )
 }
