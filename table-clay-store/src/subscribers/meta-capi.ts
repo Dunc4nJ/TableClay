@@ -1,5 +1,4 @@
 import type { SubscriberArgs, SubscriberConfig } from "@medusajs/framework"
-import { Modules } from "@medusajs/framework/utils"
 import { sendMetaPurchaseEvent } from "../services/meta-conversions"
 
 type OrderItem = {
@@ -19,7 +18,7 @@ type OrderRecord = {
   total?: number
   shipping_total?: number
   tax_total?: number
-  cart_id?: string | null
+  metadata?: Record<string, unknown> | null
   shipping_address?: {
     phone?: string | null
   } | null
@@ -43,7 +42,7 @@ export default async function metaCapiHandler({
         "total",
         "shipping_total",
         "tax_total",
-        "cart_id",
+        "metadata",
         "items.id",
         "items.title",
         "items.quantity",
@@ -81,17 +80,8 @@ export default async function metaCapiHandler({
       return
     }
 
-    const cartModule = container.resolve(Modules.CART)
-    let metadata: Record<string, unknown> = {}
-
-    if (order.cart_id) {
-      try {
-        const cart = await cartModule.retrieveCart(order.cart_id)
-        metadata = (cart?.metadata || {}) as Record<string, unknown>
-      } catch (cartError) {
-        console.warn("[Meta CAPI] Failed to load cart metadata:", cartError)
-      }
-    }
+    // Read tracking metadata directly from order (copied from cart during checkout)
+    const metadata = (order.metadata || {}) as Record<string, unknown>
 
     const metadataEventId =
       typeof metadata.event_id === "string" ? metadata.event_id : undefined
@@ -100,12 +90,11 @@ export default async function metaCapiHandler({
 
     // DEBUG: Log raw values to diagnose phone and metadata issues
     const metadataKeys = Object.keys(metadata)
-    console.log(`[Meta CAPI DEBUG] order.cart_id: ${order.cart_id ?? "NULL"}`)
     console.log(
       `[Meta CAPI DEBUG] raw phone: "${order.shipping_address?.phone ?? "NULL"}"`
     )
     console.log(
-      `[Meta CAPI DEBUG] metadata keys: ${metadataKeys.length > 0 ? metadataKeys.join(", ") : "EMPTY"}`
+      `[Meta CAPI DEBUG] order.metadata keys: ${metadataKeys.length > 0 ? metadataKeys.join(", ") : "EMPTY"}`
     )
     console.log(`[Meta CAPI DEBUG] metadata.event_id: ${metadata.event_id ?? "MISSING"}`)
     console.log(`[Meta CAPI DEBUG] metadata._fbp: ${metadata._fbp ?? "MISSING"}`)
