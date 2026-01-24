@@ -30,11 +30,10 @@ const PaymentSessionGuard = ({
     [paymentMethods]
   )
 
-  const hasShippingMethod = (cart.shipping_methods?.length ?? 0) > 0
-  const attemptKey = [cart.id, stripeProviderId ?? "none", hasShippingMethod ? "ship" : "noship"].join("|")
+  const attemptKey = [cart.id, stripeProviderId ?? "none"].join("|")
 
   useEffect(() => {
-    if (!hasShippingMethod || hasClientSecret || !stripeProviderId || attemptedKey === attemptKey) {
+    if (hasClientSecret || !stripeProviderId || attemptedKey === attemptKey) {
       return
     }
 
@@ -50,7 +49,7 @@ const PaymentSessionGuard = ({
     }
 
     run()
-  }, [hasShippingMethod, hasClientSecret, stripeProviderId, attemptKey, attemptedKey, cart, router])
+  }, [hasClientSecret, stripeProviderId, attemptKey, attemptedKey, cart, router])
 
   return null
 }

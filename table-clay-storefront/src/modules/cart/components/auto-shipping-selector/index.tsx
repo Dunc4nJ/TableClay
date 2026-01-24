@@ -19,11 +19,6 @@ const AutoShippingSelector: React.FC<AutoShippingSelectorProps> = ({ cart }) => 
         return
       }
 
-      // Skip if no shipping address (required for shipping options)
-      if (!cart.shipping_address?.address_1) {
-        return
-      }
-
       hasAttemptedSelection.current = true
 
       try {
