@@ -171,9 +171,17 @@ export const processPaymentWorkflow = createWorkflow(
       })
     })
 
-    when({ cartPaymentCollection, order }, ({ cartPaymentCollection, order }) => {
-      return !!cartPaymentCollection.data.length && !order
-    }).then(() => {
+    when(
+      { cartPaymentCollection, order, input },
+      ({ cartPaymentCollection, order, input }) => {
+        return (
+          !!cartPaymentCollection.data.length &&
+          !order &&
+          (input.action === PaymentActions.AUTHORIZED ||
+            input.action === PaymentActions.SUCCESSFUL)
+        )
+      }
+    ).then(() => {
       completeCartAfterPaymentStep({
         cart_id: cartPaymentCollection.data[0].cart_id,
       }).config({
