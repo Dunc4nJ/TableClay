@@ -98,6 +98,19 @@ export default async function metaCapiHandler({
     const eventId = metadataEventId || `purchase_${order.id}`
     const eventSourceUrl = `https://tableclay.com/us/order/${order.id}/confirmed`
 
+    // DEBUG: Log raw values to diagnose phone and metadata issues
+    const metadataKeys = Object.keys(metadata)
+    console.log(`[Meta CAPI DEBUG] order.cart_id: ${order.cart_id ?? "NULL"}`)
+    console.log(
+      `[Meta CAPI DEBUG] raw phone: "${order.shipping_address?.phone ?? "NULL"}"`
+    )
+    console.log(
+      `[Meta CAPI DEBUG] metadata keys: ${metadataKeys.length > 0 ? metadataKeys.join(", ") : "EMPTY"}`
+    )
+    console.log(`[Meta CAPI DEBUG] metadata.event_id: ${metadata.event_id ?? "MISSING"}`)
+    console.log(`[Meta CAPI DEBUG] metadata._fbp: ${metadata._fbp ?? "MISSING"}`)
+    console.log(`[Meta CAPI DEBUG] metadata.client_ip: ${metadata.client_ip ?? "MISSING"}`)
+
     // TODO: Remove testEventCode after verifying CAPI works in production
     const testEventCode = process.env.META_TEST_EVENT_CODE || null
 
