@@ -573,6 +573,7 @@ NEXT_PUBLIC_OMNISEND_BRAND_ID=your_omnisend_brand_id
 
 | Date | Change |
 |------|--------|
+| Jan 24, 2026 | Stripe checkout stabilized: Elements provider always mounted, payment confirmed before `placeOrder`, express checkout creates a session client-side after shipping or on entry |
 | Jan 16, 2026 | Odds & Ends now routes to category with legacy `/collections/no-line` redirect |
 | Jan 2, 2026 | Added configurable bundle headline via store settings API |
 | Jan 2, 2026 | Fixed bundle items display to show product names instead of variant names |
