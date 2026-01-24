@@ -30,34 +30,34 @@ export default async function CheckoutForm({
   }
 
   return (
-    <div className="w-full">
-      <PaymentSessionGuard cart={cart} paymentMethods={paymentMethods} />
-      {/* Express Checkout at TOP */}
-      <ExpressCheckout cart={cart} />
+    <PaymentWrapper cart={cart}>
+      <div className="w-full">
+        <PaymentSessionGuard cart={cart} paymentMethods={paymentMethods} />
+        {/* Express Checkout at TOP */}
+        <ExpressCheckout cart={cart} />
 
-      {/* OR Divider */}
-      <div className="relative flex items-center py-6">
-        <div className="flex-grow border-t border-cream-300"></div>
-        <span className="flex-shrink mx-4 text-xs text-ui-fg-subtle uppercase tracking-[0.2em]">
-          or continue below
-        </span>
-        <div className="flex-grow border-t border-cream-300"></div>
-      </div>
+        {/* OR Divider */}
+        <div className="relative flex items-center py-6">
+          <div className="flex-grow border-t border-cream-300"></div>
+          <span className="flex-shrink mx-4 text-xs text-ui-fg-subtle uppercase tracking-[0.2em]">
+            or continue below
+          </span>
+          <div className="flex-grow border-t border-cream-300"></div>
+        </div>
 
-      {/* Contact & Delivery Section */}
-      <CheckoutSection title="Contact & Delivery">
-        <ContactDeliveryForm cart={cart} customer={customer} />
-      </CheckoutSection>
+        {/* Contact & Delivery Section */}
+        <CheckoutSection title="Contact & Delivery">
+          <ContactDeliveryForm cart={cart} customer={customer} />
+        </CheckoutSection>
 
-      {/* Shipping Method Section */}
-      <CheckoutSection title="Shipping method">
-        <ShippingMethodSelector
-          cart={cart}
-          availableShippingMethods={shippingMethods}
-        />
-      </CheckoutSection>
+        {/* Shipping Method Section */}
+        <CheckoutSection title="Shipping method">
+          <ShippingMethodSelector
+            cart={cart}
+            availableShippingMethods={shippingMethods}
+          />
+        </CheckoutSection>
 
-      <PaymentWrapper cart={cart}>
         {/* Payment Section */}
         <CheckoutSection title="Payment">
           <PaymentForm cart={cart} availablePaymentMethods={paymentMethods} />
@@ -70,7 +70,7 @@ export default async function CheckoutForm({
 
         {/* Checkout Footer with Pay Button */}
         <CheckoutFooter cart={cart} />
-      </PaymentWrapper>
-    </div>
+      </div>
+    </PaymentWrapper>
   )
 }
