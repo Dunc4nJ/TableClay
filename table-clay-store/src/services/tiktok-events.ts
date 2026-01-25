@@ -22,6 +22,7 @@ type TikTokPurchaseEventInput = {
   ttp?: string | null
   clientIp?: string | null
   userAgent?: string | null
+  testEventCode?: string | null
 }
 
 export const sendTikTokPurchaseEvent = async (
@@ -35,6 +36,21 @@ export const sendTikTokPurchaseEvent = async (
     return
   }
 
+  const emailHash = hashForTracking(normalizeEmail(input.email))
+  const phoneHash = hashForTracking(normalizePhone(input.phone))
+
+  // Build user data object, only including fields that have values
+  const userData: Record<string, string | undefined> = {}
+  if (emailHash) userData.email = emailHash
+  if (phoneHash) userData.phone_number = phoneHash
+  if (input.ttclid) userData.ttclid = input.ttclid
+  if (input.ttp) userData.ttp = input.ttp
+
+  const userDataKeys = Object.keys(userData).join(", ") || "NONE"
+  console.log(
+    `[TikTok Events] Sending CompletePayment for order ${input.orderId} with user_data keys: ${userDataKeys} | event_id: ${input.eventId}`
+  )
+
   const payload = {
     pixel_code: pixelCode,
     event: "CompletePayment",
@@ -44,12 +60,7 @@ export const sendTikTokPurchaseEvent = async (
       user_agent: input.userAgent || undefined,
       ip: input.clientIp || undefined,
     },
-    user: {
-      email: hashForTracking(normalizeEmail(input.email)),
-      phone_number: hashForTracking(normalizePhone(input.phone)),
-      ttclid: input.ttclid || undefined,
-      ttp: input.ttp || undefined,
-    },
+    user: userData,
     properties: {
       currency: input.currency,
       value: input.value,
@@ -64,6 +75,20 @@ export const sendTikTokPurchaseEvent = async (
   }
 
   try {
+    const requestBody: {
+      pixel_code: string
+      data: typeof payload[]
+      test_event_code?: string
+    } = {
+      pixel_code: pixelCode,
+      data: [payload],
+    }
+
+    if (input.testEventCode) {
+      requestBody.test_event_code = input.testEventCode
+      console.log(`[TikTok Events] Using test_event_code: ${input.testEventCode}`)
+    }
+
     const response = await fetch(
       "https://business-api.tiktok.com/open_api/v1.3/event/track/",
       {
@@ -72,19 +97,19 @@ export const sendTikTokPurchaseEvent = async (
           "Content-Type": "application/json",
           "Access-Token": accessToken,
         },
-        body: JSON.stringify({
-          pixel_code: pixelCode,
-          data: [payload],
-        }),
+        body: JSON.stringify(requestBody),
       }
     )
 
+    const responseText = await response.text()
     if (!response.ok) {
       console.error(
         "[TikTok Events] Request failed:",
         response.status,
-        await response.text()
+        responseText
       )
+    } else {
+      console.log("[TikTok Events] Response:", responseText)
     }
   } catch (error) {
     console.error("[TikTok Events] Request error:", error)

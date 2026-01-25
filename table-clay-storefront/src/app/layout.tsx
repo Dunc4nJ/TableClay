@@ -1,6 +1,7 @@
 import { getBaseURL } from "@lib/util/env"
 import GtmScript from "@lib/analytics/gtm"
 import OmnisendScript from "@lib/analytics/omnisend"
+import TikTokScript from "@lib/analytics/tiktok"
 import { Metadata } from "next"
 import { Cormorant_Garamond, Outfit } from "next/font/google"
 import "styles/globals.css"
@@ -73,6 +74,7 @@ export default function RootLayout(props: { children: React.ReactNode }) {
       <body className="font-sans antialiased">
         <GtmScript />
         <OmnisendScript />
+        <TikTokScript />
         <main className="relative">{props.children}</main>
       </body>
     </html>

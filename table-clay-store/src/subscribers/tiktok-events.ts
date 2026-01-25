@@ -1,5 +1,4 @@
 import type { SubscriberArgs, SubscriberConfig } from "@medusajs/framework"
-import { Modules } from "@medusajs/framework/utils"
 import { sendTikTokPurchaseEvent } from "../services/tiktok-events"
 
 type OrderItem = {
@@ -16,7 +15,7 @@ type OrderRecord = {
   email?: string | null
   currency_code?: string | null
   total?: number | null
-  cart_id?: string | null
+  metadata?: Record<string, unknown> | null
   items?: OrderItem[]
   shipping_address?: {
     phone?: string | null
@@ -38,7 +37,7 @@ export default async function tiktokEventsSubscriber({
         "email",
         "currency_code",
         "total",
-        "cart_id",
+        "metadata",
         "items.id",
         "items.quantity",
         "items.unit_price",
@@ -71,22 +70,27 @@ export default async function tiktokEventsSubscriber({
 
     const currency = (order.currency_code || "USD").toUpperCase()
 
-    const cartModule = container.resolve(Modules.CART)
-    let metadata: Record<string, unknown> = {}
+    // Read tracking metadata directly from order (copied from cart during checkout)
+    const metadata = (order.metadata || {}) as Record<string, unknown>
 
-    if (order.cart_id) {
-      try {
-        const cart = await cartModule.retrieveCart(order.cart_id)
-        metadata = (cart?.metadata || {}) as Record<string, unknown>
-      } catch (cartError) {
-        console.warn("[TikTok Events] Failed to load cart metadata:", cartError)
-      }
-    }
+    const metadataEventId =
+      typeof metadata.event_id === "string" ? metadata.event_id : undefined
+    const eventId = metadataEventId || `purchase_${order.id}`
 
-    const eventId =
-      typeof metadata.event_id === "string"
-        ? metadata.event_id
-        : `order_${order.id}`
+    // DEBUG: Log raw values to diagnose metadata issues
+    const metadataKeys = Object.keys(metadata)
+    console.log(
+      `[TikTok Events DEBUG] raw phone: "${order.shipping_address?.phone ?? "NULL"}"`
+    )
+    console.log(
+      `[TikTok Events DEBUG] order.metadata keys: ${metadataKeys.length > 0 ? metadataKeys.join(", ") : "EMPTY"}`
+    )
+    console.log(`[TikTok Events DEBUG] metadata.event_id: ${metadata.event_id ?? "MISSING"}`)
+    console.log(`[TikTok Events DEBUG] metadata._ttp: ${metadata._ttp ?? "MISSING"}`)
+    console.log(`[TikTok Events DEBUG] metadata.ttclid: ${metadata.ttclid ?? "MISSING"}`)
+
+    // TODO: Remove testEventCode after verifying TikTok Events work in production
+    const testEventCode = process.env.TIKTOK_TEST_EVENT_CODE || null
 
     await sendTikTokPurchaseEvent({
       eventId,
@@ -104,6 +108,7 @@ export default async function tiktokEventsSubscriber({
         typeof metadata.client_user_agent === "string"
           ? metadata.client_user_agent
           : undefined,
+      testEventCode,
     })
 
     console.log(

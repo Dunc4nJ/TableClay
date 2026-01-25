@@ -3,6 +3,7 @@
 import { useEffect } from "react"
 import { HttpTypes } from "@medusajs/types"
 import { pushEcommerceEvent } from "@lib/analytics/events"
+import { trackTikTokEvent } from "@lib/analytics/tiktok"
 
 type TrackPurchaseProps = {
   order: HttpTypes.StoreOrder
@@ -89,6 +90,23 @@ export default function TrackPurchase({ order }: TrackPurchaseProps) {
         items,
       },
     })
+
+    // TikTok CompletePayment event for deduplication with server-side event
+    const tiktokEventId = eventId || `purchase_${order.id}`
+    trackTikTokEvent(
+      "CompletePayment",
+      {
+        content_type: "product",
+        contents: order.items?.map((item) => ({
+          content_id: item.variant_id ?? item.product_id,
+          quantity: item.quantity,
+          price: (item.unit_price ?? 0) / 100,
+        })),
+        currency,
+        value: (order.total ?? 0) / 100,
+      },
+      { event_id: tiktokEventId }
+    )
 
     trackedOrders.push(order.id)
     setTrackedOrders(trackedOrders)
