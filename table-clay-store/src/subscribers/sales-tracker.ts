@@ -10,9 +10,7 @@ type OrderLineItem = {
   id: string
   quantity: number
   variant_id: string
-  variant?: {
-    product_id?: string
-  }
+  product_id?: string
 }
 
 /**
@@ -40,7 +38,7 @@ export default async function salesTrackerHandler({
         "items.id",
         "items.quantity",
         "items.variant_id",
-        "items.variant.product_id",
+        "items.product_id",
       ],
       filters: {
         id: data.id,
@@ -58,7 +56,7 @@ export default async function salesTrackerHandler({
     const productQuantities: Map<string, number> = new Map()
 
     for (const item of items) {
-      const productId = item.variant?.product_id
+      const productId = item.product_id
 
       // Stronger validation - must be a non-empty string to prevent "nan" column errors
       if (!productId || typeof productId !== "string" || productId.trim() === "") {

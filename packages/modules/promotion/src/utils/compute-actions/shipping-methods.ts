@@ -81,13 +81,17 @@ export function applyPromotionToShippingMethods(
       ) {
         break
       }
-      if (!method.subtotal) {
+      const baseAmount = promotion.is_tax_inclusive
+        ? method.original_total ?? method.subtotal
+        : method.subtotal
+
+      if (!baseAmount) {
         continue
       }
 
       const appliedPromoValue = methodIdPromoValueMap.get(method.id) ?? 0
       let promotionValue = MathBN.convert(applicationMethod?.value ?? 0)
-      const applicableTotal = MathBN.sub(method.subtotal, appliedPromoValue)
+      const applicableTotal = MathBN.sub(baseAmount, appliedPromoValue)
 
       if (applicationMethod?.type === ApplicationMethodType.PERCENTAGE) {
         promotionValue = MathBN.mult(
@@ -127,6 +131,7 @@ export function applyPromotionToShippingMethods(
         shipping_method_id: method.id,
         amount,
         code: promotion.code!,
+        is_tax_inclusive: promotion.is_tax_inclusive,
       })
     }
   }
@@ -146,13 +151,17 @@ export function applyPromotionToShippingMethods(
     }
 
     for (const method of shippingMethods!) {
-      if (!method.subtotal) {
+      const baseAmount = promotion.is_tax_inclusive
+        ? method.original_total ?? method.subtotal
+        : method.subtotal
+
+      if (!baseAmount) {
         continue
       }
 
       const promotionValue = applicationMethod?.value ?? 0
       const appliedPromoValue = methodIdPromoValueMap.get(method.id) ?? 0
-      const applicableTotal = MathBN.sub(method.subtotal, appliedPromoValue)
+      const applicableTotal = MathBN.sub(baseAmount, appliedPromoValue)
 
       let applicablePromotionValue = MathBN.mult(
         MathBN.div(applicableTotal, totalApplicableValue),
@@ -193,6 +202,7 @@ export function applyPromotionToShippingMethods(
         shipping_method_id: method.id,
         amount,
         code: promotion.code!,
+        is_tax_inclusive: promotion.is_tax_inclusive,
       })
     }
   }

@@ -95,6 +95,7 @@ export const defaultStoreCartFields = [
   "shipping_methods.adjustments.id",
   "shipping_methods.adjustments.code",
   "shipping_methods.adjustments.amount",
+  "shipping_methods.adjustments.is_tax_inclusive",
   "shipping_methods.shipping_option_id",
   "shipping_address_id",
   "shipping_address.id",

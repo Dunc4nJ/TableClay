@@ -39,6 +39,7 @@ type OrderShippingMethodAdjustment {
   id: ID!
   code: String
   amount: Float
+  is_tax_inclusive: Boolean
   order_id: String!
   description: String
   promotion_id: String

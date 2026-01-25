@@ -293,6 +293,11 @@ export interface CreateOrderAdjustmentDTO {
   amount: BigNumberInput
 
   /**
+   * Whether the adjustment is tax inclusive.
+   */
+  is_tax_inclusive?: boolean
+
+  /**
    * The description of the adjustment.
    */
   description?: string
@@ -860,6 +865,11 @@ export interface UpdateOrderShippingMethodAdjustmentDTO {
    * The amount of the adjustment.
    */
   amount?: BigNumberInput
+
+  /**
+   * Whether the adjustment is tax inclusive.
+   */
+  is_tax_inclusive?: boolean
 
   /**
    * The description of the adjustment.

@@ -160,6 +160,7 @@ export const prepareAdjustmentsFromPromotionActionsStep = createStep(
           shippingMethodAdjustmentsToCreate.push({
             code: action.code,
             amount: shippingAction.amount as number,
+            is_tax_inclusive: shippingAction.is_tax_inclusive,
             shipping_method_id: shippingAction.shipping_method_id,
             promotion_id: promotionsMap.get(action.code)?.id,
           })

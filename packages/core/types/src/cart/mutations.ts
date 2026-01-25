@@ -247,6 +247,11 @@ export interface CreateAdjustmentDTO {
   amount: BigNumberInput
 
   /**
+   * Whether the adjustment is tax inclusive.
+   */
+  is_tax_inclusive?: boolean
+
+  /**
    * Whether the adjustment amount includes tax.
    */
   is_tax_inclusive?: boolean
@@ -347,6 +352,11 @@ export interface UpsertLineItemAdjustmentDTO {
    * The amount to adjust the original amount with.
    */
   amount?: BigNumberInput
+
+  /**
+   * Whether the adjustment is tax inclusive.
+   */
+  is_tax_inclusive?: boolean
 
   /**
    * The description of the line item adjustment.

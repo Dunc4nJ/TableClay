@@ -142,6 +142,11 @@ export interface AddShippingMethodAdjustment {
   amount: BigNumberInput
 
   /**
+   * Whether the adjustment is tax inclusive.
+   */
+  is_tax_inclusive?: boolean
+
+  /**
    * The promotion's code.
    */
   code: string

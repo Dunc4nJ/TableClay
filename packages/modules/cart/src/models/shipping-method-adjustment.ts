@@ -12,6 +12,7 @@ const ShippingMethodAdjustment = model
       description: model.text().nullable(),
       code: model.text().nullable(),
       amount: model.bigNumber(),
+      is_tax_inclusive: model.boolean().default(false),
       provider_id: model.text().nullable(),
       metadata: model.json().nullable(),
       promotion_id: model.text().nullable(),

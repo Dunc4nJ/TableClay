@@ -84,6 +84,11 @@ export interface OrderAdjustmentLineDTO {
   amount: BigNumberValue
 
   /**
+   * Whether the adjustment is tax inclusive.
+   */
+  is_tax_inclusive?: boolean
+
+  /**
    * The ID of the associated order
    */
   order_id: string
