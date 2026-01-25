@@ -143,7 +143,8 @@ class OmnisendModuleService {
     options?: OmnisendEventOptions
   ): Promise<void> {
     const payload: Record<string, unknown> = {
-      name: eventName,
+      eventName: eventName,
+      origin: "api",
       contact,
     }
 
