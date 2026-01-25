@@ -58,8 +58,12 @@ export default async function salesTrackerHandler({
 
     for (const item of items) {
       const productId = item.variant?.product_id
-      if (!productId) {
-        console.warn(`[SalesTracker] Item ${item.id} has no product_id, skipping`)
+
+      // Stronger validation - must be a non-empty string to prevent "nan" column errors
+      if (!productId || typeof productId !== "string" || productId.trim() === "") {
+        console.warn(
+          `[SalesTracker] Item ${item.id} has invalid product_id: ${JSON.stringify(productId)}, skipping`
+        )
         continue
       }
 

@@ -51,11 +51,11 @@ export const sendTikTokPurchaseEvent = async (
     `[TikTok Events] Sending CompletePayment for order ${input.orderId} with user_data keys: ${userDataKeys} | event_id: ${input.eventId}`
   )
 
-  const payload = {
-    pixel_code: pixelCode,
+  // Build event payload (without pixel_code - that goes in request body)
+  const eventPayload = {
     event: "CompletePayment",
     event_id: input.eventId,
-    timestamp: new Date().toISOString(),
+    event_time: Math.floor(Date.now() / 1000), // Unix timestamp in seconds
     context: {
       user_agent: input.userAgent || undefined,
       ip: input.clientIp || undefined,
@@ -75,13 +75,16 @@ export const sendTikTokPurchaseEvent = async (
   }
 
   try {
+    // TikTok Events API v1.3 requires event_source and event_source_id (not pixel_code)
     const requestBody: {
-      pixel_code: string
-      data: typeof payload[]
+      event_source: string
+      event_source_id: string
+      data: typeof eventPayload[]
       test_event_code?: string
     } = {
-      pixel_code: pixelCode,
-      data: [payload],
+      event_source: "web",
+      event_source_id: pixelCode,
+      data: [eventPayload],
     }
 
     if (input.testEventCode) {

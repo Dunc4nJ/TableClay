@@ -20,6 +20,9 @@ type OrderRecord = {
   shipping_address?: {
     phone?: string | null
   } | null
+  billing_address?: {
+    phone?: string | null
+  } | null
 }
 
 export default async function tiktokEventsSubscriber({
@@ -44,6 +47,7 @@ export default async function tiktokEventsSubscriber({
         "items.variant_id",
         "items.product_id",
         "shipping_address.phone",
+        "billing_address.phone",
       ],
       filters: {
         id: data.id,
@@ -77,10 +81,21 @@ export default async function tiktokEventsSubscriber({
       typeof metadata.event_id === "string" ? metadata.event_id : undefined
     const eventId = metadataEventId || `purchase_${order.id}`
 
-    // DEBUG: Log raw values to diagnose metadata issues
+    // Try both shipping and billing address for phone (fallback)
+    const shippingPhone = order.shipping_address?.phone || ""
+    const billingPhone = order.billing_address?.phone || ""
+    const phone = shippingPhone || billingPhone || null
+
+    // DEBUG: Log raw values to diagnose address/metadata issues
     const metadataKeys = Object.keys(metadata)
     console.log(
-      `[TikTok Events DEBUG] raw phone: "${order.shipping_address?.phone ?? "NULL"}"`
+      `[TikTok Events DEBUG] shipping_address.phone: "${shippingPhone || "EMPTY"}"`
+    )
+    console.log(
+      `[TikTok Events DEBUG] billing_address.phone: "${billingPhone || "EMPTY"}"`
+    )
+    console.log(
+      `[TikTok Events DEBUG] resolved phone: "${phone || "NULL"}"`
     )
     console.log(
       `[TikTok Events DEBUG] order.metadata keys: ${metadataKeys.length > 0 ? metadataKeys.join(", ") : "EMPTY"}`
@@ -96,7 +111,7 @@ export default async function tiktokEventsSubscriber({
       eventId,
       orderId: order.id,
       email: order.email ?? null,
-      phone: order.shipping_address?.phone ?? null,
+      phone,
       currency,
       value: (order.total ?? 0) / 100,
       items,
