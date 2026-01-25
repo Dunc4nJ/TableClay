@@ -2,12 +2,23 @@ import type { SubscriberArgs, SubscriberConfig } from "@medusajs/framework"
 import { sendTikTokPurchaseEvent } from "../services/tiktok-events"
 import { toNumber } from "../utils/decimal-convert"
 
+type Adjustment = {
+  amount?: number
+  code?: string
+}
+
 type OrderItem = {
   id: string
   quantity: number
   unit_price?: number
   variant_id?: string
   product_id?: string
+  adjustments?: Adjustment[]
+}
+
+type ShippingMethod = {
+  total?: number
+  adjustments?: Adjustment[]
 }
 
 type OrderRecord = {
@@ -28,6 +39,7 @@ type OrderRecord = {
   billing_address?: {
     phone?: string | null
   } | null
+  shipping_methods?: ShippingMethod[]
 }
 
 export default async function tiktokEventsSubscriber({
@@ -57,6 +69,12 @@ export default async function tiktokEventsSubscriber({
         "items.product_id",
         "shipping_address.phone",
         "billing_address.phone",
+        // DEBUG: Fetch adjustments to understand discount source
+        "shipping_methods.total",
+        "shipping_methods.adjustments.amount",
+        "shipping_methods.adjustments.code",
+        "items.adjustments.amount",
+        "items.adjustments.code",
       ],
       filters: {
         id: data.id,
@@ -116,6 +134,13 @@ export default async function tiktokEventsSubscriber({
     // DEBUG: Log raw order totals to diagnose value=0 issue
     console.log(`[TikTok Events DEBUG] order.total: ${order.total}, type: ${typeof order.total}`)
     console.log(`[TikTok Events DEBUG] order.subtotal: ${order.subtotal}, shipping: ${order.shipping_total}, tax: ${order.tax_total}, discount: ${order.discount_total}`)
+
+    // DEBUG: Log adjustments to find discount source
+    console.log(`[TikTok Events DEBUG] shipping_methods:`, JSON.stringify(order.shipping_methods || [], null, 2))
+    console.log(`[TikTok Events DEBUG] item adjustments:`, JSON.stringify(
+      (order.items || []).map(i => ({ id: i.id, adjustments: i.adjustments || [] })),
+      null, 2
+    ))
 
     // Calculate value with fallback and logging
     const rawTotal = toNumber(order.total)
