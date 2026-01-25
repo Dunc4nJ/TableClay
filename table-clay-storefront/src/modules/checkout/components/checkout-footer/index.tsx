@@ -8,6 +8,7 @@ import { Button } from "@medusajs/ui"
 import { useElements, useStripe } from "@stripe/react-stripe-js"
 import { useState } from "react"
 import ErrorMessage from "@modules/checkout/components/error-message"
+import { useCheckoutSave } from "../../context/checkout-save-context"
 
 interface CheckoutFooterProps {
   cart: HttpTypes.StoreCart
@@ -38,6 +39,7 @@ const CheckoutFooter: React.FC<CheckoutFooterProps> = ({ cart }) => {
   const [error, setError] = useState<string | null>(null)
   const stripe = useStripe()
   const elements = useElements()
+  const { isPending: isAddressSaving } = useCheckoutSave()
 
   // Check if all required info is present
   const hasEmail = !!cart.email
@@ -190,11 +192,11 @@ const CheckoutFooter: React.FC<CheckoutFooterProps> = ({ cart }) => {
         size="large"
         className="w-full py-4 bg-tc-terracotta hover:bg-tc-brown text-white font-semibold text-lg transition-colors"
         onClick={handlePlaceOrder}
-        isLoading={isLoading}
-        disabled={!canPlaceOrder || isLoading}
+        isLoading={isLoading || isAddressSaving}
+        disabled={!canPlaceOrder || isLoading || isAddressSaving}
         data-testid="submit-order-button"
       >
-        Pay now
+        {isAddressSaving ? "Saving..." : "Pay now"}
       </Button>
 
       {/* Missing info hints */}

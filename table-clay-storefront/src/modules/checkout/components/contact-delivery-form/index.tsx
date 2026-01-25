@@ -8,7 +8,6 @@ import {
   useActionState,
   useEffect,
   useState,
-  useTransition,
   useRef,
   useCallback,
 } from "react"
@@ -22,6 +21,7 @@ import { Container } from "@medusajs/ui"
 import { mapKeys, debounce } from "lodash"
 import { useRouter } from "next/navigation"
 import { identifyOmnisendContact } from "@lib/analytics/omnisend"
+import { useCheckoutSave } from "../../context/checkout-save-context"
 
 // US State options for dropdown
 const US_STATES = [
@@ -110,7 +110,7 @@ const ContactDeliveryForm: React.FC<ContactDeliveryFormProps> = ({
   customer,
 }) => {
   const router = useRouter()
-  const [isPending, startTransition] = useTransition()
+  const { startTransition } = useCheckoutSave()
   const { state: sameAsBilling, toggle: toggleSameAsBilling } = useToggleState(
     cart?.shipping_address && cart?.billing_address
       ? compareAddresses(cart?.shipping_address, cart?.billing_address)
@@ -135,7 +135,6 @@ const ContactDeliveryForm: React.FC<ContactDeliveryFormProps> = ({
   const [touched, setTouched] = useState<TouchedFields>({})
 
   const [message, formAction] = useActionState(setAddresses, null)
-  const [isSavingAddress, setIsSavingAddress] = useState(false)
   const lastSavedAddressRef = useRef<string>("")
   const lastIdentifiedEmailRef = useRef<string>("")
 
@@ -234,9 +233,10 @@ const ContactDeliveryForm: React.FC<ContactDeliveryFormProps> = ({
   }, [])
 
   // Debounced function to save shipping address to cart
+  // Uses startTransition from context to track pending state across components
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const debouncedSaveAddress = useCallback(
-    debounce(async (data: Record<string, any>) => {
+    debounce((data: Record<string, any>) => {
       if (!cart?.id || !hasMinimumAddressFields(data)) return
 
       const addressHash = JSON.stringify({
@@ -245,39 +245,40 @@ const ContactDeliveryForm: React.FC<ContactDeliveryFormProps> = ({
         postal_code: data["shipping_address.postal_code"],
         country_code: data["shipping_address.country_code"],
         province: data["shipping_address.province"],
+        phone: data["shipping_address.phone"],
       })
 
       if (addressHash === lastSavedAddressRef.current) return
       lastSavedAddressRef.current = addressHash
 
-      setIsSavingAddress(true)
-      try {
-        await updateCartSilent({
-          email: data.email || undefined,
-          shipping_address: {
-            first_name: data["shipping_address.first_name"] || "",
-            last_name: data["shipping_address.last_name"] || "",
-            address_1: data["shipping_address.address_1"] || "",
-            address_2: "",
-            company: data["shipping_address.company"] || "",
-            postal_code: data["shipping_address.postal_code"] || "",
-            city: data["shipping_address.city"] || "",
-            country_code: data["shipping_address.country_code"] || "",
-            province: data["shipping_address.province"] || "",
-            phone: data["shipping_address.phone"] || "",
-          },
-        })
-        router.refresh()
-      } catch (error) {
-        console.error(
-          "[ContactDeliveryForm] Failed to auto-save address:",
-          error
-        )
-      } finally {
-        setIsSavingAddress(false)
-      }
+      // Use startTransition to track pending state (disables Pay button while saving)
+      startTransition(async () => {
+        try {
+          await updateCartSilent({
+            email: data.email || undefined,
+            shipping_address: {
+              first_name: data["shipping_address.first_name"] || "",
+              last_name: data["shipping_address.last_name"] || "",
+              address_1: data["shipping_address.address_1"] || "",
+              address_2: "",
+              company: data["shipping_address.company"] || "",
+              postal_code: data["shipping_address.postal_code"] || "",
+              city: data["shipping_address.city"] || "",
+              country_code: data["shipping_address.country_code"] || "",
+              province: data["shipping_address.province"] || "",
+              phone: data["shipping_address.phone"] || "",
+            },
+          })
+          router.refresh()
+        } catch (error) {
+          console.error(
+            "[ContactDeliveryForm] Failed to auto-save address:",
+            error
+          )
+        }
+      })
     }, 800),
-    [cart?.id, hasMinimumAddressFields, router]
+    [cart?.id, hasMinimumAddressFields, router, startTransition]
   )
 
   // Auto-save address when form data changes

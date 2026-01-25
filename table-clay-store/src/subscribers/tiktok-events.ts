@@ -15,6 +15,10 @@ type OrderRecord = {
   email?: string | null
   currency_code?: string | null
   total?: number | null
+  subtotal?: number | null
+  shipping_total?: number | null
+  tax_total?: number | null
+  discount_total?: number | null
   metadata?: Record<string, unknown> | null
   items?: OrderItem[]
   shipping_address?: {
@@ -40,6 +44,10 @@ export default async function tiktokEventsSubscriber({
         "email",
         "currency_code",
         "total",
+        "subtotal",
+        "shipping_total",
+        "tax_total",
+        "discount_total",
         "metadata",
         "items.id",
         "items.quantity",
@@ -104,6 +112,15 @@ export default async function tiktokEventsSubscriber({
     console.log(`[TikTok Events DEBUG] metadata._ttp: ${metadata._ttp ?? "MISSING"}`)
     console.log(`[TikTok Events DEBUG] metadata.ttclid: ${metadata.ttclid ?? "MISSING"}`)
 
+    // DEBUG: Log raw order totals to diagnose value=0 issue
+    console.log(`[TikTok Events DEBUG] order.total: ${order.total}, type: ${typeof order.total}`)
+    console.log(`[TikTok Events DEBUG] order.subtotal: ${order.subtotal}, shipping: ${order.shipping_total}, tax: ${order.tax_total}, discount: ${order.discount_total}`)
+
+    // Calculate value with fallback and logging
+    const rawTotal = order.total ?? 0
+    const value = rawTotal / 100
+    console.log(`[TikTok Events DEBUG] Calculated value: ${value} (raw: ${rawTotal} / 100)`)
+
     // TODO: Remove testEventCode after verifying TikTok Events work in production
     const testEventCode = process.env.TIKTOK_TEST_EVENT_CODE || null
 
@@ -113,7 +130,7 @@ export default async function tiktokEventsSubscriber({
       email: order.email ?? null,
       phone,
       currency,
-      value: (order.total ?? 0) / 100,
+      value,
       items,
       ttclid: typeof metadata.ttclid === "string" ? metadata.ttclid : undefined,
       ttp: typeof metadata._ttp === "string" ? metadata._ttp : undefined,

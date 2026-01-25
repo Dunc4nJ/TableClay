@@ -10,6 +10,7 @@ import PaymentSessionGuard from "@modules/checkout/components/payment-session-gu
 import PaymentWrapper from "@modules/checkout/components/payment-wrapper"
 import PaymentForm from "@modules/checkout/components/payment-form"
 import TipSelector from "@modules/checkout/components/tip-selector"
+import { CheckoutSaveProvider } from "@modules/checkout/context/checkout-save-context"
 
 export default async function CheckoutForm({
   cart,
@@ -31,8 +32,9 @@ export default async function CheckoutForm({
 
   return (
     <PaymentWrapper cart={cart}>
-      <div className="w-full">
-        <PaymentSessionGuard cart={cart} paymentMethods={paymentMethods} />
+      <CheckoutSaveProvider>
+        <div className="w-full">
+          <PaymentSessionGuard cart={cart} paymentMethods={paymentMethods} />
         {/* Express Checkout at TOP */}
         <ExpressCheckout cart={cart} />
 
@@ -70,7 +72,8 @@ export default async function CheckoutForm({
 
         {/* Checkout Footer with Pay Button */}
         <CheckoutFooter cart={cart} />
-      </div>
+        </div>
+      </CheckoutSaveProvider>
     </PaymentWrapper>
   )
 }
