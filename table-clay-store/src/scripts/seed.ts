@@ -222,15 +222,15 @@ export default async function seedDemoData({ container }: ExecArgs) {
         ],
       },
       {
-        name: "Premium Shipping",
+        name: "Standard Shipping + Premium Protection",
         price_type: "flat",
         provider_id: "manual_manual",
         service_zone_id: fulfillmentSetResult.service_zones[0].id,
         shipping_profile_id: shippingProfile.id,
         type: {
-          label: "Premium",
-          description: "Ships in 2-3 business days",
-          code: "premium",
+          label: "Premium Protection",
+          description: "Ships in 5-7 business days with premium handling",
+          code: "premium-protection",
         },
         prices: [
           { currency_code: "usd", amount: 800 },
