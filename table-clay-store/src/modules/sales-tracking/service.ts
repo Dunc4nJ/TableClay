@@ -30,6 +30,14 @@ class SalesTrackingModuleService extends MedusaService({
   async incrementSales(input: IncrementSalesInput): Promise<ProductSalesRecord> {
     const { product_id, quantity } = input
 
+    // Validate input to prevent NaN propagation
+    if (!product_id || typeof product_id !== "string" || product_id.trim() === "") {
+      throw new Error(`[SalesTracking] Invalid product_id: ${JSON.stringify(product_id)}`)
+    }
+    if (typeof quantity !== "number" || isNaN(quantity) || quantity <= 0) {
+      throw new Error(`[SalesTracking] Invalid quantity: ${JSON.stringify(quantity)}`)
+    }
+
     // Try to find existing record
     const existing = await this.listProductSales({
       product_id,
@@ -38,10 +46,16 @@ class SalesTrackingModuleService extends MedusaService({
     if (existing.length > 0) {
       // Update existing record
       const record = existing[0]
+
+      // Validate existing sales_count to prevent NaN propagation
+      const currentCount = typeof record.sales_count === "number" && !isNaN(record.sales_count)
+        ? record.sales_count
+        : 0
+
       const updated = await this.updateProductSales({
         selector: { id: record.id },
         data: {
-          sales_count: record.sales_count + quantity,
+          sales_count: currentCount + quantity,
           last_sold_at: new Date(),
         },
       })
