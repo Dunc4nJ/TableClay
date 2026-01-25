@@ -1,5 +1,6 @@
 import type { SubscriberArgs, SubscriberConfig } from "@medusajs/framework"
 import { sendTikTokPurchaseEvent } from "../services/tiktok-events"
+import { toNumber } from "../utils/decimal-convert"
 
 type OrderItem = {
   id: string
@@ -71,8 +72,8 @@ export default async function tiktokEventsSubscriber({
       .filter((item) => item.variant_id || item.product_id)
       .map((item) => ({
         content_id: item.variant_id ?? item.product_id ?? item.id,
-        quantity: item.quantity,
-        price: (item.unit_price ?? 0) / 100,
+        quantity: toNumber(item.quantity),
+        price: toNumber(item.unit_price) / 100,
       }))
 
     if (items.length === 0) {
@@ -117,7 +118,7 @@ export default async function tiktokEventsSubscriber({
     console.log(`[TikTok Events DEBUG] order.subtotal: ${order.subtotal}, shipping: ${order.shipping_total}, tax: ${order.tax_total}, discount: ${order.discount_total}`)
 
     // Calculate value with fallback and logging
-    const rawTotal = order.total ?? 0
+    const rawTotal = toNumber(order.total)
     const value = rawTotal / 100
     console.log(`[TikTok Events DEBUG] Calculated value: ${value} (raw: ${rawTotal} / 100)`)
 

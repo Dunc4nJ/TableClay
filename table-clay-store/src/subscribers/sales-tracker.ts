@@ -4,6 +4,7 @@ import type {
 } from "@medusajs/framework"
 import { SALES_TRACKING_MODULE } from "../modules/sales-tracking"
 import type SalesTrackingModuleService from "../modules/sales-tracking/service"
+import { toNumber } from "../utils/decimal-convert"
 
 type OrderLineItem = {
   id: string
@@ -67,8 +68,14 @@ export default async function salesTrackerHandler({
         continue
       }
 
+      const qty = toNumber(item.quantity)
+      if (qty <= 0) {
+        console.warn(`[SalesTracker] Item ${item.id} has invalid quantity: ${item.quantity}, skipping`)
+        continue
+      }
+
       const currentQty = productQuantities.get(productId) || 0
-      productQuantities.set(productId, currentQty + item.quantity)
+      productQuantities.set(productId, currentQty + qty)
     }
 
     // Increment sales for each product

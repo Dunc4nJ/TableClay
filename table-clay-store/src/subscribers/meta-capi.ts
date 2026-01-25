@@ -1,5 +1,6 @@
 import type { SubscriberArgs, SubscriberConfig } from "@medusajs/framework"
 import { sendMetaPurchaseEvent } from "../services/meta-conversions"
+import { toNumber } from "../utils/decimal-convert"
 
 type OrderItem = {
   id: string
@@ -71,8 +72,8 @@ export default async function metaCapiHandler({
       .filter((item) => item.variant_id || item.product_id)
       .map((item) => ({
         id: item.variant_id ?? item.product_id ?? item.id,
-        quantity: item.quantity,
-        item_price: (item.unit_price ?? 0) / 100,
+        quantity: toNumber(item.quantity),
+        item_price: toNumber(item.unit_price) / 100,
       }))
 
     if (items.length === 0) {
@@ -117,7 +118,7 @@ export default async function metaCapiHandler({
           ? metadata.client_user_agent
           : undefined,
       currency,
-      value: (order.total ?? 0) / 100,
+      value: toNumber(order.total) / 100,
       items,
       eventSourceUrl,
       testEventCode,
