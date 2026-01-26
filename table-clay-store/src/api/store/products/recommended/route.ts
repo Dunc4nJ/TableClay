@@ -33,8 +33,6 @@ const DEFAULT_STORE_PRODUCT_FIELDS = [
   "updated_at",
   "*type",
   "*collection",
-  "*options",
-  "*options.values",
   "*tags",
   "*images",
   "*variants",
