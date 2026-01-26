@@ -202,7 +202,7 @@ export default function CartRecommendations({
                     <div className="relative">
                       {showDiscountBadge && (
                         <div
-                          className="absolute top-2 right-2 z-10 flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-amber-950 ring-2 ring-amber-200/70 shadow-[0_8px_24px_rgba(245,158,11,0.5)] animate-[pulse_1.1s_ease-in-out_infinite]"
+                          className="badge-pulse absolute top-2 right-2 z-10 flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-amber-950 ring-2 ring-amber-200/70 shadow-[0_6px_16px_rgba(245,158,11,0.35)] will-change-transform"
                           style={{
                             background:
                               "linear-gradient(135deg, #fde68a 0%, #fbbf24 45%, #f59e0b 100%)",
