@@ -9,26 +9,24 @@ import LocalizedClientLink from "@modules/common/components/localized-client-lin
 import Thumbnail from "@modules/products/components/thumbnail"
 import { Text } from "@medusajs/ui"
 import { getProductPrice } from "@lib/util/get-product-price"
+import { convertToLocale } from "@lib/util/money"
 import repeat from "@lib/util/repeat"
 import SkeletonProductPreview from "@modules/skeletons/components/skeleton-product-preview"
 
 type CartRecommendationsProps = {
   cart: HttpTypes.StoreCart
   region: HttpTypes.StoreRegion
+  showDiscountBadge?: boolean
 }
 
 /**
- * CartRecommendations - Smart selection of 3 recommended products for the cart page:
- * 1. Global bestseller (top-selling product)
- * 2. Random product from same collection as cart items (if available)
- * 3. Random product from different collection
- *
- * Products refresh randomly on each page load.
- * Excludes products already in the cart.
+ * CartRecommendations - Curated recommendations for the cart page.
+ * Uses /store/products/recommended with exclusions for cart items.
  */
 export default function CartRecommendations({
   cart,
   region,
+  showDiscountBadge = false,
 }: CartRecommendationsProps) {
   const [products, setProducts] = useState<HttpTypes.StoreProduct[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -39,16 +37,6 @@ export default function CartRecommendations({
   const countryCode =
     typeof params?.countryCode === "string" ? params.countryCode : ""
 
-  // Get collection IDs from cart items
-  const cartCollectionIds = useMemo(
-    () =>
-      (cart.items
-        ?.map((item) => item.product?.collection_id)
-        .filter(Boolean) as string[]) || [],
-    [cart.items]
-  )
-
-  // Get product IDs already in cart (to exclude from recommendations)
   const cartProductIds = useMemo(
     () =>
       (cart.items
@@ -57,134 +45,54 @@ export default function CartRecommendations({
     [cart.items]
   )
 
+  const preferredCollectionId = useMemo(() => {
+    const collectionIds =
+      (cart.items
+        ?.map((item) => item.product?.collection_id)
+        .filter(Boolean) as string[]) || []
+    return collectionIds[0] || ""
+  }, [cart.items])
+
+  const cartProductIdsKey = useMemo(
+    () => cartProductIds.join(","),
+    [cartProductIds]
+  )
+
   useEffect(() => {
-    async function fetchCartRecommendations() {
+    async function fetchRecommendations() {
       try {
         setIsLoading(true)
         setError(null)
 
-        const results: HttpTypes.StoreProduct[] = []
-        const usedIds = new Set(cartProductIds || [])
         const apiKey = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || ""
         const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
 
-        // Helper to fetch products
-        const fetchProducts = async (
-          params: URLSearchParams
-        ): Promise<HttpTypes.StoreProduct[]> => {
-          params.set("region_id", region.id)
-          params.set("is_giftcard", "false")
-          params.set(
-            "fields",
-            "*variants.calculated_price,+variants.inventory_quantity,*variants.images"
-          )
-
-          const response = await fetch(
-            `${baseUrl}/store/products?${params.toString()}`,
-            {
-              headers: { "x-publishable-api-key": apiKey },
-              credentials: "include",
-              cache: "no-store", // Disable caching for random selection
-            }
-          )
-
-          if (!response.ok) {
-            throw new Error(`Failed to fetch products: ${response.status}`)
-          }
-
-          const data = await response.json()
-          return data.products || []
+        if (!baseUrl) {
+          throw new Error("Missing NEXT_PUBLIC_MEDUSA_BACKEND_URL")
         }
 
-        // 1. GLOBAL BESTSELLER - Try to get the top-selling product
-        try {
-          const bestsellerResponse = await fetch(
-            `${baseUrl}/store/products/bestseller?region_id=${region.id}`,
-            {
-              headers: { "x-publishable-api-key": apiKey },
-              credentials: "include",
-              // Bestseller can be cached for 5 minutes (acceptable staleness)
-              next: { revalidate: 300 },
-            }
-          )
-
-          if (bestsellerResponse.ok) {
-            const data = await bestsellerResponse.json()
-            if (data.product && !usedIds.has(data.product.id)) {
-              results.push(data.product)
-              usedIds.add(data.product.id)
-            }
-          }
-        } catch (e) {
-          // Bestseller endpoint may not exist yet, continue silently
-          console.debug("Bestseller endpoint not available, using fallback")
+        const excludeIds = cartProductIds.join(",")
+        const url = new URL(`${baseUrl}/store/products/recommended`)
+        url.searchParams.set("region_id", region.id)
+        if (preferredCollectionId) {
+          url.searchParams.set("collection_id", preferredCollectionId)
+        }
+        if (excludeIds) {
+          url.searchParams.set("exclude_product_ids", excludeIds)
         }
 
-        // 2. SAME COLLECTION RANDOM - Get a random product from cart items' collections
-        if (cartCollectionIds && cartCollectionIds.length > 0) {
-          // Pick a random collection from the cart items
-          const randomCollectionId =
-            cartCollectionIds[
-              Math.floor(Math.random() * cartCollectionIds.length)
-            ]
+        const response = await fetch(url.toString(), {
+          headers: { "x-publishable-api-key": apiKey },
+          credentials: "include",
+          cache: "no-store",
+        })
 
-          const sameCollectionParams = new URLSearchParams()
-          sameCollectionParams.set("collection_id[]", randomCollectionId)
-          sameCollectionParams.set("limit", "50")
-
-          const sameCollectionProducts = await fetchProducts(
-            sameCollectionParams
-          )
-          const eligibleSameCollection = sameCollectionProducts.filter(
-            (p) => !usedIds.has(p.id)
-          )
-
-          if (eligibleSameCollection.length > 0) {
-            const randomIndex = Math.floor(
-              Math.random() * eligibleSameCollection.length
-            )
-            const randomProduct = eligibleSameCollection[randomIndex]
-            results.push(randomProduct)
-            usedIds.add(randomProduct.id)
-          }
+        if (!response.ok) {
+          throw new Error(`Failed to fetch recommendations: ${response.status}`)
         }
 
-        // 3. DIFFERENT COLLECTION RANDOM - Get a random product from any other collection
-        const allProductsParams = new URLSearchParams()
-        allProductsParams.set("limit", "100")
-
-        const allProducts = await fetchProducts(allProductsParams)
-
-        // Filter for products from different collections
-        const differentCollectionProducts = allProducts.filter(
-          (p) =>
-            !usedIds.has(p.id) &&
-            (!cartCollectionIds ||
-              !cartCollectionIds.includes(p.collection_id || ""))
-        )
-
-        if (differentCollectionProducts.length > 0) {
-          const randomIndex = Math.floor(
-            Math.random() * differentCollectionProducts.length
-          )
-          const randomProduct = differentCollectionProducts[randomIndex]
-          results.push(randomProduct)
-          usedIds.add(randomProduct.id)
-        }
-
-        // 4. FALLBACK - Fill remaining slots with any available products
-        const remainingProducts = allProducts.filter((p) => !usedIds.has(p.id))
-
-        while (results.length < 3 && remainingProducts.length > 0) {
-          const randomIndex = Math.floor(
-            Math.random() * remainingProducts.length
-          )
-          const randomProduct = remainingProducts.splice(randomIndex, 1)[0]
-          results.push(randomProduct)
-          usedIds.add(randomProduct.id)
-        }
-
-        setProducts(results.slice(0, 3))
+        const data = await response.json()
+        setProducts(data.products || [])
       } catch (err) {
         console.error("Error fetching cart recommendations:", err)
         setError(
@@ -198,9 +106,9 @@ export default function CartRecommendations({
     }
 
     if (cart?.id && region?.id) {
-      fetchCartRecommendations()
+      fetchRecommendations()
     }
-  }, [cart?.id, region?.id, cartProductIds, cartCollectionIds])
+  }, [cart?.id, region?.id, preferredCollectionId, cartProductIdsKey])
 
   // Handle adding product to cart
   const handleAddToCart = async (product: HttpTypes.StoreProduct) => {
@@ -273,6 +181,15 @@ export default function CartRecommendations({
               !variant?.manage_inventory ||
               variant?.allow_backorder ||
               (variant?.inventory_quantity || 0) > 0
+            const discountedPrice =
+              showDiscountBadge && cheapestPrice
+                ? convertToLocale({
+                    amount: Math.floor(
+                      cheapestPrice.calculated_price_number * 0.9
+                    ),
+                    currency_code: cheapestPrice.currency_code,
+                  })
+                : null
 
             return (
               <li key={product.id} className="flex flex-col">
@@ -282,11 +199,24 @@ export default function CartRecommendations({
                   className="group flex-1"
                 >
                   <div data-testid="product-wrapper">
-                    <Thumbnail
-                      thumbnail={product.thumbnail}
-                      images={product.images}
-                      size="full"
-                    />
+                    <div className="relative">
+                      {showDiscountBadge && (
+                        <div
+                          className="absolute top-2 left-2 z-10 px-2 py-1 text-xs font-bold text-black rounded shadow-lg animate-pulse"
+                          style={{
+                            background: "linear-gradient(135deg, #fbbf24, #f59e0b)",
+                            boxShadow: "0 0 12px rgba(251, 191, 36, 0.6)",
+                          }}
+                        >
+                          10% OFF
+                        </div>
+                      )}
+                      <Thumbnail
+                        thumbnail={product.thumbnail}
+                        images={product.images}
+                        size="full"
+                      />
+                    </div>
                     <div className="flex txt-compact-medium mt-4 justify-between">
                       <Text
                         className="text-ui-fg-subtle"
@@ -295,14 +225,31 @@ export default function CartRecommendations({
                         {product.title}
                       </Text>
                       <div className="flex items-center gap-x-2">
-                        {cheapestPrice && (
+                        {cheapestPrice && showDiscountBadge ? (
+                          <div className="flex flex-col items-end">
+                            <Text
+                              className="text-ui-fg-muted line-through text-sm"
+                              data-testid="original-price"
+                            >
+                              {cheapestPrice.calculated_price}
+                            </Text>
+                            {discountedPrice && (
+                              <Text
+                                className="text-green-600 font-semibold"
+                                data-testid="discounted-price"
+                              >
+                                {discountedPrice}
+                              </Text>
+                            )}
+                          </div>
+                        ) : cheapestPrice ? (
                           <Text
                             className="text-ui-fg-base font-semibold"
                             data-testid="price"
                           >
                             {cheapestPrice.calculated_price}
                           </Text>
-                        )}
+                        ) : null}
                       </div>
                     </div>
                   </div>

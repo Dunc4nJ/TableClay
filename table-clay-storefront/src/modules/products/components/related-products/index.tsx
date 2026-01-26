@@ -2,151 +2,89 @@
 
 import { useState, useEffect } from "react"
 import { HttpTypes } from "@medusajs/types"
-import Product from "../product-preview"
+import LocalizedClientLink from "@modules/common/components/localized-client-link"
+import Thumbnail from "@modules/products/components/thumbnail"
+import { Text } from "@medusajs/ui"
+import { getProductPrice } from "@lib/util/get-product-price"
+import { convertToLocale } from "@lib/util/money"
 import repeat from "@lib/util/repeat"
 import SkeletonProductPreview from "@modules/skeletons/components/skeleton-product-preview"
 
 type RelatedProductsProps = {
   product: HttpTypes.StoreProduct
-  countryCode: string
   region: HttpTypes.StoreRegion
+  cartProductIds?: string[]
+  showDiscountBadge?: boolean
 }
 
 /**
- * RelatedProducts - Smart selection of 3 related products:
- * 1. Global bestseller (top-selling product)
- * 2. Random product from same collection (if available)
- * 3. Random product from different collection
- *
- * Products refresh randomly on each page load.
+ * RelatedProducts - Fetches curated recommendations for a product detail page.
  */
 export default function RelatedProducts({
   product,
-  countryCode,
   region,
+  cartProductIds,
+  showDiscountBadge = false,
 }: RelatedProductsProps) {
   const [products, setProducts] = useState<HttpTypes.StoreProduct[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  const cartProductIdsKey = (cartProductIds || []).join(",")
+
   useEffect(() => {
-    async function fetchSmartRelatedProducts() {
+    async function fetchRecommendations() {
       try {
         setIsLoading(true)
         setError(null)
 
-        const results: HttpTypes.StoreProduct[] = []
-        const usedIds = new Set([product.id])
         const apiKey = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || ""
         const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
 
-        // Helper to fetch products
-        const fetchProducts = async (params: URLSearchParams): Promise<HttpTypes.StoreProduct[]> => {
-          params.set("region_id", region.id)
-          params.set("is_giftcard", "false")
-          params.set("fields", "*variants.calculated_price,+variants.inventory_quantity,*variants.images")
-
-          const response = await fetch(
-            `${baseUrl}/store/products?${params.toString()}`,
-            {
-              headers: { "x-publishable-api-key": apiKey },
-              credentials: "include",
-              cache: "no-store", // Disable caching for random selection
-            }
-          )
-
-          if (!response.ok) {
-            throw new Error(`Failed to fetch products: ${response.status}`)
-          }
-
-          const data = await response.json()
-          return data.products || []
+        if (!baseUrl) {
+          throw new Error("Missing backend URL")
         }
 
-        // 1. GLOBAL BESTSELLER - Try to get the top-selling product
-        try {
-          const bestsellerResponse = await fetch(
-            `${baseUrl}/store/products/bestseller?region_id=${region.id}`,
-            {
-              headers: { "x-publishable-api-key": apiKey },
-              credentials: "include",
-              // Bestseller can be cached for 5 minutes (acceptable staleness)
-              next: { revalidate: 300 },
-            }
-          )
+        const excludeIds = [product.id, ...(cartProductIds || [])]
+          .filter(Boolean)
+          .filter((value, index, array) => array.indexOf(value) === index)
+          .join(",")
 
-          if (bestsellerResponse.ok) {
-            const data = await bestsellerResponse.json()
-            if (data.product && !usedIds.has(data.product.id)) {
-              results.push(data.product)
-              usedIds.add(data.product.id)
-            }
-          }
-        } catch (e) {
-          // Bestseller endpoint may not exist yet, continue silently
-          console.debug("Bestseller endpoint not available, using fallback")
-        }
-
-        // 2. SAME COLLECTION RANDOM - Get a random product from current product's collection
+        const url = new URL(`${baseUrl}/store/products/recommended`)
+        url.searchParams.set("region_id", region.id)
         if (product.collection_id) {
-          const sameCollectionParams = new URLSearchParams()
-          sameCollectionParams.set("collection_id[]", product.collection_id)
-          sameCollectionParams.set("limit", "50")
-
-          const sameCollectionProducts = await fetchProducts(sameCollectionParams)
-          const eligibleSameCollection = sameCollectionProducts.filter(
-            (p) => !usedIds.has(p.id)
-          )
-
-          if (eligibleSameCollection.length > 0) {
-            const randomIndex = Math.floor(Math.random() * eligibleSameCollection.length)
-            const randomProduct = eligibleSameCollection[randomIndex]
-            results.push(randomProduct)
-            usedIds.add(randomProduct.id)
-          }
+          url.searchParams.set("collection_id", product.collection_id)
+        }
+        if (excludeIds) {
+          url.searchParams.set("exclude_product_ids", excludeIds)
         }
 
-        // 3. DIFFERENT COLLECTION RANDOM - Get a random product from any other collection
-        const allProductsParams = new URLSearchParams()
-        allProductsParams.set("limit", "100")
+        const response = await fetch(url.toString(), {
+          headers: { "x-publishable-api-key": apiKey },
+          credentials: "include",
+          cache: "no-store",
+        })
 
-        const allProducts = await fetchProducts(allProductsParams)
-
-        // Filter for products from different collections
-        const differentCollectionProducts = allProducts.filter(
-          (p) => !usedIds.has(p.id) && p.collection_id !== product.collection_id
-        )
-
-        if (differentCollectionProducts.length > 0) {
-          const randomIndex = Math.floor(Math.random() * differentCollectionProducts.length)
-          const randomProduct = differentCollectionProducts[randomIndex]
-          results.push(randomProduct)
-          usedIds.add(randomProduct.id)
+        if (!response.ok) {
+          throw new Error(`Failed to fetch recommendations: ${response.status}`)
         }
 
-        // 4. FALLBACK - Fill remaining slots with any available products
-        const remainingProducts = allProducts.filter((p) => !usedIds.has(p.id))
-
-        while (results.length < 3 && remainingProducts.length > 0) {
-          const randomIndex = Math.floor(Math.random() * remainingProducts.length)
-          const randomProduct = remainingProducts.splice(randomIndex, 1)[0]
-          results.push(randomProduct)
-          usedIds.add(randomProduct.id)
-        }
-
-        setProducts(results.slice(0, 3))
+        const data = await response.json()
+        setProducts(data.products || [])
       } catch (err) {
         console.error("Error fetching related products:", err)
-        setError(err instanceof Error ? err.message : "Failed to load related products")
+        setError(
+          err instanceof Error ? err.message : "Failed to load recommendations"
+        )
       } finally {
         setIsLoading(false)
       }
     }
 
     if (product?.id && region?.id) {
-      fetchSmartRelatedProducts()
+      fetchRecommendations()
     }
-  }, [product.id, product.collection_id, region?.id])
+  }, [product?.id, product?.collection_id, region?.id, cartProductIdsKey])
 
   // Loading state - show 3 skeletons
   if (isLoading) {
@@ -191,11 +129,79 @@ export default function RelatedProducts({
 
         {/* Product grid - 3 columns centered */}
         <ul className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 max-w-4xl mx-auto">
-          {products.map((relatedProduct) => (
-            <li key={relatedProduct.id}>
-              <Product region={region} product={relatedProduct} />
-            </li>
-          ))}
+          {products.map((relatedProduct) => {
+            const { cheapestPrice } = getProductPrice({ product: relatedProduct })
+            const showDiscount = Boolean(showDiscountBadge && cheapestPrice)
+            const discountedAmount = showDiscount
+              ? Math.floor(cheapestPrice!.calculated_price_number * 0.9)
+              : null
+
+            return (
+              <li key={relatedProduct.id} className="flex flex-col">
+                <LocalizedClientLink
+                  href={`/products/${relatedProduct.handle}`}
+                  className="group flex-1"
+                >
+                  <div data-testid="product-wrapper" className="relative">
+                    {showDiscountBadge && (
+                      <div
+                        className="absolute top-2 left-2 z-10 px-2 py-1 text-xs font-bold text-black rounded shadow-lg"
+                        style={{
+                          background: "linear-gradient(135deg, #fbbf24, #f59e0b)",
+                          boxShadow: "0 0 12px rgba(251, 191, 36, 0.6)",
+                          animation:
+                            "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+                        }}
+                      >
+                        10% OFF
+                      </div>
+                    )}
+                    <Thumbnail
+                      thumbnail={relatedProduct.thumbnail}
+                      images={relatedProduct.images}
+                      size="full"
+                    />
+                    <div className="flex txt-compact-medium mt-4 justify-between">
+                      <Text
+                        className="text-ui-fg-subtle"
+                        data-testid="product-title"
+                      >
+                        {relatedProduct.title}
+                      </Text>
+                      <div className="flex flex-col items-end gap-1">
+                        {cheapestPrice && showDiscount ? (
+                          <>
+                            <Text
+                              className="text-ui-fg-muted line-through text-sm"
+                              data-testid="original-price"
+                            >
+                              {cheapestPrice.calculated_price}
+                            </Text>
+                            <Text
+                              className="text-green-600 font-semibold"
+                              data-testid="discounted-price"
+                            >
+                              {convertToLocale({
+                                amount: discountedAmount || 0,
+                                currency_code: cheapestPrice.currency_code,
+                              })}
+                            </Text>
+                          </>
+                        ) : cheapestPrice ? (
+                          <Text
+                            className="text-ui-fg-base font-semibold"
+                            data-testid="price"
+                          >
+                            {cheapestPrice.calculated_price}
+                          </Text>
+                        ) : null}
+                      </div>
+                    </div>
+                  </div>
+                </LocalizedClientLink>
+              </li>
+            )
+          })}
         </ul>
       </div>
     </section>

@@ -13,6 +13,7 @@ import {
   removeCartId,
   setCartId,
 } from "./cookies"
+import { syncAdditionalItemDiscount } from "./discount-sync"
 import { getRegion } from "./regions"
 import { getLocale } from "@lib/data/locale-actions"
 
@@ -182,6 +183,8 @@ export async function addToCart({
 
       const fulfillmentCacheTag = await getCacheTag("fulfillment")
       revalidateTag(fulfillmentCacheTag)
+
+      await syncAdditionalItemDiscount()
     })
     .catch(medusaError)
 }
@@ -215,6 +218,8 @@ export async function updateLineItem({
 
       const fulfillmentCacheTag = await getCacheTag("fulfillment")
       revalidateTag(fulfillmentCacheTag)
+
+      await syncAdditionalItemDiscount()
     })
     .catch(medusaError)
 }
@@ -242,6 +247,8 @@ export async function deleteLineItem(lineId: string) {
 
       const fulfillmentCacheTag = await getCacheTag("fulfillment")
       revalidateTag(fulfillmentCacheTag)
+
+      await syncAdditionalItemDiscount()
     })
     .catch(medusaError)
 }

@@ -3,6 +3,7 @@
 import { sdk } from "@lib/config"
 import { revalidateTag } from "next/cache"
 import { getCacheOptions, getCacheTag, getCartId } from "./cookies"
+import { syncAdditionalItemDiscount } from "./discount-sync"
 
 // Types for bundle data
 export type BundleItemVariant = {
@@ -171,6 +172,8 @@ export async function addBundleToCart(
     const fulfillmentCacheTag = await getCacheTag("fulfillment")
     revalidateTag(fulfillmentCacheTag)
 
+    await syncAdditionalItemDiscount()
+
     return response
   } catch (error) {
     console.error("Error adding bundle to cart:", error)
@@ -213,6 +216,8 @@ export async function removeBundleFromCart(
 
     const fulfillmentCacheTag = await getCacheTag("fulfillment")
     revalidateTag(fulfillmentCacheTag)
+
+    await syncAdditionalItemDiscount()
 
     return response
   } catch (error) {
