@@ -20,23 +20,10 @@ const DEFAULT_STORE_PRODUCT_FIELDS = [
   "discountable",
   "thumbnail",
   "collection_id",
-  "type_id",
-  "weight",
-  "length",
-  "height",
-  "width",
-  "hs_code",
-  "origin_country",
-  "mid_code",
-  "material",
   "created_at",
   "updated_at",
-  "*type",
-  "*collection",
-  "*tags",
-  "*images",
-  "*variants",
-  "*variants.options",
+  "images",
+  "variants",
 ]
 
 const parseStoredOrder = (value: string | null): string[] => {
@@ -229,7 +216,7 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
     const { data: products = [] } = await query.graph(
       {
         entity: "product",
-        fields: [...DEFAULT_STORE_PRODUCT_FIELDS, "*variants.calculated_price"],
+        fields: [...DEFAULT_STORE_PRODUCT_FIELDS, "variants.calculated_price"],
         filters: {
           id: topProductIds,
           status: "published",
