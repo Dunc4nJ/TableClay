@@ -41,8 +41,9 @@ export default function DiscountRetrievalButton() {
   }, [])
 
   const handleOpenForm = () => {
-    if (typeof window !== "undefined" && window.omnisend) {
-      window.omnisend.push(["forms", "teaser", "open", OMNISEND_FORM_ID])
+    if (typeof window !== "undefined") {
+      window.omnisend = window.omnisend || []
+      window.omnisend.push(["openForm", OMNISEND_FORM_ID])
     }
   }
 
