@@ -2,8 +2,6 @@ import type {
   SubscriberArgs,
   SubscriberConfig,
 } from "@medusajs/framework"
-import { NEWSLETTER_MODULE } from "../modules/newsletter"
-import type NewsletterModuleService from "../modules/newsletter/service"
 import { OMNISEND_MODULE } from "../modules/omnisend"
 import type OmnisendModuleService from "../modules/omnisend/service"
 import type { OmnisendOrderLineItem, OmnisendAddress } from "../modules/omnisend/types"
@@ -135,63 +133,6 @@ export default async function orderPlacedHandler({
   } catch (error) {
     // Log error but do NOT re-throw - OmniSend failure should not block order placement
     console.error(`Failed to send OmniSend order placed event for order #${order.display_id}:`, error)
-  }
-
-  // Track newsletter discount code usage
-  // Only track if this order has a discount applied
-  if (order.discount_total && order.discount_total > 0) {
-    try {
-      const newsletterService: NewsletterModuleService = container.resolve(NEWSLETTER_MODULE)
-
-      // Query order with shipping method adjustments to find applied promotion codes
-      const { data: [orderWithAdjustments] } = await query.graph({
-        entity: "order",
-        fields: [
-          "id",
-          "shipping_methods.adjustments.code",
-          "items.adjustments.code",
-        ],
-        filters: {
-          id: data.id,
-        },
-      })
-
-      // Collect all promotion codes from adjustments
-      const appliedCodes = new Set<string>()
-
-      // Check shipping method adjustments (where FREESHIP codes apply)
-      const shippingMethods = (orderWithAdjustments?.shipping_methods || []) as Array<{
-        adjustments?: Array<{ code?: string }>
-      }>
-      for (const method of shippingMethods) {
-        for (const adj of method.adjustments || []) {
-          if (adj.code && adj.code.startsWith("FREESHIP-")) {
-            appliedCodes.add(adj.code)
-          }
-        }
-      }
-
-      // Also check item adjustments (in case code was applied to items)
-      const orderItems = (orderWithAdjustments?.items || []) as Array<{
-        adjustments?: Array<{ code?: string }>
-      }>
-      for (const item of orderItems) {
-        for (const adj of item.adjustments || []) {
-          if (adj.code && adj.code.startsWith("FREESHIP-")) {
-            appliedCodes.add(adj.code)
-          }
-        }
-      }
-
-      // Mark each applied FREESHIP code as used
-      for (const code of appliedCodes) {
-        await newsletterService.markDiscountCodeUsed(code)
-        console.log(`Marked newsletter discount code ${code} as used for order #${order.display_id}`)
-      }
-    } catch (discountError) {
-      // Don't fail the order if discount tracking fails - just log it
-      console.warn("Failed to track newsletter discount code usage:", discountError)
-    }
   }
 }
 

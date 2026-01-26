@@ -76,10 +76,6 @@ module.exports = defineConfig({
         api_key: process.env.OMNISEND_API_KEY,
       },
     },
-    // Custom Newsletter Module for subscriber management
-    {
-      resolve: "./src/modules/newsletter",
-    },
     // Custom Bundle Module for product bundling
     {
       resolve: "./src/modules/bundle",

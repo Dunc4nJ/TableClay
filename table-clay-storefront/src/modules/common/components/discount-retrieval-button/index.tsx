@@ -1,20 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
-import dynamic from "next/dynamic"
-import { useLocalStorageExpiry } from "@lib/hooks/use-local-storage"
-import {
-  NEWSLETTER_DISMISSED_KEY,
-  NEWSLETTER_SUBSCRIBED_KEY,
-} from "../newsletter-modal"
-
-// Dynamic import to prevent caching issues
-const NewsletterModal = dynamic(() => import("../newsletter-modal"), {
-  ssr: false,
-})
-
-const DISMISS_DURATION_MS = 30 * 24 * 60 * 60 * 1000 // 30 days
-const SUBSCRIBE_DURATION_MS = 365 * 24 * 60 * 60 * 1000 // 1 year
+import { useState, useEffect } from "react"
 
 /**
  * Gift icon component with explicit centering
@@ -41,84 +27,42 @@ function GiftIcon({ className }: { className?: string }) {
   )
 }
 
+const OMNISEND_FORM_ID = "6976a0a234d1fec67da55880"
+
 /**
- * Floating button that appears after user dismisses the newsletter popup
- * but hasn't subscribed yet. Allows them to retrieve the discount code
- * by reopening the newsletter modal.
- *
- * Positioned in the bottom-right corner with pulse animation
+ * Floating gift button that triggers the Omnisend newsletter form.
+ * Always visible in the bottom-right corner with pulse animation.
  */
 export default function DiscountRetrievalButton() {
-  const [showModal, setShowModal] = useState(false)
   const [mounted, setMounted] = useState(false)
 
-  // Track if modal was opened - keeps it mounted until explicitly closed
-  // This prevents unmounting during subscription flow
-  const modalWasOpenedRef = useRef(false)
-
-  // Check localStorage states (same durations as newsletter modal)
-  const [wasDismissed] = useLocalStorageExpiry(
-    NEWSLETTER_DISMISSED_KEY,
-    DISMISS_DURATION_MS
-  )
-  const [wasSubscribed] = useLocalStorageExpiry(
-    NEWSLETTER_SUBSCRIBED_KEY,
-    SUBSCRIBE_DURATION_MS
-  )
-
-  // Handle hydration - only show after client mount
   useEffect(() => {
     setMounted(true)
   }, [])
 
-  // Track when modal is opened
-  useEffect(() => {
-    if (showModal) {
-      modalWasOpenedRef.current = true
+  const handleOpenForm = () => {
+    if (typeof window !== "undefined" && window.omnisend) {
+      window.omnisend.push(["forms", "teaser", "open", OMNISEND_FORM_ID])
     }
-  }, [showModal])
-
-  const handleOpenModal = () => {
-    setShowModal(true)
   }
 
-  const handleCloseModal = () => {
-    setShowModal(false)
-    modalWasOpenedRef.current = false
-  }
-
-  // Determine if button should be visible
-  // Hide button if: not mounted, not dismissed, or already subscribed (and modal not open)
-  const shouldShowButton = mounted && wasDismissed && !wasSubscribed
-
-  // Keep modal mounted if it was opened, even if wasSubscribed changes
-  // This allows user to see and copy their discount code
-  const shouldRenderModal = showModal || modalWasOpenedRef.current
-
-  // Don't render anything during SSR
+  // Don't render during SSR
   if (!mounted) {
     return null
   }
 
   return (
-    <>
-      {shouldShowButton && (
-        <button
-          onClick={handleOpenModal}
-          className="fixed bottom-5 right-5 z-20 w-14 h-14 rounded-full bg-brand-800 hover:bg-brand-900 text-white shadow-lg grid place-items-center transition-colors duration-200 hover:scale-105 animate-pulse-ring"
-          aria-label="Get discount code"
-          title="Get your free shipping code"
-          style={{
-            display: "grid",
-            placeItems: "center",
-          }}
-        >
-          <GiftIcon className="w-6 h-6" />
-        </button>
-      )}
-      {shouldRenderModal && (
-        <NewsletterModal forceOpen={showModal} onClose={handleCloseModal} />
-      )}
-    </>
+    <button
+      onClick={handleOpenForm}
+      className="fixed bottom-5 right-5 z-20 w-14 h-14 rounded-full bg-brand-800 hover:bg-brand-900 text-white shadow-lg grid place-items-center transition-colors duration-200 hover:scale-105 animate-pulse-ring"
+      aria-label="Get discount code"
+      title="Get your free shipping code"
+      style={{
+        display: "grid",
+        placeItems: "center",
+      }}
+    >
+      <GiftIcon className="w-6 h-6" />
+    </button>
   )
 }
