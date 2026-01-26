@@ -4,6 +4,10 @@ import { useEffect, useRef } from "react"
 import { HttpTypes } from "@medusajs/types"
 import { generateEventId, pushEcommerceEvent } from "@lib/analytics/events"
 import { trackOmnisendEvent } from "@lib/analytics/omnisend"
+import {
+  buildAbandonedCheckoutURL,
+  formatOmnisendLineItems,
+} from "@lib/analytics/omnisend-helpers"
 
 type TrackInitiateCheckoutProps = {
   cart: HttpTypes.StoreCart
@@ -46,11 +50,14 @@ export default function TrackInitiateCheckout({
       },
     })
 
-    // OmniSend started checkout event
-    trackOmnisendEvent("$startedCheckout", {
-      $value: (cart.total ?? 0) / 100,
-      $currency: currency,
-      $abandonedCheckoutURL: typeof window !== "undefined" ? `${window.location.origin}/cart` : undefined,
+    // OmniSend started checkout event with full cart data
+    const countryCode = cart.region?.countries?.[0]?.iso_2 || "us"
+    trackOmnisendEvent("started checkout", {
+      cartID: cart.id,
+      currency,
+      value: (cart.total ?? 0) / 100,
+      abandonedCheckoutURL: buildAbandonedCheckoutURL(cart.id, countryCode),
+      lineItems: formatOmnisendLineItems(cart, countryCode),
     })
   }, [cart])
 

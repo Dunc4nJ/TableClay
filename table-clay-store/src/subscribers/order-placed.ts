@@ -17,6 +17,9 @@ type OrderItem = {
   thumbnail?: string
   variant_id?: string
   product_id?: string
+  product?: {
+    handle?: string
+  }
 }
 
 type ShippingAddress = {
@@ -53,6 +56,7 @@ export default async function orderPlacedHandler({
       "discount_total",
       "currency_code",
       "items.*",
+      "items.product.handle",
       "shipping_address.*",
       "summary.pending_difference",
     ],
@@ -70,8 +74,11 @@ export default async function orderPlacedHandler({
   const shippingAddress = order.shipping_address as ShippingAddress | undefined
   const currencyCode = (order.currency_code || "USD").toUpperCase()
 
+  // Use environment variable for base URL, fallback to production URL
+  const storefrontBaseUrl = process.env.STOREFRONT_BASE_URL || "https://tableclay.com"
+
   // Order confirmation URL
-  const orderUrl = `https://tableclay.com/us/order/${order.id}/confirmed`
+  const orderUrl = `${storefrontBaseUrl}/us/order/${order.id}/confirmed`
 
   // Map line items to OmniSend format
   const lineItems: OmnisendOrderLineItem[] = items.map((item) => ({
@@ -82,8 +89,8 @@ export default async function orderPlacedHandler({
     price: item.unit_price / 100, // Convert from cents
     discount: 0,
     imageURL: item.thumbnail,
-    productURL: item.product_id
-      ? `https://tableclay.com/us/products/${item.product_id}`
+    productURL: item.product?.handle
+      ? `${storefrontBaseUrl}/us/products/${item.product.handle}`
       : undefined,
   }))
 

@@ -1,6 +1,6 @@
 "use client"
 
-import { addToCart, getOrSetCart } from "@lib/data/cart"
+import { addToCart, getOrSetCart, retrieveCart } from "@lib/data/cart"
 import { addBundleToCart, Bundle } from "@lib/data/bundles"
 import type { BundlePromoSettings } from "@lib/data/settings"
 import { useIntersection } from "@lib/hooks/use-in-view"
@@ -19,6 +19,11 @@ import { useRouter } from "next/navigation"
 import StickyCartBar from "@modules/products/components/sticky-cart-bar"
 import { generateEventId, pushEcommerceEvent } from "@lib/analytics/events"
 import { trackOmnisendEvent } from "@lib/analytics/omnisend"
+import {
+  buildAbandonedCheckoutURL,
+  formatOmnisendLineItems,
+  getBaseUrl,
+} from "@lib/analytics/omnisend-helpers"
 
 const PUBLIC_BACKEND_URL =
   process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || ""
@@ -263,14 +268,24 @@ export default function ProductActions({
           },
         })
 
-        // OmniSend add to cart event for bundle
-        trackOmnisendEvent("$addedToCart", {
-          $value: bundlePrice / 100,
-          $productID: selectedBundle.id,
-          $title: selectedBundle.name || "Bundle",
-          $quantity: 1,
-          $productURL: typeof window !== "undefined" ? window.location.href : undefined,
-        })
+        // OmniSend add to cart event for bundle - fetch updated cart for full lineItems
+        const updatedBundleCart = await retrieveCart()
+        if (updatedBundleCart) {
+          trackOmnisendEvent("added product to cart", {
+            cartID: updatedBundleCart.id,
+            currency,
+            value: (updatedBundleCart.total ?? 0) / 100,
+            abandonedCheckoutURL: buildAbandonedCheckoutURL(updatedBundleCart.id, countryCode),
+            lineItems: formatOmnisendLineItems(updatedBundleCart, countryCode),
+            addedItem: {
+              productID: selectedBundle.id,
+              title: selectedBundle.name || "Bundle",
+              quantity: 1,
+              price: bundlePrice / 100,
+              productURL: typeof window !== "undefined" ? window.location.href : undefined,
+            },
+          })
+        }
       } else {
         // Standard variant flow (single item)
         if (!selectedVariant?.id) return null
@@ -302,16 +317,26 @@ export default function ProductActions({
           },
         })
 
-        // OmniSend add to cart event for single variant
-        trackOmnisendEvent("$addedToCart", {
-          $value: price / 100,
-          $productID: product.id,
-          $variantID: selectedVariant.id,
-          $title: product.title || "Product",
-          $quantity: 1,
-          $imageURL: product.thumbnail || undefined,
-          $productURL: typeof window !== "undefined" ? window.location.href : undefined,
-        })
+        // OmniSend add to cart event - fetch updated cart for full lineItems
+        const updatedCart = await retrieveCart()
+        if (updatedCart) {
+          trackOmnisendEvent("added product to cart", {
+            cartID: updatedCart.id,
+            currency,
+            value: (updatedCart.total ?? 0) / 100,
+            abandonedCheckoutURL: buildAbandonedCheckoutURL(updatedCart.id, countryCode),
+            lineItems: formatOmnisendLineItems(updatedCart, countryCode),
+            addedItem: {
+              productID: product.id,
+              variantID: selectedVariant.id,
+              title: product.title || "Product",
+              quantity: 1,
+              price: price / 100,
+              imageURL: product.thumbnail || undefined,
+              productURL: typeof window !== "undefined" ? window.location.href : undefined,
+            },
+          })
+        }
       }
 
       router.push(`/${countryCode}/cart`)
