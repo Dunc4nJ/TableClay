@@ -83,7 +83,7 @@ export default function AdditionalItemBanner({
 
   return (
     <div
-      className="relative overflow-hidden"
+      className="sticky top-20 z-40 relative overflow-hidden"
       style={{
         background: "linear-gradient(90deg, #f59e0b, #fbbf24, #f59e0b)",
         backgroundSize: "200% 100%",

@@ -202,7 +202,7 @@ export default function CartRecommendations({
                     <div className="relative">
                       {showDiscountBadge && (
                         <div
-                          className="absolute top-2 right-2 z-10 flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-amber-950 shadow-[0_6px_18px_rgba(245,158,11,0.35)]"
+                          className="absolute top-2 right-2 z-10 flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-amber-950 ring-2 ring-amber-200/70 shadow-[0_8px_24px_rgba(245,158,11,0.5)] animate-[pulse_1.1s_ease-in-out_infinite]"
                           style={{
                             background:
                               "linear-gradient(135deg, #fde68a 0%, #fbbf24 45%, #f59e0b 100%)",
@@ -212,8 +212,7 @@ export default function CartRecommendations({
                             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-200 opacity-75" />
                             <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-amber-50" />
                           </span>
-                          <span>10% OFF EACH</span>
-                          <span className="ml-0.5 text-amber-900">*</span>
+                          <span>10% OFF!</span>
                         </div>
                       )}
                       <Thumbnail

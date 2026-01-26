@@ -35,14 +35,16 @@ const Summary = ({ cart }: SummaryProps) => {
       <DiscountCode cart={cart} />
       <Divider />
       <CartTotals totals={cart} promotions={cart.promotions} />
-      <LocalizedClientLink
-        href={"/checkout?step=" + step}
-        data-testid="checkout-button"
-      >
-        <Button className="w-full h-10 bg-brand-700 hover:bg-brand-800 text-white border-0">
-          Go to checkout
-        </Button>
-      </LocalizedClientLink>
+      <div className="hidden small:block">
+        <LocalizedClientLink
+          href={"/checkout?step=" + step}
+          data-testid="checkout-button"
+        >
+          <Button className="w-full h-10 bg-brand-700 hover:bg-brand-800 text-white border-0">
+            Go to checkout
+          </Button>
+        </LocalizedClientLink>
+      </div>
     </div>
   )
 }
