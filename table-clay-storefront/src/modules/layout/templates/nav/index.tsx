@@ -44,7 +44,6 @@ export default async function Nav() {
             >
               Shop All
             </LocalizedClientLink>
-            <NavDropdown label="Collections" items={COLLECTIONS} />
             <LocalizedClientLink
               href="/categories/pottery-wheel"
               className="text-ui-fg-subtle hover:text-brand-600 uppercase text-sm tracking-wider font-medium transition-colors"
@@ -97,9 +96,16 @@ export default async function Nav() {
             </LocalizedClientLink>
           </div>
 
-          {/* Right side: Account & Cart */}
+          {/* Right side: Collections, Community Creations, Account & Cart */}
           <div className="flex items-center gap-x-6 h-full flex-1 basis-0 justify-end">
             <div className="hidden small:flex items-center gap-x-6 h-full">
+              <NavDropdown label="Collections" items={COLLECTIONS} />
+              <LocalizedClientLink
+                href="/community-creations"
+                className="text-ui-fg-subtle hover:text-brand-600 uppercase text-sm tracking-wider font-medium transition-colors"
+              >
+                Community Creations
+              </LocalizedClientLink>
               <LocalizedClientLink
                 className="text-ui-fg-subtle hover:text-brand-600 uppercase text-sm tracking-wider font-medium transition-colors"
                 href="/account"

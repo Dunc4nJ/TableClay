@@ -152,6 +152,24 @@ const SideMenu = ({ regions, locales, currentLocale }: SideMenuProps) => {
                         </ul>
                       </div>
 
+                      {/* Community Section */}
+                      <div>
+                        <Text className="text-ui-fg-muted text-xs uppercase tracking-wider mb-3">
+                          Community
+                        </Text>
+                        <ul className="flex flex-col gap-3 items-start justify-start">
+                          <li>
+                            <LocalizedClientLink
+                              href="/community-creations"
+                              className="text-lg leading-6 hover:text-ui-fg-disabled"
+                              onClick={close}
+                            >
+                              Community Creations
+                            </LocalizedClientLink>
+                          </li>
+                        </ul>
+                      </div>
+
                       {/* Account Section */}
                       <ul className="flex flex-col gap-4 items-start justify-start">
                         {Object.entries(AccountMenuItems).map(([name, href]) => (

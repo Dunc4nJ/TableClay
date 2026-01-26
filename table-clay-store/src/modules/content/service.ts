@@ -1,5 +1,5 @@
 import { MedusaService } from "@medusajs/framework/utils"
-import { Review, ReviewImage, ProductReviewStats, FAQ } from "./models"
+import { Review, ReviewImage, ProductReviewStats, FAQ, CommunityCreation } from "./models"
 
 // Type definitions for better type safety
 type ReviewRecord = {
@@ -52,6 +52,33 @@ type FAQRecord = {
   updated_at: Date
 }
 
+type CommunityCreationRecord = {
+  id: string
+  title: string
+  creator_first_name: string
+  creator_last_initial: string
+  image_url: string
+  image_alt_text: string | null
+  display_date: Date
+  is_active: boolean
+  sort_order: number
+  metadata: Record<string, unknown> | null
+  created_at: Date
+  updated_at: Date
+}
+
+type CreateCommunityCreationInput = {
+  title: string
+  creator_first_name: string
+  creator_last_initial: string
+  image_url: string
+  image_alt_text?: string
+  display_date: Date
+  is_active?: boolean
+  sort_order?: number
+  metadata?: Record<string, unknown>
+}
+
 type CreateReviewInput = {
   product_id: string
   customer_name: string
@@ -84,6 +111,7 @@ class ContentModuleService extends MedusaService({
   ReviewImage,
   ProductReviewStats,
   Faq: FAQ,  // Use 'Faq' key to generate correct method names (listFaqs not listFAQS)
+  CommunityCreation,
 }) {
   // ===== REVIEWS =====
 
@@ -347,6 +375,60 @@ class ContentModuleService extends MedusaService({
       product_specific: productSpecific.length,
       active: active.length,
       inactive: inactive.length,
+    }
+  }
+
+  // ===== COMMUNITY CREATIONS =====
+
+  /**
+   * Store: List community creations with pagination (for infinite scroll)
+   */
+  async listCommunityCreationsForStore(options: {
+    limit?: number
+    offset?: number
+  }): Promise<{ creations: CommunityCreationRecord[]; count: number }> {
+    const { limit = 12, offset = 0 } = options
+    const creations = await this.listCommunityCreations(
+      { is_active: true },
+      { order: { display_date: "DESC" }, skip: offset, take: limit }
+    )
+    const allActive = await this.listCommunityCreations({ is_active: true })
+    return { creations, count: allActive.length }
+  }
+
+  /**
+   * Admin: List all community creations with optional filters
+   */
+  async listAllCommunityCreations(filters?: {
+    is_active?: boolean
+  }): Promise<CommunityCreationRecord[]> {
+    return this.listCommunityCreations(filters || {}, {
+      order: { display_date: "DESC" },
+    })
+  }
+
+  /**
+   * Admin: Create community creation
+   */
+  async createCommunityCreation(data: CreateCommunityCreationInput): Promise<CommunityCreationRecord> {
+    return this.createCommunityCreations(data)
+  }
+
+  /**
+   * Admin: Get community creation stats
+   */
+  async getCommunityCreationStats(): Promise<{
+    total: number
+    active: number
+    inactive: number
+  }> {
+    const all = await this.listCommunityCreations({})
+    const active = all.filter((c) => c.is_active)
+
+    return {
+      total: all.length,
+      active: active.length,
+      inactive: all.length - active.length,
     }
   }
 }
