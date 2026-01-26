@@ -14,8 +14,15 @@ const LineItemUnitPrice = ({
   currencyCode,
 }: LineItemUnitPriceProps) => {
   const quantity = item.quantity || 1
-  const total = item.total ?? 0
-  const originalTotal = item.original_total ?? total
+  // Use subtotal (tax-exclusive) to match product page prices
+  // Fall back to total for backwards compatibility with order line items
+  const itemWithSubtotal = item as HttpTypes.StoreCartLineItem & {
+    subtotal?: number
+    original_subtotal?: number
+  }
+  const total = itemWithSubtotal.subtotal ?? item.total ?? 0
+  const originalTotal =
+    itemWithSubtotal.original_subtotal ?? item.original_total ?? total
   const hasReducedPrice = total < originalTotal
 
   const percentageDiff = originalTotal

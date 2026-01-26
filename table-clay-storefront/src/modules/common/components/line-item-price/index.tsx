@@ -14,8 +14,17 @@ const LineItemPrice = ({
   style = "default",
   currencyCode,
 }: LineItemPriceProps) => {
-  const currentPrice = item.total ?? 0
-  const originalPrice = item.original_total ?? currentPrice
+  // Use subtotal (tax-exclusive) to match product page prices
+  // Fall back to total for backwards compatibility with order line items
+  const itemWithSubtotal = item as HttpTypes.StoreCartLineItem & {
+    subtotal?: number
+    original_subtotal?: number
+    tax_total?: number
+  }
+  const currentPrice = itemWithSubtotal.subtotal ?? item.total ?? 0
+  const originalPrice =
+    itemWithSubtotal.original_subtotal ?? item.original_total ?? currentPrice
+  const taxAmount = itemWithSubtotal.tax_total ?? 0
   const hasReducedPrice = currentPrice < originalPrice
 
   return (
@@ -55,6 +64,12 @@ const LineItemPrice = ({
             currency_code: currencyCode,
           })}
         </span>
+        {taxAmount > 0 && (
+          <span className="text-xs text-ui-fg-muted block">
+            +{convertToLocale({ amount: taxAmount, currency_code: currencyCode })}{" "}
+            tax
+          </span>
+        )}
       </div>
     </div>
   )
