@@ -54,19 +54,38 @@ const parseStoredOrder = (value: string | null): string[] => {
   }
 }
 
-const parseCsvParam = (value: string | string[] | undefined): string[] => {
+const parseCsvParam = (value: unknown): string[] => {
   if (!value) return []
   if (Array.isArray(value)) {
     return value
-      .flatMap((entry) => entry.split(","))
+      .flatMap((entry) =>
+        typeof entry === "string" ? entry.split(",") : []
+      )
       .map((entry) => entry.trim())
       .filter(Boolean)
   }
 
-  return value
-    .split(",")
-    .map((entry) => entry.trim())
-    .filter(Boolean)
+  if (typeof value === "string") {
+    return value
+      .split(",")
+      .map((entry) => entry.trim())
+      .filter(Boolean)
+  }
+
+  return []
+}
+
+const getQueryParam = (value: unknown): string | undefined => {
+  if (typeof value === "string") {
+    return value
+  }
+
+  if (Array.isArray(value)) {
+    const first = value.find((entry) => typeof entry === "string")
+    return typeof first === "string" ? first : undefined
+  }
+
+  return undefined
 }
 
 const pickRandom = <T,>(items: T[]): T | null => {
@@ -107,10 +126,12 @@ const buildPricingContext = async (
     currency_code: region.currency_code,
   }
 
-  if (req.auth_context?.actor_id) {
+  const authContext = (req as { auth_context?: { actor_id?: string } })
+    .auth_context
+  if (authContext?.actor_id) {
     const { data: customerGroups } = await refetchEntities({
       entity: "customer_group",
-      idOrFilter: { customers: { id: req.auth_context.actor_id } },
+      idOrFilter: { customers: { id: authContext.actor_id } },
       scope: req.scope,
       fields: ["id"],
     })
@@ -135,10 +156,7 @@ const buildPricingContext = async (
  */
 export async function GET(req: MedusaRequest, res: MedusaResponse) {
   try {
-    const regionParam = req.query.region_id
-    const regionId = Array.isArray(regionParam)
-      ? regionParam[0]
-      : regionParam
+    const regionId = getQueryParam(req.query.region_id)
 
     if (!regionId) {
       return res.status(400).json({
@@ -146,10 +164,7 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
       })
     }
 
-    const collectionParam = req.query.collection_id
-    const collectionId = Array.isArray(collectionParam)
-      ? collectionParam[0]
-      : collectionParam
+    const collectionId = getQueryParam(req.query.collection_id)
 
     const excludeIds = new Set(
       parseCsvParam(req.query.exclude_product_ids).filter(Boolean)
