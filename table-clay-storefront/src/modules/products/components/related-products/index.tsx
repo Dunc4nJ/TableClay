@@ -145,15 +145,18 @@ export default function RelatedProducts({
                   <div data-testid="product-wrapper" className="relative">
                     {showDiscountBadge && (
                       <div
-                        className="absolute top-2 left-2 z-10 px-2 py-1 text-xs font-bold text-black rounded shadow-lg"
+                        className="absolute top-2 right-2 z-10 flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-amber-950 shadow-[0_6px_18px_rgba(245,158,11,0.35)]"
                         style={{
-                          background: "linear-gradient(135deg, #fbbf24, #f59e0b)",
-                          boxShadow: "0 0 12px rgba(251, 191, 36, 0.6)",
-                          animation:
-                            "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+                          background:
+                            "linear-gradient(135deg, #fde68a 0%, #fbbf24 45%, #f59e0b 100%)",
                         }}
                       >
-                        10% OFF
+                        <span className="relative inline-flex h-1.5 w-1.5">
+                          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-200 opacity-75" />
+                          <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-amber-50" />
+                        </span>
+                        <span>10% OFF EACH</span>
+                        <span className="ml-0.5 text-amber-900">*</span>
                       </div>
                     )}
                     <Thumbnail

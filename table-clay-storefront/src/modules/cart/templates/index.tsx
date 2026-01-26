@@ -16,7 +16,11 @@ const CartTemplate = ({ cart }: { cart: HttpTypes.StoreCart | null }) => {
             <div className="flex flex-col bg-transparent py-6 gap-y-4">
               <ItemsTemplate cart={cart} />
               {cart.region && (
-                <CartRecommendations cart={cart} region={cart.region} />
+                <CartRecommendations
+                  cart={cart}
+                  region={cart.region}
+                  showDiscountBadge={Boolean(cart.items?.length)}
+                />
               )}
             </div>
             <div className="relative">
