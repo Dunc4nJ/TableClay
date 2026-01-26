@@ -43,7 +43,14 @@ export default function DiscountRetrievalButton() {
   const handleOpenForm = () => {
     if (typeof window !== "undefined") {
       window.omnisend = window.omnisend || []
+      
+      // Debug: log what we're doing
+      console.log("[Omnisend] Attempting to open form:", OMNISEND_FORM_ID)
+      console.log("[Omnisend] Queue before push:", window.omnisend)
+      
       window.omnisend.push(["openForm", OMNISEND_FORM_ID])
+      
+      console.log("[Omnisend] Queue after push:", window.omnisend)
     }
   }
 
