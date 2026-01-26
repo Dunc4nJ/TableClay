@@ -29,13 +29,14 @@ import type { BundlePromoSettings } from "@lib/data/settings"
 type ProductTemplateProps = {
   product: HttpTypes.StoreProduct
   region: HttpTypes.StoreRegion
-  countryCode: string
   images: HttpTypes.StoreProductImage[]
   bundles?: Bundle[]
   bundleSettings?: BundlePromoSettings
   reviews?: Review[]
   reviewStats?: ProductReviewStats | null
   faqs?: FAQ[]
+  cartProductIds?: string[]
+  showDiscountBadge?: boolean
 }
 
 /**
@@ -67,13 +68,14 @@ const ReviewSummaryBadge = ({
 const ProductTemplate: React.FC<ProductTemplateProps> = ({
   product,
   region,
-  countryCode,
   images,
   bundles = [],
   bundleSettings,
   reviews = [],
   reviewStats,
   faqs = [],
+  cartProductIds,
+  showDiscountBadge = false,
 }) => {
   const initialReviewCount = Math.min(3, reviews.length)
   const reviewsSectionRef = useRef<HTMLDivElement>(null)
@@ -189,7 +191,12 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
 
       {/* Related Products - Client component with internal loading state */}
       <div data-testid="related-products-container">
-        <RelatedProducts product={product} countryCode={countryCode} region={region} />
+        <RelatedProducts
+          product={product}
+          region={region}
+          cartProductIds={cartProductIds}
+          showDiscountBadge={showDiscountBadge}
+        />
       </div>
 
       {/* Reviews Section - Always shown with defaults */}

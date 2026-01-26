@@ -6,6 +6,7 @@ import { getBundlesForProduct } from "@lib/data/bundles"
 import { getProductReviews } from "@lib/data/reviews"
 import { getProductFAQs } from "@lib/data/faqs"
 import { getStoreSettings } from "@lib/data/settings"
+import { retrieveCart } from "@lib/data/cart"
 import ProductTemplate from "@modules/products/templates"
 import { HttpTypes } from "@medusajs/types"
 
@@ -125,24 +126,32 @@ export default async function ProductPage(props: Props) {
   const images = getImagesForVariant(pricedProduct, selectedVariantId) || []
 
   // Fetch bundles, reviews, FAQs, and store settings in parallel
-  const [bundles, reviewData, faqs, bundleSettings] = await Promise.all([
+  const [bundles, reviewData, faqs, bundleSettings, cart] = await Promise.all([
     getBundlesForProduct(pricedProduct.id),
     getProductReviews(pricedProduct.id),
     getProductFAQs(pricedProduct.id),
     getStoreSettings(),
+    retrieveCart(undefined, "id,items.product_id"),
   ])
+
+  const cartProductIds =
+    cart?.items
+      ?.map((item) => item.product_id)
+      .filter((id): id is string => Boolean(id)) || []
+  const hasCartItems = (cart?.items?.length || 0) > 0
 
   return (
     <ProductTemplate
       product={pricedProduct}
       region={region}
-      countryCode={params.countryCode}
       images={images as HttpTypes.StoreProductImage[]}
       bundles={bundles}
       bundleSettings={bundleSettings}
       reviews={reviewData.reviews}
       reviewStats={reviewData.stats}
       faqs={faqs}
+      cartProductIds={cartProductIds}
+      showDiscountBadge={hasCartItems}
     />
   )
 }
