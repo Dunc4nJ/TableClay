@@ -1,8 +1,7 @@
 "use server"
 
+import { sdk } from "@lib/config"
 import { getCartId } from "./cookies"
-
-const BACKEND_URL = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
 
 /**
  * Syncs the additional item discount based on cart state.
@@ -11,24 +10,21 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
 export async function syncAdditionalItemDiscount(): Promise<void> {
   try {
     const cartId = await getCartId()
-    if (!cartId || !BACKEND_URL) {
+    if (!cartId) {
       return
     }
 
-    const response = await fetch(
-      `${BACKEND_URL}/store/cart/additional-item-discount`,
+    const response = await sdk.client.fetch<{ success?: boolean }>(
+      "/store/cart/additional-item-discount",
       {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ cart_id: cartId }),
+        body: { cart_id: cartId },
         cache: "no-store",
       }
     )
 
-    if (!response.ok) {
-      console.error("Failed to sync additional item discount:", response.status)
+    if (response?.success === false) {
+      console.error("Failed to sync additional item discount")
     }
   } catch (error) {
     console.error("Error syncing additional item discount:", error)
@@ -42,24 +38,21 @@ export async function syncAdditionalItemDiscount(): Promise<void> {
 export async function removeAdditionalItemDiscount(): Promise<void> {
   try {
     const cartId = await getCartId()
-    if (!cartId || !BACKEND_URL) {
+    if (!cartId) {
       return
     }
 
-    const response = await fetch(
-      `${BACKEND_URL}/store/cart/additional-item-discount`,
+    const response = await sdk.client.fetch<{ success?: boolean }>(
+      "/store/cart/additional-item-discount",
       {
         method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ cart_id: cartId }),
+        body: { cart_id: cartId },
         cache: "no-store",
       }
     )
 
-    if (!response.ok) {
-      console.error("Failed to remove additional item discount:", response.status)
+    if (response?.success === false) {
+      console.error("Failed to remove additional item discount")
     }
   } catch (error) {
     console.error("Error removing additional item discount:", error)
