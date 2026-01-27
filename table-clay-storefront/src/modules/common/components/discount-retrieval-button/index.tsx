@@ -27,7 +27,7 @@ function GiftIcon({ className }: { className?: string }) {
   )
 }
 
-const OMNISEND_FORM_ID = "6976a0a234d1fec67da55880"
+const OMNISEND_FORM_ID = "6977fa882cc5b6b1e876aaf3"
 
 /**
  * Floating gift button that triggers the Omnisend newsletter form.
