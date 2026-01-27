@@ -144,39 +144,44 @@
 
 ## Current Marketing State
 
-### Active Channels
-- **Instagram:** @table.clay (primary visual channel)
-- **TikTok:** @table.clay (video content, DIY pottery)
-- **Email:** Omnisend (transactional + marketing)
-- **Website:** SEO potential not fully tapped
+### Stage: PRE-LAUNCH 🚀
 
-### Tracking & Analytics
-- TikTok Pixel installed
-- Stripe for payments
-- Omnisend for email analytics
+Currently in pre-launch phase — site is live but not actively marketed yet.
 
-### Traffic Sources (estimated)
-- Social (Instagram/TikTok): Primary driver
-- Organic search: Underutilized opportunity
-- Email: Transactional, nurture sequences TBD
-- Paid: TikTok ads (pixel installed)
+### Channels Ready
+- **Instagram:** @table.clay (set up, ready for content)
+- **TikTok:** @table.clay (set up, pixel installed)
+- **Email:** Omnisend (integrated, sequences TBD)
+- **Website:** Live at tableclay.com
+
+### Tracking & Analytics (Installed)
+- TikTok Pixel ✓
+- Stripe payments ✓
+- Omnisend email ✓
+- GA4: TBD
+
+### Traffic Sources
+- Currently: None (pre-launch)
+- Planned: Social-first strategy (Instagram/TikTok), then SEO
 
 ### Primary Conversion Goals
 1. Purchase (primary)
-2. Email signup (secondary)
-3. Community Creations submission (engagement)
+2. Email signup (secondary — build list pre-launch)
+3. Community Creations submission (engagement/UGC)
 
-### Current Challenges
-- [ ] SEO not fully optimized (opportunity for programmatic SEO)
-- [ ] Email sequences could be stronger (welcome, abandoned cart)
-- [ ] Product descriptions could be more compelling
-- [ ] No referral program yet (natural fit for artisan products)
+### Pre-Launch Priorities
+- [ ] Build email list before launch
+- [ ] Create launch content for Instagram/TikTok
+- [ ] Set up welcome email sequence
+- [ ] Optimize product descriptions for SEO
+- [ ] Plan launch campaign (consider Product Hunt for the Mini Wheel?)
+- [ ] Set up abandoned cart emails
 
-### What's Working
-- Strong product reviews (4.8-4.9★ ratings)
-- Custom Pet Mug generates emotional word-of-mouth
-- Mini Wheel attracts DIY/hobby segment
-- Visual aesthetic is Instagram-ready
+### Launch Assets Ready
+- Product photography ✓
+- Product reviews (seeded/imported) ✓
+- Collections organized ✓
+- Checkout flow working ✓
 
 ## Competitors & Alternatives
 
