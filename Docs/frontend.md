@@ -550,6 +550,11 @@ git push origin develop
 # Vercel auto-deploys from develop branch
 ```
 
+### Incident Playbook
+
+- Shared incident runbook: `Docs/incident-playbook.md`
+- Use this first for storefront outages involving Vercel middleware errors or Railway backend reachability.
+
 ---
 
 ## Environment Variables

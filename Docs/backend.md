@@ -431,6 +431,11 @@ railway ssh -- yarn medusa user -e email@example.com -p password
 railway ssh -- yarn medusa db:migrate
 ```
 
+### Incident Playbook
+
+- Shared incident runbook: `Docs/incident-playbook.md`
+- Use this first for: Vercel `MIDDLEWARE_INVOCATION_FAILED`, Railway `Application not found`, and storefront/backend connectivity incidents.
+
 ---
 
 ## Maintenance Scripts

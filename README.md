@@ -94,4 +94,5 @@ OMNISEND_API_KEY=
 ## Docs & runbooks
 - Backend details: `Docs/backend.md`
 - Storefront details: `Docs/frontend.md`
+- Incident response: `Docs/incident-playbook.md`
 - Project-wide instructions: `AGENTS.md`
