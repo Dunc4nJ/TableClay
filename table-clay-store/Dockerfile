@@ -31,12 +31,12 @@ RUN yarn build
 # Copy admin build to expected location
 RUN mkdir -p ./public && cp -r ./.medusa/server/public/admin ./public/admin
 
-# Expose port
-EXPOSE 9000
+# Expose Railway runtime port
+EXPOSE 8080
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:9000/health || exit 1
+  CMD sh -c 'wget --no-verbose --tries=1 --spider "http://localhost:${PORT:-8080}/health" || exit 1'
 
 # Run migrations then start server
 CMD ["sh", "-c", "yarn medusa db:migrate && yarn medusa start"]
