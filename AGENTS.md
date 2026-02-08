@@ -16,58 +16,203 @@ cd table-clay-storefront && yarn dev
 
 ---
 
-## Production URLs
+## Environment URLs
 
-| Service | URL |
-|---------|-----|
-| Backend API | https://tableclay-production.up.railway.app |
-| Admin Dashboard | https://tableclay-production.up.railway.app/app |
-| Storefront | https://tableclay.com |
+| Environment | Frontend | Backend | Git Trigger |
+|-------------|----------|---------|-------------|
+| **Production** | `tableclay.com` | `tableclay-production.up.railway.app` | Push to `develop` |
+| **Staging** | `*.vercel.app` (auto per branch) | `tableclay-staging.up.railway.app` | Push to `staging` (Railway) / any branch (Vercel) |
+| **Local** | `localhost:8000` | `localhost:9000` | N/A |
 
-**Deployment**: Push to `develop` → Railway auto-deploys backend, Vercel auto-deploys frontend.
+**Staging admin**: `https://tableclay-staging.up.railway.app/app` | `tableclayy@gmail.com`
+
+Stripe is in **test mode** on staging. All analytics, tracking, and email services are disabled.
+See `STAGING.md` for full env var details and setup history.
 
 ---
 
-## Beads Workflow (REQUIRED)
+## Development Workflow (REQUIRED)
 
-1. Read the current bead specification and implement accordingly.
-2. Run `./scripts/validate.sh all`.
-3. Push to GitHub (triggers Railway + Vercel deployments).
-4. Run `./scripts/monitor-deploy.sh` and wait for successful deploys.
-5. Verify backend changes using the Store API.
-6. Verify frontend changes by navigating to https://tableclay.com and confirming behavior.
-7. Only close the bead after verification succeeds. If verification fails, iterate and repeat this loop.
-8. When committing after validation, if unrelated files are modified, do not stop.
-   Stage only files relevant to the current bead, then commit and push.
+Every code change follows this sequence. Do not skip steps.
+
+### Step 1: Pick a task
+
+```bash
+br ready --json                    # List ready beads (highest priority, no blockers)
+bv --robot-priority                # Ranked tasks with impact scores
+```
+
+Read the bead specification. Understand acceptance criteria before writing code.
+
+### Step 2: Create a branch
+
+```bash
+git checkout develop
+git pull origin develop
+git checkout -b br-<ID>-<short-description>
+```
+
+Branch naming: `br-###-description` (e.g., `br-42-fix-cart-total`).
+
+### Step 3: Implement
+
+Write the code. Stage only files relevant to the current bead.
+If unrelated files are modified by other developers, do not stop -- continue with your task.
+
+### Step 4: Validate locally
+
+```bash
+./scripts/validate.sh all          # TypeScript + tests + build (both backend and frontend)
+./scripts/validate.sh quick        # TypeScript only (fastest, use during iteration)
+```
+
+Do NOT push until `validate.sh all` passes.
+
+### Step 5: Push and deploy to staging
+
+The deploy path depends on what changed:
+
+**Frontend-only changes:**
+```bash
+git push origin br-<ID>-<short-description>
+# Vercel auto-creates a preview URL pointing to the staging backend
+```
+
+**Backend changes (with or without frontend):**
+```bash
+# First: deploy backend to staging
+git checkout staging
+git pull origin staging
+git merge br-<ID>-<short-description>
+git push origin staging
+# Railway auto-deploys to staging
+
+# Then: push feature branch for Vercel preview
+git checkout br-<ID>-<short-description>
+git push origin br-<ID>-<short-description>
+```
+
+### Step 6: Wait for deploys
+
+```bash
+./scripts/monitor-deploy.sh        # Polls Railway + Vercel until both succeed
+```
+
+Or check manually:
+```bash
+railway status                     # Railway deployment state
+vercel list --cwd table-clay-storefront  # Latest Vercel deployment URL + state
+```
+
+### Step 7: Verify on staging
+
+**Backend verification** -- curl the staging API:
+```bash
+curl -s https://tableclay-staging.up.railway.app/health | jq .
+curl -s https://tableclay-staging.up.railway.app/store/products | jq '.products | length'
+```
+
+**Frontend verification** -- use agent-browser on the Vercel preview URL:
+```bash
+agent-browser open <VERCEL_PREVIEW_URL>
+agent-browser snapshot -i
+# Interact and verify acceptance criteria
+agent-browser screenshot screenshots/br-<ID>-<description>.png
+agent-browser close
+```
+
+If verification fails, fix the issue and repeat from Step 3.
+
+### Step 8: Promote to production
+
+```bash
+git checkout develop
+git pull origin develop
+git merge br-<ID>-<short-description>
+git push origin develop
+# Railway + Vercel auto-deploy to production
+```
+
+Wait for production deploys:
+```bash
+./scripts/monitor-deploy.sh
+```
+
+### Step 9: Production sanity check
+
+```bash
+curl -s https://tableclay-production.up.railway.app/health | jq .
+agent-browser open https://tableclay.com
+agent-browser snapshot -i
+agent-browser screenshot screenshots/br-<ID>-production.png
+agent-browser close
+```
+
+### Step 10: Close the bead
+
+```bash
+br close br-<ID> --reason "Verified: <what was confirmed>"
+```
+
+**NEVER close a bead until the change is VERIFIED working on production.**
+If code is written but unverified, update the bead with "Pending verification" instead.
+
 ---
 
+## Staging Environment
 
-### Pre-existing Bugs and Errors
-When you encounter bugs or errors that are **unrelated to the current task** or are **pre-existing in the codebase**:
-1. **Create a bead** for the issue using `bd create "BUG: <description>" -p 2 --type bug`
-2. **Do NOT attempt to fix** if it would distract from the current task
-3. **Document** what you observed in the bead description
-4. **Continue** with the original task
+### Catalog Refresh
 
-This ensures issues are captured for another developer to resolve without derailing current work.
+Staging catalog can be refreshed from production at any time:
 
-### CRITICAL: Verification Before Closing
-**NEVER close a bead until the fix/feature is VERIFIED to be working correctly.**
+```bash
+python scripts/clone-prod-to-staging.py              # Full clone (all tables)
+python scripts/clone-prod-to-staging.py --dry-run     # Preview without changes
+python scripts/clone-prod-to-staging.py --tables custom  # Reviews, FAQs, bundles only
+python scripts/clone-prod-to-staging.py --tables core    # Products, prices, categories only
+```
 
-- Do NOT close beads just because code was written and pushed
-- Do NOT close beads based on "should work" assumptions
-- Wait for deployment to complete and TEST the actual behavior
-- Ask the user to verify if you cannot test yourself
-- Only close after confirmation that the change works as expected
+The script copies products, categories, collections, reviews, FAQs, bundles, community creations, store settings, and sales tracking. Orders, customers, and auth data are NOT cloned. IDs are automatically remapped for staging.
 
-If you need to track that code is written but unverified, add a comment to the bead or update its description with "Pending verification" instead of closing it.
+### Stripe Test Cards
+
+Use these on staging/preview checkout:
+
+| Card | Number |
+|------|--------|
+| Success | `4242 4242 4242 4242` |
+| Decline | `4000 0000 0000 0002` |
+| 3D Secure | `4000 0025 0000 3155` |
+
+Expiry: any future date. CVC: any 3 digits. ZIP: any 5 digits.
+
+### More Details
+
+See `STAGING.md` for complete env var listings, Railway CLI context warnings, and setup history.
+
+---
+
+## Pre-existing Bugs
+
+When you encounter bugs **unrelated to the current task**:
+
+1. Create a bead: `br create "BUG: <description>" -p 2 --type bug`
+2. Do NOT attempt to fix -- it would distract from the current task
+3. Document what you observed in the bead description
+4. Continue with the original task
+
+---
 
 ## Pre-Push Validation (REQUIRED)
 
 ```bash
-./scripts/validate.sh all    # Full validation before any push
-./scripts/validate.sh quick  # Quick TypeScript check only
+./scripts/validate.sh all          # Full: TypeScript + tests + build (both projects)
+./scripts/validate.sh quick        # Quick: TypeScript only
+./scripts/validate.sh backend      # Backend only
+./scripts/validate.sh frontend     # Frontend only
 ```
+
+---
 
 ## Build Environment (Node vs Bun)
 
@@ -82,30 +227,16 @@ PATH=/usr/bin:$PATH npm run build
 
 ---
 
-## Playwright Session Cleanup
-
-If Playwright reports `browser already in use`, run the cleanup script to release the locked browser profile. Always run it after finishing a Playwright verification as well.
-
-```bash
-./scripts/cleanup-playwright.sh
-```
-
-Notes:
-- Defaults to a 60s wait before checking. Pass a custom wait in seconds, e.g. `./scripts/cleanup-playwright.sh 10`.
-- Matches the MCP Chrome profile by default. Override with `PLAYWRIGHT_PATTERN="your-pattern"`.
-
----
-
-## Key Gotchas & Fixes
+## Key Gotchas
 
 ### 1. Admin Widget Crashes
 **Problem**: Widget crashes with `Cannot read properties of undefined`
 **Fix**: Always use optional chaining for widget data:
 ```typescript
-// ❌ Bad
+// Bad
 const productId = data.product.id
 
-// ✅ Good
+// Good
 const productId = data?.product?.id
 if (!productId) return null
 ```
@@ -176,15 +307,24 @@ print(json.loads(urllib.request.urlopen(req).read()))
 
 ```
 TableClay/
-├── table-clay-store/        # Backend (Medusa)
-│   ├── src/api/             # Custom API routes
-│   ├── src/admin/widgets/   # Admin dashboard widgets
-│   └── src/modules/         # Custom modules
-├── table-clay-storefront/   # Frontend (Next.js 15)
-│   ├── src/app/             # App router pages
-│   ├── src/modules/         # UI components
-│   └── src/lib/data/        # Data fetching
-└── Docs/                    # Additional documentation
+├── table-clay-store/           # Backend (Medusa v2)
+│   ├── src/api/                # Custom API routes
+│   ├── src/admin/widgets/      # Admin dashboard widgets
+│   └── src/modules/            # Custom modules
+├── table-clay-storefront/      # Frontend (Next.js 15)
+│   ├── src/app/                # App router pages
+│   ├── src/modules/            # UI components
+│   └── src/lib/data/           # Data fetching
+├── scripts/                    # Automation scripts
+│   ├── validate.sh             # Pre-push validation
+│   ├── monitor-deploy.sh       # Deploy polling
+│   └── clone-prod-to-staging.py # Catalog sync
+├── Docs/                       # Documentation
+│   ├── backend.md              # API, modules, admin widgets
+│   ├── frontend.md             # Pages, components, data fetching
+│   └── incident-playbook.md    # Operational recovery runbooks
+├── STAGING.md                  # Staging env setup and details
+└── AGENTS.md                   # This file (symlinked to CLAUDE.md)
 ```
 
 ---
@@ -201,18 +341,13 @@ cd table-clay-storefront && yarn test
 
 ---
 
-## After Deploying Changes
-
-Update documentation to reflect current state:
-- `Docs/backend.md` - API endpoints, modules, admin widgets, env vars
-- `Docs/frontend.md` - Pages, components, styling, data fetching
-
----
-
 ## Resources
 
 - [Medusa Docs](https://docs.medusajs.com)
 - [Next.js Docs](https://nextjs.org/docs)
-- See `Docs/backend.md` and `Docs/frontend.md` for detailed documentation
+- `Docs/backend.md` -- Backend API endpoints, modules, admin widgets, env vars
+- `Docs/frontend.md` -- Frontend pages, components, styling, data fetching
+- `Docs/incident-playbook.md` -- Operational incident recovery steps
+- `STAGING.md` -- Full staging environment details and env var reference
 
-*Last updated: January 2026*
+*Last updated: February 2026*
