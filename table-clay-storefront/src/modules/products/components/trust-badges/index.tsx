@@ -3,6 +3,7 @@ import { clx } from "@medusajs/ui"
 interface Badge {
   icon: React.ReactNode
   label: string
+  detail: string
 }
 
 interface TrustBadgesProps {
@@ -10,6 +11,7 @@ interface TrustBadgesProps {
   size?: "sm" | "md" | "lg"
   className?: string
   badges?: Badge[]
+  shippingPolicyHref?: string
 }
 
 // Inline SVG icons to avoid lucide-react SSR issues
@@ -33,9 +35,21 @@ const ShieldIcon = ({ className = "w-5 h-5" }: { className?: string }) => (
 )
 
 const DEFAULT_BADGES: Badge[] = [
-  { icon: <TruckIcon className="w-5 h-5" />, label: "FAST SHIPPING" },
-  { icon: <RefreshIcon className="w-5 h-5" />, label: "30-DAY MONEY BACK" },
-  { icon: <ShieldIcon className="w-5 h-5" />, label: "SECURE CHECKOUT" },
+  {
+    icon: <TruckIcon className="w-5 h-5" />,
+    label: "Ships within 24 hours",
+    detail: "5-7 business day delivery",
+  },
+  {
+    icon: <RefreshIcon className="w-5 h-5" />,
+    label: "14-Day Returns",
+    detail: "Hassle-free return window",
+  },
+  {
+    icon: <ShieldIcon className="w-5 h-5" />,
+    label: "Damage Protection",
+    detail: "Free replacement if it arrives damaged",
+  },
 ]
 
 /**
@@ -48,6 +62,7 @@ const TrustBadges = ({
   size = "md",
   className = "",
   badges = DEFAULT_BADGES,
+  shippingPolicyHref,
 }: TrustBadgesProps) => {
   const sizeClasses = {
     sm: {
@@ -96,17 +111,29 @@ const TrustBadges = ({
           >
             <span className="text-amber-600">{badge.icon}</span>
           </span>
-          {/* ALL CAPS bold text */}
-          <span
-            className={clx(
-              "font-bold tracking-wide text-ui-fg-subtle",
-              currentSize.text
-            )}
-          >
-            {badge.label}
-          </span>
+          <div className="flex flex-col">
+            <span
+              className={clx(
+                "font-semibold text-ui-fg-base leading-tight",
+                currentSize.text
+              )}
+            >
+              {badge.label}
+            </span>
+            <span className="text-xs text-ui-fg-subtle leading-tight">
+              {badge.detail}
+            </span>
+          </div>
         </div>
       ))}
+      {shippingPolicyHref && (
+        <a
+          href={shippingPolicyHref}
+          className="text-sm text-amber-700 hover:text-amber-800 underline underline-offset-2 font-medium mt-1"
+        >
+          See full shipping policy
+        </a>
+      )}
     </div>
   )
 }
