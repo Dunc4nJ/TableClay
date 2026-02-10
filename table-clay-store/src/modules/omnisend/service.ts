@@ -262,7 +262,7 @@ class OmnisendModuleService {
    * Create or update a category in OmniSend
    */
   async createOrUpdateCategory(data: OmnisendCategory): Promise<void> {
-    await this.request("POST", "/categories", {
+    await this.request("POST", "/product-categories", {
       categoryID: data.categoryID,
       title: data.title,
     })
@@ -273,7 +273,7 @@ class OmnisendModuleService {
    * Delete a category from OmniSend
    */
   async deleteCategory(categoryId: string): Promise<void> {
-    await this.request("DELETE", `/categories/${categoryId}`)
+    await this.request("DELETE", `/product-categories/${categoryId}`)
     this.logger.info(`Deleted OmniSend category: ${categoryId}`)
   }
 
