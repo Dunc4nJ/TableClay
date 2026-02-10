@@ -50,7 +50,7 @@ export default function CommunityCreationsTemplate({
           </p>
           <div className="mt-6">
             <a
-              href="https://drive.google.com/drive/folders/1BN2_xR0kdGNEZDx1B1fQGg9V3-898bmU?usp=sharing"
+              href="https://forms.gle/mukkFFxxCTVuiRSf9"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center rounded-full bg-cream-100 px-6 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-brand-900 transition hover:bg-cream-200"
