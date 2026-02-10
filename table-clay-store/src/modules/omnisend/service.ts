@@ -5,6 +5,7 @@ import type {
   OmnisendEventOptions,
   OmnisendOrderProperties,
   OmnisendFulfillmentProperties,
+  OmnisendCategory,
   OmnisendApiError,
 } from "./types"
 
@@ -256,6 +257,54 @@ class OmnisendModuleService {
       properties,
       { eventVersion: "v2" }
     )
+  }
+  /**
+   * Create or update a category in OmniSend
+   */
+  async createOrUpdateCategory(data: OmnisendCategory): Promise<void> {
+    await this.request("POST", "/categories", {
+      categoryID: data.categoryID,
+      title: data.title,
+    })
+    this.logger.info(`Synced OmniSend category: ${data.title} (${data.categoryID})`)
+  }
+
+  /**
+   * Delete a category from OmniSend
+   */
+  async deleteCategory(categoryId: string): Promise<void> {
+    await this.request("DELETE", `/categories/${categoryId}`)
+    this.logger.info(`Deleted OmniSend category: ${categoryId}`)
+  }
+
+  /**
+   * Sync all Medusa product categories to OmniSend
+   * Accepts pre-fetched categories to avoid circular dependency on Modules
+   */
+  async syncAllCategories(
+    categories: { id: string; name: string }[]
+  ): Promise<{ synced: number; failed: number; errors: string[] }> {
+    let synced = 0
+    let failed = 0
+    const errors: string[] = []
+
+    for (const category of categories) {
+      try {
+        await this.createOrUpdateCategory({
+          categoryID: category.id,
+          title: category.name,
+        })
+        synced++
+      } catch (error) {
+        failed++
+        const msg = `Failed to sync category ${category.name}: ${error instanceof Error ? error.message : "Unknown error"}`
+        errors.push(msg)
+        this.logger.error(msg)
+      }
+    }
+
+    this.logger.info(`OmniSend category sync complete: ${synced} synced, ${failed} failed`)
+    return { synced, failed, errors }
   }
 }
 

@@ -117,6 +117,12 @@ export interface OmnisendFulfillmentProperties {
   fulfilledAt?: string
 }
 
+// Category types
+export interface OmnisendCategory {
+  categoryID: string
+  title: string
+}
+
 // API Response types
 export interface OmnisendApiError {
   error?: string
