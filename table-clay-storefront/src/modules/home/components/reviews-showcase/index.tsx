@@ -1,25 +1,20 @@
 "use client"
 
-import { Transition } from "@headlessui/react"
-import Image from "next/image"
 import { useCallback, useEffect, useRef, useState } from "react"
 import StarRating from "@modules/products/components/reviews-section/star-rating"
 import { formatReviewDate } from "@lib/data/review-types"
 import type { Review } from "@lib/data/review-types"
-
-const ROTATE_INTERVAL_MS = 4000
-const TRANSITION_MS = 300
 
 interface ReviewsShowcaseProps {
   reviews: Review[]
 }
 
 export default function ReviewsShowcase({ reviews }: ReviewsShowcaseProps) {
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const [isPaused, setIsPaused] = useState(false)
-  const [isVisible, setIsVisible] = useState(true)
   const [reduceMotion, setReduceMotion] = useState(false)
-  const transitionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [canScrollLeft, setCanScrollLeft] = useState(false)
+  const [canScrollRight, setCanScrollRight] = useState(false)
+  const [hasOverflow, setHasOverflow] = useState(false)
+  const trackRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)")
@@ -33,160 +28,161 @@ export default function ReviewsShowcase({ reviews }: ReviewsShowcaseProps) {
     }
   }, [])
 
-  useEffect(() => {
-    if (currentIndex >= reviews.length && reviews.length > 0) {
-      setCurrentIndex(0)
-    }
-  }, [currentIndex, reviews.length])
+  const updateScrollState = useCallback(() => {
+    const track = trackRef.current
 
-  const advanceReview = useCallback(() => {
-    if (reviews.length <= 1) {
+    if (!track) {
       return
     }
 
-    setIsVisible(false)
-
-    if (transitionTimeoutRef.current) {
-      clearTimeout(transitionTimeoutRef.current)
-    }
-
-    transitionTimeoutRef.current = setTimeout(() => {
-      setCurrentIndex((prev) => (prev + 1) % reviews.length)
-      setIsVisible(true)
-    }, TRANSITION_MS)
-  }, [reviews.length])
-
-  useEffect(() => {
-    if (reduceMotion || isPaused || reviews.length <= 1) {
-      return
-    }
-
-    const interval = setInterval(advanceReview, ROTATE_INTERVAL_MS)
-    return () => clearInterval(interval)
-  }, [advanceReview, isPaused, reduceMotion, reviews.length])
-
-  useEffect(() => {
-    return () => {
-      if (transitionTimeoutRef.current) {
-        clearTimeout(transitionTimeoutRef.current)
-      }
-    }
+    const maxScrollLeft = Math.max(0, track.scrollWidth - track.clientWidth)
+    setCanScrollLeft(track.scrollLeft > 4)
+    setCanScrollRight(track.scrollLeft < maxScrollLeft - 4)
+    setHasOverflow(track.scrollWidth > track.clientWidth + 4)
   }, [])
+
+  useEffect(() => {
+    updateScrollState()
+    const track = trackRef.current
+
+    if (!track) {
+      return
+    }
+
+    const handleScroll = () => updateScrollState()
+    track.addEventListener("scroll", handleScroll, { passive: true })
+
+    const resizeObserver =
+      typeof ResizeObserver !== "undefined"
+        ? new ResizeObserver(() => updateScrollState())
+        : null
+
+    if (resizeObserver) {
+      resizeObserver.observe(track)
+    }
+
+    window.addEventListener("resize", updateScrollState)
+
+    return () => {
+      track.removeEventListener("scroll", handleScroll)
+      resizeObserver?.disconnect()
+      window.removeEventListener("resize", updateScrollState)
+    }
+  }, [reviews.length, updateScrollState])
+
+  const scrollByCard = useCallback(
+    (direction: "left" | "right") => {
+      const track = trackRef.current
+
+      if (!track) {
+        return
+      }
+
+      const firstCard = track.querySelector<HTMLElement>("[data-review-card]")
+      const gap = Number.parseFloat(getComputedStyle(track).gap || "16")
+      const step = firstCard ? firstCard.offsetWidth + gap : track.clientWidth * 0.85
+      const left = direction === "right" ? step : -step
+
+      track.scrollBy({
+        left,
+        behavior: reduceMotion ? "auto" : "smooth",
+      })
+    },
+    [reduceMotion]
+  )
 
   if (reviews.length === 0) {
     return null
   }
 
-  const currentReview = reviews[currentIndex]
-  const displayDate = formatReviewDate(currentReview.display_date)
-  const reviewImages = (currentReview.images ?? []).filter(
-    (image) => image?.url
-  )
-  const hasImages = reviewImages.length > 0
-  const visibleImages = reviewImages.slice(0, 3)
-  const remainingImages = reviewImages.length - visibleImages.length
-  const enterClass = reduceMotion ? "" : "transition duration-500 ease-out"
-  const enterFromClass = reduceMotion ? "" : "opacity-0 translate-y-2"
-  const enterToClass = reduceMotion ? "" : "opacity-100 translate-y-0"
-  const leaveClass = reduceMotion ? "" : "transition duration-300 ease-in"
-  const leaveFromClass = reduceMotion ? "" : "opacity-100 translate-y-0"
-  const leaveToClass = reduceMotion ? "" : "opacity-0 -translate-y-2"
-
   return (
     <section className="bg-cream-100 py-12 sm:py-16">
-      <div className="content-container">
-        <div className="text-center">
+      <div className="content-container relative">
+        <div className="text-center mb-8">
           <h2 className="font-display text-3xl sm:text-4xl text-ui-fg-base mb-6">
             What Our Customers Say
           </h2>
+        </div>
 
-          <div className="mx-auto max-w-2xl">
-            <div
-              className="rounded-3xl border border-cream-200 bg-cream-50/80 px-6 sm:px-10 py-8 shadow-sm"
-              onMouseEnter={() => setIsPaused(true)}
-              onMouseLeave={() => setIsPaused(false)}
-              onFocus={() => setIsPaused(true)}
-              onBlur={() => setIsPaused(false)}
+        {hasOverflow ? (
+          <>
+            <button
+              type="button"
+              onClick={() => scrollByCard("left")}
+              disabled={!canScrollLeft}
+              className="hidden md:flex absolute left-1 top-1/2 z-10 h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-cream-300 bg-cream-50/95 text-ui-fg-base shadow-sm transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-40"
+              aria-label="Scroll reviews left"
             >
-              <Transition
-                appear
-                show={isVisible}
-                enter={enterClass}
-                enterFrom={enterFromClass}
-                enterTo={enterToClass}
-                leave={leaveClass}
-                leaveFrom={leaveFromClass}
-                leaveTo={leaveToClass}
+              <span aria-hidden="true">←</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollByCard("right")}
+              disabled={!canScrollRight}
+              className="hidden md:flex absolute right-1 top-1/2 z-10 h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-cream-300 bg-cream-50/95 text-ui-fg-base shadow-sm transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-40"
+              aria-label="Scroll reviews right"
+            >
+              <span aria-hidden="true">→</span>
+            </button>
+          </>
+        ) : null}
+
+        <div
+          ref={trackRef}
+          className="flex gap-4 overflow-x-auto pb-4 pl-1 pr-1 snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          onKeyDown={(event) => {
+            if (event.key === "ArrowLeft") {
+              event.preventDefault()
+              scrollByCard("left")
+            }
+            if (event.key === "ArrowRight") {
+              event.preventDefault()
+              scrollByCard("right")
+            }
+          }}
+          tabIndex={0}
+          role="region"
+          aria-label="Customer review carousel"
+        >
+          {reviews.map((review) => {
+            const displayDate = formatReviewDate(review.display_date)
+            return (
+              <article
+                key={review.id}
+                data-review-card
+                className="snap-start shrink-0 w-[86%] sm:w-[48%] lg:w-[32%] xl:w-[24%] rounded-3xl border border-cream-200 bg-cream-50/85 px-5 py-6 text-left shadow-sm"
               >
-                <div
-                  className={`flex flex-col items-center ${
-                    hasImages ? "gap-5" : "gap-4"
-                  }`}
-                  aria-live="polite"
-                >
-                  <span
-                    className="text-5xl sm:text-6xl text-cream-300 leading-none"
-                    aria-hidden="true"
-                  >
-                    “
-                  </span>
-
-                  <StarRating rating={currentReview.rating} size="md" />
-
-                  <p className="text-lg sm:text-xl text-ui-fg-base leading-relaxed">
-                    {currentReview.content}
-                  </p>
-
-                  {hasImages && (
-                    <div className="w-full">
-                      <div className="mx-auto flex max-w-sm flex-wrap justify-center gap-3">
-                        {visibleImages.map((image, index) => (
-                          <div
-                            key={image.id}
-                            className="relative h-20 w-20 overflow-hidden rounded-2xl border border-cream-200 bg-cream-100 shadow-sm sm:h-24 sm:w-24"
-                          >
-                            <Image
-                              src={image.url}
-                              alt={
-                                image.alt_text?.trim() ||
-                                `Review photo from ${currentReview.customer_name}`
-                              }
-                              fill
-                              sizes="(min-width: 640px) 96px, 80px"
-                              className="object-cover"
-                            />
-                            {remainingImages > 0 &&
-                            index === visibleImages.length - 1 ? (
-                              <span className="absolute inset-0 flex items-center justify-center bg-cream-900/50 text-sm font-medium text-white">
-                                +{remainingImages}
-                              </span>
-                            ) : null}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="flex flex-wrap items-center justify-center gap-2 text-sm text-ui-fg-subtle">
-                    <span className="font-medium text-ui-fg-base">
-                      {currentReview.customer_name}
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <StarRating rating={review.rating} size="sm" />
+                  {review.is_verified_buyer ? (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-1 text-[11px] font-medium text-emerald-700">
+                      <span aria-hidden="true">✓</span>
+                      Verified
                     </span>
-
-                    {currentReview.is_verified_buyer && (
-                      <span className="inline-flex items-center gap-1 text-emerald-700">
-                        <span aria-hidden="true">✓</span>
-                        Verified Purchase
-                      </span>
-                    )}
-
-                    {displayDate ? (
-                      <span>• {displayDate}</span>
-                    ) : null}
-                  </div>
+                  ) : null}
                 </div>
-              </Transition>
-            </div>
-          </div>
+
+                <p
+                  className="mb-4 text-sm leading-relaxed text-ui-fg-base"
+                  style={{
+                    display: "-webkit-box",
+                    WebkitLineClamp: 3,
+                    WebkitBoxOrient: "vertical",
+                    overflow: "hidden",
+                  }}
+                >
+                  {review.content}
+                </p>
+
+                <div className="flex items-center justify-between gap-2 text-xs text-ui-fg-subtle">
+                  <span className="font-medium text-ui-fg-base">
+                    {review.customer_name}
+                  </span>
+                  {displayDate ? <span>{displayDate}</span> : null}
+                </div>
+              </article>
+            )
+          })}
         </div>
       </div>
     </section>
