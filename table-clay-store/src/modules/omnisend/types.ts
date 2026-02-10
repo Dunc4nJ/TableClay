@@ -142,6 +142,21 @@ export interface OmnisendCategory {
   title: string
 }
 
+// Template types
+export interface OmnisendTemplate {
+  templateID: string
+  name: string
+  subject?: string
+  status?: string
+  type?: string
+  createdAt?: string
+  updatedAt?: string
+}
+
+export interface OmnisendTemplateListResponse {
+  templates: OmnisendTemplate[]
+}
+
 // API Response types
 export interface OmnisendApiError {
   error?: string

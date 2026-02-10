@@ -7,6 +7,8 @@ import type {
   OmnisendFulfillmentProperties,
   OmnisendCategory,
   OmnisendCartProperties,
+  OmnisendTemplate,
+  OmnisendTemplateListResponse,
   OmnisendApiError,
 } from "./types"
 
@@ -331,6 +333,24 @@ class OmnisendModuleService {
 
     this.logger.info(`OmniSend category sync complete: ${synced} synced, ${failed} failed`)
     return { synced, failed, errors }
+  }
+
+  /**
+   * List all email templates from OmniSend
+   */
+  async listTemplates(): Promise<OmnisendTemplate[]> {
+    const response = await this.request<OmnisendTemplateListResponse>(
+      "GET",
+      "/templates"
+    )
+    return response.templates || []
+  }
+
+  /**
+   * Get a specific email template from OmniSend
+   */
+  async getTemplate(templateId: string): Promise<OmnisendTemplate> {
+    return this.request<OmnisendTemplate>("GET", `/templates/${templateId}`)
   }
 }
 
