@@ -2,7 +2,7 @@
 
 import React, { useRef, useEffect, useState } from "react"
 import { HttpTypes } from "@medusajs/types"
-import { notFound } from "next/navigation"
+import { notFound, useParams } from "next/navigation"
 import { Button } from "@medusajs/ui"
 
 import ImageGallery from "@modules/products/components/image-gallery"
@@ -77,6 +77,12 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
   cartProductIds,
   showDiscountBadge = false,
 }) => {
+  const params = useParams<{ countryCode?: string | string[] }>()
+  const countryCode = Array.isArray(params?.countryCode)
+    ? params.countryCode[0]
+    : params?.countryCode
+  const shippingPolicyHref = countryCode ? `/${countryCode}/shipping` : "/shipping"
+
   const initialReviewCount = Math.min(3, reviews.length)
   const reviewsSectionRef = useRef<HTMLDivElement>(null)
   const addToCartRef = useRef<HTMLDivElement>(null)
@@ -153,7 +159,11 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
 
               {/* Trust Badges */}
               <div className="hidden lg:block">
-                <TrustBadges layout="vertical" size="md" />
+                <TrustBadges
+                  layout="vertical"
+                  size="md"
+                  shippingPolicyHref={shippingPolicyHref}
+                />
               </div>
 
               {/* FAQ Accordion - In right column for quick access */}
@@ -172,7 +182,11 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
         <div className="content-container py-6 space-y-6">
           {faqs.length > 0 && <FAQAccordion faqs={faqs} />}
           <PaymentIcons size="md" />
-          <TrustBadges layout="vertical" size="md" />
+          <TrustBadges
+            layout="vertical"
+            size="md"
+            shippingPolicyHref={shippingPolicyHref}
+          />
           <div className="flex justify-center">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-cream-100 border border-cream-300 rounded-full">
               <span className="text-amber-600">✨</span>
