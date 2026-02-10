@@ -20,19 +20,17 @@ const ReviewsSection = async ({
 }: ReviewsSectionProps) => {
   const { reviews, stats } = await getProductReviews(productId)
 
-  // Don't render if no reviews and no stats
-  if (reviews.length === 0 && !stats) {
-    return null
-  }
+  const hasReviews = reviews.length > 0
+  const hasStats = !!stats
 
   return (
     <section className={clx("py-12", className)}>
       <div className="content-container">
         {/* Stats Header */}
-        {stats && <ReviewStats stats={stats} title={title} />}
+        {hasStats && <ReviewStats stats={stats} title={title} />}
 
         {/* Reviews List */}
-        {reviews.length > 0 && (
+        {hasReviews && (
           <div className="max-w-3xl mx-auto mt-8">
             {reviews.map((review) => (
               <ReviewCard key={review.id} review={review} />
@@ -40,14 +38,26 @@ const ReviewsSection = async ({
           </div>
         )}
 
-        {/* Empty State (has stats but no reviews) */}
-        {reviews.length === 0 && stats && (
+        {/* Empty State */}
+        {!hasReviews && hasStats && (
           <div className="text-center py-8">
             <p className="text-ui-fg-muted text-sm">
               Reviews will be displayed here.
             </p>
           </div>
         )}
+
+        {/* Write a Review CTA */}
+        <div className="text-center mt-8">
+          <a
+            href="https://forms.gle/TQVvphoZkY5ti1Hf9"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center rounded-full border border-amber-600 bg-transparent px-6 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-amber-600 transition hover:bg-amber-50"
+          >
+            Write a Review
+          </a>
+        </div>
       </div>
     </section>
   )
