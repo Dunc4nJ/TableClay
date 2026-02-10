@@ -6,6 +6,7 @@ import type {
   OmnisendOrderProperties,
   OmnisendFulfillmentProperties,
   OmnisendCategory,
+  OmnisendCartProperties,
   OmnisendApiError,
 } from "./types"
 
@@ -258,6 +259,31 @@ class OmnisendModuleService {
       { eventVersion: "v2" }
     )
   }
+  /**
+   * Send "$cartUpdated" event to OmniSend for abandoned cart recovery
+   */
+  async sendCartUpdatedEvent(
+    contactEmail: string,
+    cartData: OmnisendCartProperties
+  ): Promise<void> {
+    const properties: Record<string, unknown> = {
+      cartID: cartData.cartID,
+      currency: cartData.currency,
+      cartTotal: cartData.value,
+      abandonedCheckoutURL: cartData.abandonedCheckoutURL,
+    }
+
+    if (cartData.lineItems && cartData.lineItems.length > 0) {
+      properties.lineItems = cartData.lineItems
+    }
+
+    await this.sendEvent(
+      "$cartUpdated",
+      { email: contactEmail },
+      properties
+    )
+  }
+
   /**
    * Create or update a category in OmniSend
    */

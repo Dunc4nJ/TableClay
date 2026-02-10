@@ -117,6 +117,25 @@ export interface OmnisendFulfillmentProperties {
   fulfilledAt?: string
 }
 
+// Cart types
+export interface OmnisendCartLineItem {
+  productID: string
+  variantID?: string
+  title: string
+  quantity: number
+  price: number
+  imageURL?: string
+  productURL?: string
+}
+
+export interface OmnisendCartProperties {
+  cartID: string
+  currency: string
+  value: number
+  abandonedCheckoutURL: string
+  lineItems: OmnisendCartLineItem[]
+}
+
 // Category types
 export interface OmnisendCategory {
   categoryID: string
