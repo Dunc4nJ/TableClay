@@ -14,13 +14,31 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
 
     res.json({
       success: true,
+      provider: "omnisend",
+      supported: true,
       templates,
       count: templates.length,
     })
   } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown error"
+
+    // OmniSend v5 may return 404 for template APIs depending on account/capability.
+    // Treat this as unsupported capability instead of a server error.
+    if (message.includes("HTTP 404")) {
+      return res.status(200).json({
+        success: true,
+        provider: "omnisend",
+        supported: false,
+        templates: [],
+        count: 0,
+        warning: "OmniSend template API is not available for this account/capability.",
+      })
+    }
+
     res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : "Unknown error",
+      provider: "omnisend",
+      error: message,
     })
   }
 }
