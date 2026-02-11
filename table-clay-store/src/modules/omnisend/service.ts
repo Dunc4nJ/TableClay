@@ -45,9 +45,6 @@ type ProductVariantRecord = {
   id: string
   title?: string | null
   sku?: string | null
-  inventory_quantity?: number | null
-  manage_inventory?: boolean | null
-  allow_backorder?: boolean | null
 }
 
 type ProductCategoryRecord = {
@@ -146,8 +143,15 @@ class OmnisendModuleService {
       const response = await fetch(url, options)
 
       if (!response.ok) {
-        const errorData = (await response.json().catch(() => ({}))) as OmnisendApiError
-        const errorMessage = errorData.message || errorData.error || `HTTP ${response.status}`
+        const errorData = (await response.json().catch(() => ({}))) as Record<string, unknown>
+        let errorMessage = (errorData.message || errorData.error || `HTTP ${response.status}`) as string
+        // Include field-level errors from OmniSend validation responses
+        if (Array.isArray(errorData.fields)) {
+          const fieldErrors = (errorData.fields as Array<{ field?: string; message?: string }>)
+            .map((f) => `${f.field || "?"}: ${f.message || "invalid"}`)
+            .join("; ")
+          errorMessage = `${errorMessage} [${fieldErrors}]`
+        }
         throw new MedusaError(
           MedusaError.Types.UNEXPECTED_STATE,
           `OmniSend API error: ${errorMessage}`
@@ -179,20 +183,11 @@ class OmnisendModuleService {
   async createOrUpdateContact(data: OmnisendContactRequest): Promise<void> {
     const payload: Record<string, unknown> = {}
 
-    if (data.email) {
-      payload.email = data.email
-    }
-    if (data.phone) {
-      payload.phone = data.phone
-    }
     if (data.firstName) {
       payload.firstName = data.firstName
     }
     if (data.lastName) {
       payload.lastName = data.lastName
-    }
-    if (data.identifiers && data.identifiers.length > 0) {
-      payload.identifiers = data.identifiers
     }
     if (data.customProperties) {
       payload.customProperties = data.customProperties
@@ -205,6 +200,31 @@ class OmnisendModuleService {
     }
     if (data.sendWelcomeEmail !== undefined) {
       payload.sendWelcomeEmail = data.sendWelcomeEmail
+    }
+
+    // OmniSend v5 requires identifiers with channel status.
+    // Build from explicit identifiers or auto-generate from email/phone.
+    if (data.identifiers && data.identifiers.length > 0) {
+      payload.identifiers = data.identifiers
+    } else {
+      const identifiers: Array<Record<string, unknown>> = []
+      if (data.email) {
+        identifiers.push({
+          type: "email",
+          id: data.email,
+          channels: { email: { status: "nonSubscribed" } },
+        })
+      }
+      if (data.phone) {
+        identifiers.push({
+          type: "phone",
+          id: data.phone,
+          channels: { sms: { status: "nonSubscribed" } },
+        })
+      }
+      if (identifiers.length > 0) {
+        payload.identifiers = identifiers
+      }
     }
 
     await this.request("POST", "/contacts", payload)
@@ -270,9 +290,6 @@ class OmnisendModuleService {
             "variants.id",
             "variants.title",
             "variants.sku",
-            "variants.inventory_quantity",
-            "variants.manage_inventory",
-            "variants.allow_backorder",
             "categories.id",
           ],
           take: batchSize,
@@ -318,17 +335,10 @@ class OmnisendModuleService {
           const categoryIDs = (product.categories || []).map((category) => category.id)
           const variants = product.variants || []
 
-          const mapVariantStatus = (variant: ProductVariantRecord): OmnisendProductStatus => {
-            if (variant.manage_inventory === false) {
-              return "inStock"
-            }
-            if (variant.allow_backorder) {
-              return "inStock"
-            }
-            if ((variant.inventory_quantity || 0) > 0) {
-              return "inStock"
-            }
-            return "outOfStock"
+          const mapVariantStatus = (_variant: ProductVariantRecord): OmnisendProductStatus => {
+            // Medusa v2 manages inventory via InventoryItem, not on the variant directly.
+            // Default to inStock since published products are assumed available.
+            return "inStock"
           }
 
           const omnisendVariants = variants.map((variant) => {
@@ -636,14 +646,13 @@ class OmnisendModuleService {
         title: data.title,
       })
     } catch (error) {
-      // If category already exists, update it with PUT
-      if (error instanceof MedusaError && error.message.includes("exists")) {
-        await this.request("PUT", `/product-categories/${data.categoryID}`, {
-          title: data.title,
-        })
-      } else {
-        throw error
+      // If category already exists in OmniSend, treat as success
+      const msg = error instanceof Error ? error.message : ""
+      if (msg.includes("exists")) {
+        this.logger.info(`OmniSend category already exists: ${data.title} (${data.categoryID})`)
+        return
       }
+      throw error
     }
     this.logger.info(`Synced OmniSend category: ${data.title} (${data.categoryID})`)
   }
