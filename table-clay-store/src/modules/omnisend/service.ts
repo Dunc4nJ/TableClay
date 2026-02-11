@@ -144,9 +144,26 @@ class OmnisendModuleService {
 
       if (!response.ok) {
         const errorText = await response.text().catch(() => "")
-        // Include full OmniSend response body (truncated) for field-level validation debugging
-        const truncated = errorText.length > 500 ? errorText.slice(0, 500) + "..." : errorText
-        const errorMessage = `HTTP ${response.status}: ${truncated}`
+        let errorData: Record<string, unknown> = {}
+        try {
+          errorData = JSON.parse(errorText) as Record<string, unknown>
+        } catch {
+          // Non-JSON error response
+        }
+        let errorMessage = (errorData.message || errorData.error || `HTTP ${response.status}`) as string
+        // Include field-level errors from OmniSend validation responses
+        const fields = errorData.fields || errorData.details || errorData.errors
+        if (Array.isArray(fields)) {
+          const fieldErrors = (fields as Array<Record<string, unknown>>)
+            .map((f) => JSON.stringify(f))
+            .join("; ")
+          errorMessage = `${errorMessage} [${fieldErrors}]`
+        } else if (fields && typeof fields === "object") {
+          const fieldErrors = Object.entries(fields as Record<string, unknown>)
+            .map(([k, v]) => `${k}: ${v}`)
+            .join("; ")
+          errorMessage = `${errorMessage} [${fieldErrors}]`
+        }
         throw new MedusaError(
           MedusaError.Types.UNEXPECTED_STATE,
           `OmniSend API error: ${errorMessage}`
@@ -253,8 +270,19 @@ class OmnisendModuleService {
       }))
     }
 
-    await this.request("POST", "/products", payload)
-    this.logger.info(`Created/updated OmniSend product: ${data.productID}`)
+    try {
+      await this.request("POST", "/products", payload)
+      this.logger.info(`Created OmniSend product: ${data.productID}`)
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : ""
+      // If product already exists (409), update it with PUT
+      if (msg.includes("409") || msg.includes("already exists")) {
+        await this.request("PUT", `/products/${data.productID}`, payload)
+        this.logger.info(`Updated existing OmniSend product: ${data.productID}`)
+        return
+      }
+      throw error
+    }
   }
 
   /**
