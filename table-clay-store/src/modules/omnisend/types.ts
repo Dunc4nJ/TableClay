@@ -50,6 +50,31 @@ export interface OmnisendContactRequest {
   sendWelcomeEmail?: boolean
 }
 
+// Product types
+export type OmnisendProductStatus = "inStock" | "outOfStock" | "notAvailable"
+
+export interface OmnisendProductVariant {
+  variantID: string
+  title: string
+  sku?: string
+  status: OmnisendProductStatus
+  price: number
+  imageUrl?: string
+  productUrl?: string
+}
+
+export interface OmnisendProduct {
+  productID: string
+  title: string
+  status: OmnisendProductStatus
+  currency: string
+  productUrl: string
+  imageUrl?: string
+  description?: string
+  categoryIDs?: string[]
+  variants?: OmnisendProductVariant[]
+}
+
 // Event types
 export interface OmnisendEventContact {
   email?: string
