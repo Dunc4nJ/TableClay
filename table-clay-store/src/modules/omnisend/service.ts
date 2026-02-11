@@ -144,21 +144,9 @@ class OmnisendModuleService {
 
       if (!response.ok) {
         const errorText = await response.text().catch(() => "")
-        let errorData: Record<string, unknown> = {}
-        try {
-          errorData = JSON.parse(errorText) as Record<string, unknown>
-        } catch {
-          // Non-JSON error response
-        }
-        let errorMessage = (errorData.message || errorData.error || `HTTP ${response.status}`) as string
-        // Include field-level errors from OmniSend validation responses
-        const fields = errorData.fields || errorData.details || errorData.errors
-        if (Array.isArray(fields)) {
-          const fieldErrors = (fields as Array<Record<string, unknown>>)
-            .map((f) => JSON.stringify(f))
-            .join("; ")
-          errorMessage = `${errorMessage} [${fieldErrors}]`
-        }
+        // Include full OmniSend response body (truncated) for field-level validation debugging
+        const truncated = errorText.length > 500 ? errorText.slice(0, 500) + "..." : errorText
+        const errorMessage = `HTTP ${response.status}: ${truncated}`
         throw new MedusaError(
           MedusaError.Types.UNEXPECTED_STATE,
           `OmniSend API error: ${errorMessage}`
@@ -242,7 +230,30 @@ class OmnisendModuleService {
    * Create or update a product in OmniSend
    */
   async createOrUpdateProduct(data: OmnisendProduct): Promise<void> {
-    await this.request("POST", "/products", data)
+    // OmniSend v5 API expects ID/Url (not productID/productUrl)
+    const payload: Record<string, unknown> = {
+      ID: data.productID,
+      title: data.title,
+      status: data.status,
+      currency: data.currency,
+      Url: data.productUrl,
+    }
+    if (data.imageUrl) payload.imageUrl = data.imageUrl
+    if (data.description) payload.description = data.description
+    if (data.categoryIDs && data.categoryIDs.length > 0) payload.categoryIDs = data.categoryIDs
+    if (data.variants && data.variants.length > 0) {
+      payload.variants = data.variants.map((v) => ({
+        ID: v.variantID,
+        title: v.title,
+        status: v.status,
+        price: v.price,
+        Url: v.productUrl,
+        ...(v.sku ? { sku: v.sku } : {}),
+        ...(v.imageUrl ? { imageUrl: v.imageUrl } : {}),
+      }))
+    }
+
+    await this.request("POST", "/products", payload)
     this.logger.info(`Created/updated OmniSend product: ${data.productID}`)
   }
 
