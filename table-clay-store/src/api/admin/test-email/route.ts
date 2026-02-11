@@ -21,8 +21,18 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
     const omnisendService: OmnisendModuleService = req.scope.resolve(OMNISEND_MODULE)
 
     // Create/update a test contact in OmniSend
+    // OmniSend v5 requires explicit identifiers with channel status
     await omnisendService.createOrUpdateContact({
       email,
+      identifiers: [{
+        type: "email" as const,
+        id: email,
+        channels: {
+          email: {
+            status: "nonSubscribed" as const,
+          },
+        },
+      }],
       tags: ["test-email", "admin-test"],
       customProperties: {
         test_timestamp: new Date().toISOString(),
