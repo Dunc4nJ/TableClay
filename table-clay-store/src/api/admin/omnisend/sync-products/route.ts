@@ -1,6 +1,6 @@
 import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import { Modules } from "@medusajs/framework/utils"
-import type { IProductModuleService } from "@medusajs/framework/types"
+import type { IProductModuleService, IPricingModuleService } from "@medusajs/framework/types"
 import { OMNISEND_MODULE } from "../../../../modules/omnisend"
 import type OmnisendModuleService from "../../../../modules/omnisend/service"
 
@@ -35,11 +35,13 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
 
     const omnisendService: OmnisendModuleService = req.scope.resolve(OMNISEND_MODULE)
     const productService: IProductModuleService = req.scope.resolve(Modules.PRODUCT)
+    const pricingService: IPricingModuleService = req.scope.resolve(Modules.PRICING)
 
     const result = await omnisendService.syncAllProducts(productService, {
       batchSize: batch_size,
       delayMs: delay_ms,
       storefrontBaseUrl: process.env.STOREFRONT_BASE_URL || "https://tableclay.com",
+      pricingService,
     })
 
     return res.json({

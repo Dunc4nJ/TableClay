@@ -1,5 +1,5 @@
 import { MedusaError } from "@medusajs/framework/utils"
-import type { IProductModuleService } from "@medusajs/framework/types"
+import type { IProductModuleService, IPricingModuleService } from "@medusajs/framework/types"
 import type {
   OmnisendContactRequest,
   OmnisendProduct,
@@ -41,11 +41,6 @@ type MedusaCustomerRecord = {
   last_name?: string | null
 }
 
-type ProductPriceRecord = {
-  amount?: number | null
-  currency_code?: string | null
-}
-
 type ProductVariantRecord = {
   id: string
   title?: string | null
@@ -53,7 +48,6 @@ type ProductVariantRecord = {
   inventory_quantity?: number | null
   manage_inventory?: boolean | null
   allow_backorder?: boolean | null
-  prices?: ProductPriceRecord[]
 }
 
 type ProductCategoryRecord = {
@@ -243,11 +237,14 @@ class OmnisendModuleService {
       batchSize?: number
       delayMs?: number
       storefrontBaseUrl?: string
+      pricingService?: IPricingModuleService
+      currencyCode?: string
     }
   ): Promise<SyncProductsResult> {
     const batchSize = Math.max(1, options?.batchSize ?? 50)
     const delayMs = Math.max(0, options?.delayMs ?? 200)
     const storefrontBaseUrl = options?.storefrontBaseUrl || "https://tableclay.com"
+    const currencyCode = options?.currencyCode || "usd"
 
     const result: SyncProductsResult = {
       total_products: 0,
@@ -262,7 +259,7 @@ class OmnisendModuleService {
       const products = (await productService.listProducts(
         { status: "published" },
         {
-          relations: ["variants", "variants.prices", "categories"],
+          relations: ["variants", "categories"],
           select: [
             "id",
             "title",
@@ -276,8 +273,6 @@ class OmnisendModuleService {
             "variants.inventory_quantity",
             "variants.manage_inventory",
             "variants.allow_backorder",
-            "variants.prices.amount",
-            "variants.prices.currency_code",
             "categories.id",
           ],
           take: batchSize,
@@ -292,6 +287,29 @@ class OmnisendModuleService {
 
       result.total_products += products.length
 
+      // Batch-fetch prices for all variants in this batch using the Pricing module
+      const variantPriceMap = new Map<string, number>()
+      if (options?.pricingService) {
+        const allVariantIds = products.flatMap(
+          (p) => (p.variants || []).map((v) => v.id)
+        )
+        if (allVariantIds.length > 0) {
+          try {
+            const pricingResult = await options.pricingService.calculatePrices(
+              { id: allVariantIds },
+              { context: { currency_code: currencyCode } }
+            )
+            for (const priceEntry of pricingResult) {
+              if (priceEntry.id && priceEntry.calculated_amount != null) {
+                variantPriceMap.set(priceEntry.id, Number(priceEntry.calculated_amount))
+              }
+            }
+          } catch (pricingError) {
+            this.logger.error("Failed to batch-fetch variant prices", pricingError)
+          }
+        }
+      }
+
       for (const product of products) {
         try {
           const productTitle = product.title?.trim() || `Product ${product.id}`
@@ -299,13 +317,6 @@ class OmnisendModuleService {
           const productUrl = `${storefrontBaseUrl}/us/products/${productHandle}`
           const categoryIDs = (product.categories || []).map((category) => category.id)
           const variants = product.variants || []
-
-          const defaultCurrency =
-            variants
-              .flatMap((variant) => variant.prices || [])
-              .find((price) => typeof price.currency_code === "string")
-              ?.currency_code
-              ?.toUpperCase() || "USD"
 
           const mapVariantStatus = (variant: ProductVariantRecord): OmnisendProductStatus => {
             if (variant.manage_inventory === false) {
@@ -321,18 +332,14 @@ class OmnisendModuleService {
           }
 
           const omnisendVariants = variants.map((variant) => {
-            const variantPrice =
-              (variant.prices || []).find((price) => typeof price.amount === "number")
+            const priceAmount = variantPriceMap.get(variant.id)
 
             return {
               variantID: variant.id,
               title: variant.title?.trim() || variant.sku || variant.id,
               sku: variant.sku || undefined,
               status: mapVariantStatus(variant),
-              price:
-                typeof variantPrice?.amount === "number"
-                  ? variantPrice.amount / 100
-                  : 0,
+              price: typeof priceAmount === "number" ? priceAmount / 100 : 0,
               imageUrl: product.thumbnail || undefined,
               productUrl,
             }
@@ -342,7 +349,7 @@ class OmnisendModuleService {
             productID: product.id,
             title: productTitle,
             status: product.status === "published" ? "inStock" : "notAvailable",
-            currency: defaultCurrency,
+            currency: currencyCode.toUpperCase(),
             productUrl,
             imageUrl: product.thumbnail || undefined,
             description: product.description || undefined,
@@ -430,6 +437,15 @@ class OmnisendModuleService {
             firstName: customer.first_name || undefined,
             lastName: customer.last_name || undefined,
             tags: baseTags,
+            identifiers: [{
+              type: "email",
+              id: customer.email,
+              channels: {
+                email: {
+                  status: "nonSubscribed",
+                },
+              },
+            }],
             customProperties: {
               medusa_customer_id: customer.id,
             },
@@ -614,10 +630,21 @@ class OmnisendModuleService {
    * Create or update a category in OmniSend
    */
   async createOrUpdateCategory(data: OmnisendCategory): Promise<void> {
-    await this.request("POST", "/product-categories", {
-      categoryID: data.categoryID,
-      title: data.title,
-    })
+    try {
+      await this.request("POST", "/product-categories", {
+        categoryID: data.categoryID,
+        title: data.title,
+      })
+    } catch (error) {
+      // If category already exists, update it with PUT
+      if (error instanceof MedusaError && error.message.includes("exists")) {
+        await this.request("PUT", `/product-categories/${data.categoryID}`, {
+          title: data.title,
+        })
+      } else {
+        throw error
+      }
+    }
     this.logger.info(`Synced OmniSend category: ${data.title} (${data.categoryID})`)
   }
 
