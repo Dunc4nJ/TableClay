@@ -22,9 +22,15 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error"
 
-    // OmniSend v5 may return 404 for template APIs depending on account/capability.
-    // Treat this as unsupported capability instead of a server error.
-    if (message.includes("HTTP 404")) {
+    // OmniSend v5 may return 404 for template APIs depending on account/capability,
+    // or "forbidden" if the API key is invalid/disabled.
+    // Treat these as unsupported capability instead of a server error.
+    const isNotAvailable =
+      message.includes("HTTP 404") ||
+      message.toLowerCase().includes("forbidden") ||
+      message.includes("HTTP 403")
+
+    if (isNotAvailable) {
       return res.status(200).json({
         success: true,
         provider: "omnisend",
