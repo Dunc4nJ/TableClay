@@ -101,15 +101,12 @@ export type SyncContactsResult = {
 class OmnisendModuleService {
   private apiKey: string
   private logger: Logger
-  private query?: QueryService
 
   constructor(
     {
       logger,
-      query,
     }: {
       logger?: Logger
-      query?: QueryService
     },
     options: OmnisendModuleOptions
   ) {
@@ -117,7 +114,6 @@ class OmnisendModuleService {
       info: (msg: string) => console.log(`[OmniSend] ${msg}`),
       error: (msg: string, error?: unknown) => console.error(`[OmniSend] ${msg}`, error),
     }
-    this.query = query
 
     if (!options?.api_key) {
       throw new MedusaError(
@@ -386,18 +382,14 @@ class OmnisendModuleService {
    * Batch sync all Medusa customers to OmniSend contacts.
    * Uses pagination and inter-batch delay to reduce API throttling risk.
    */
-  async syncAllContacts(options?: {
-    batchSize?: number
-    delayMs?: number
-    tags?: string[]
-  }): Promise<SyncContactsResult> {
-    if (!this.query) {
-      throw new MedusaError(
-        MedusaError.Types.INVALID_DATA,
-        "Query service is not available for contact sync"
-      )
+  async syncAllContacts(
+    query: QueryService,
+    options?: {
+      batchSize?: number
+      delayMs?: number
+      tags?: string[]
     }
-
+  ): Promise<SyncContactsResult> {
     const batchSize = Math.max(1, options?.batchSize ?? 100)
     const delayMs = Math.max(0, options?.delayMs ?? 250)
     const baseTags = options?.tags && options.tags.length > 0
@@ -413,7 +405,7 @@ class OmnisendModuleService {
       errors: [],
     }
 
-    const { data } = await this.query.graph({
+    const { data } = await query.graph({
       entity: "customer",
       fields: ["id", "email", "first_name", "last_name"],
     })

@@ -30,8 +30,9 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
     }
 
     const omnisendService: OmnisendModuleService = req.scope.resolve(OMNISEND_MODULE)
+    const query = req.scope.resolve("query")
 
-    const result = await omnisendService.syncAllContacts({
+    const result = await omnisendService.syncAllContacts(query, {
       batchSize: batch_size,
       delayMs: delay_ms,
       tags: ["medusa-customer"],
