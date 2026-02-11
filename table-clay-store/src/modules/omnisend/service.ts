@@ -143,12 +143,19 @@ class OmnisendModuleService {
       const response = await fetch(url, options)
 
       if (!response.ok) {
-        const errorData = (await response.json().catch(() => ({}))) as Record<string, unknown>
+        const errorText = await response.text().catch(() => "")
+        let errorData: Record<string, unknown> = {}
+        try {
+          errorData = JSON.parse(errorText) as Record<string, unknown>
+        } catch {
+          // Non-JSON error response
+        }
         let errorMessage = (errorData.message || errorData.error || `HTTP ${response.status}`) as string
         // Include field-level errors from OmniSend validation responses
-        if (Array.isArray(errorData.fields)) {
-          const fieldErrors = (errorData.fields as Array<{ field?: string; message?: string }>)
-            .map((f) => `${f.field || "?"}: ${f.message || "invalid"}`)
+        const fields = errorData.fields || errorData.details || errorData.errors
+        if (Array.isArray(fields)) {
+          const fieldErrors = (fields as Array<Record<string, unknown>>)
+            .map((f) => JSON.stringify(f))
             .join("; ")
           errorMessage = `${errorMessage} [${fieldErrors}]`
         }
