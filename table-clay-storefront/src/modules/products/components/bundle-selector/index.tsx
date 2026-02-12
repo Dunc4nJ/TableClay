@@ -39,6 +39,20 @@ function formatPrice(cents: number): string {
 }
 
 /**
+ * Savings callout shown when original > sale price
+ */
+function SavingsCallout({ original, sale }: { original: number; sale: number }) {
+  if (original <= sale) return null
+  const saved = original - sale
+  const pct = Math.round((saved / original) * 100)
+  return (
+    <div className="text-sm font-semibold text-green-700">
+      Save {formatPrice(saved)} ({pct}%)
+    </div>
+  )
+}
+
+/**
  * Badge component for bundle options
  */
 function BundleBadge({ text }: { text: string }) {
@@ -188,9 +202,12 @@ export default function BundleSelector({
                     {formatPrice(singleOption.price)}
                   </div>
                   {singleOption.originalPrice && singleOption.originalPrice > singleOption.price && (
-                    <div className="text-sm text-ui-fg-muted line-through">
-                      {formatPrice(singleOption.originalPrice)}
-                    </div>
+                    <>
+                      <div className="text-sm text-ui-fg-muted line-through">
+                        {formatPrice(singleOption.originalPrice)}
+                      </div>
+                      <SavingsCallout original={singleOption.originalPrice} sale={singleOption.price} />
+                    </>
                   )}
                 </div>
               </div>
@@ -256,9 +273,12 @@ export default function BundleSelector({
                       {formatPrice(bundle.sale_price)}
                     </div>
                     {bundle.original_price > bundle.sale_price && (
-                      <div className="text-sm text-ui-fg-muted line-through">
-                        {formatPrice(bundle.original_price)}
-                      </div>
+                      <>
+                        <div className="text-sm text-ui-fg-muted line-through">
+                          {formatPrice(bundle.original_price)}
+                        </div>
+                        <SavingsCallout original={bundle.original_price} sale={bundle.sale_price} />
+                      </>
                     )}
                   </div>
                 </div>
