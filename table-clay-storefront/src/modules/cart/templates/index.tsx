@@ -5,6 +5,7 @@ import CartRecommendations from "../components/cart-recommendations"
 import AutoShippingSelector from "../components/auto-shipping-selector"
 import { HttpTypes } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
+import FreeShippingBar from "@modules/common/components/free-shipping-bar"
 import { Button } from "@medusajs/ui"
 
 const getCheckoutStep = (cart: HttpTypes.StoreCart) => {
@@ -18,6 +19,15 @@ const getCheckoutStep = (cart: HttpTypes.StoreCart) => {
 }
 
 const CartTemplate = ({ cart }: { cart: HttpTypes.StoreCart | null }) => {
+  const extendedCart =
+    cart as (HttpTypes.StoreCart & {
+      item_subtotal?: number | null
+      promotions?: HttpTypes.StorePromotion[]
+    }) | null
+
+  const itemSubtotal = extendedCart?.item_subtotal ?? cart?.subtotal ?? 0
+  const promotions = extendedCart?.promotions ?? []
+
   return (
     <div className="py-12">
       <div className="content-container" data-testid="cart-container">
@@ -26,6 +36,11 @@ const CartTemplate = ({ cart }: { cart: HttpTypes.StoreCart | null }) => {
             <AutoShippingSelector cart={cart} />
             <div className="grid grid-cols-1 small:grid-cols-[1fr_360px] gap-x-40">
             <div className="flex flex-col bg-transparent py-6 gap-y-4">
+              <FreeShippingBar
+                itemSubtotal={itemSubtotal}
+                currencyCode={cart.currency_code}
+                promotions={promotions}
+              />
               <ItemsTemplate cart={cart} />
               <div className="small:hidden">
                 <LocalizedClientLink
