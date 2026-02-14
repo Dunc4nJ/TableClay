@@ -11,7 +11,15 @@ type MobileOrderSummaryProps = {
 const MobileOrderSummary = ({ cart }: MobileOrderSummaryProps) => {
   const items = cart.items
   const itemCount = items?.length ?? 0
-  const total = cart.total ?? 0
+  const itemTotal =
+    cart.item_total ??
+    items?.reduce((sum, item) => sum + (item.total ?? 0), 0) ??
+    0
+  const shippingTotal = cart.shipping_total ?? 0
+  const taxTotal = cart.tax_total ?? 0
+  const discountTotal = cart.discount_total ?? 0
+  const total =
+    cart.total ?? itemTotal + shippingTotal + taxTotal - discountTotal
   const currencyCode = cart.currency_code ?? "usd"
 
   if (itemCount === 0) return null
@@ -48,6 +56,53 @@ const MobileOrderSummary = ({ cart }: MobileOrderSummaryProps) => {
           </div>
         </summary>
         <div className="mt-2 px-4 py-3 bg-ui-bg-component rounded-lg border border-cream-300">
+          <div className="mb-4 space-y-1.5">
+            <div className="flex items-center justify-between text-sm text-ui-fg-muted">
+              <span>Subtotal</span>
+              <span>
+                {convertToLocale({
+                  amount: itemTotal,
+                  currency_code: currencyCode,
+                })}
+              </span>
+            </div>
+            <div className="flex items-center justify-between text-sm text-ui-fg-muted">
+              <span>Shipping</span>
+              <span>
+                {convertToLocale({
+                  amount: shippingTotal,
+                  currency_code: currencyCode,
+                })}
+              </span>
+            </div>
+            <div className="flex items-center justify-between text-sm text-ui-fg-muted">
+              <span>Tax</span>
+              <span>
+                {convertToLocale({
+                  amount: taxTotal,
+                  currency_code: currencyCode,
+                })}
+              </span>
+            </div>
+            {discountTotal > 0 && (
+              <div className="flex items-center justify-between text-sm text-ui-fg-base">
+                <span>Discount</span>
+                <span>
+                  -
+                  {convertToLocale({
+                    amount: discountTotal,
+                    currency_code: currencyCode,
+                  })}
+                </span>
+              </div>
+            )}
+            <div className="pt-2 border-t border-cream-200 flex items-center justify-between text-sm font-semibold text-ui-fg-base">
+              <span>Total</span>
+              <span>
+                {convertToLocale({ amount: total, currency_code: currencyCode })}
+              </span>
+            </div>
+          </div>
           <div className="flex flex-col divide-y divide-cream-200">
             {items?.map((item) => (
               <div
