@@ -26,7 +26,6 @@ const CartTemplate = ({ cart }: { cart: HttpTypes.StoreCart | null }) => {
     }) | null
 
   const itemSubtotal = extendedCart?.item_subtotal ?? cart?.subtotal ?? 0
-  const promotions = extendedCart?.promotions ?? []
 
   return (
     <div className="py-12">
@@ -39,7 +38,6 @@ const CartTemplate = ({ cart }: { cart: HttpTypes.StoreCart | null }) => {
               <FreeShippingBar
                 itemSubtotal={itemSubtotal}
                 currencyCode={cart.currency_code}
-                promotions={promotions}
               />
               <ItemsTemplate cart={cart} />
               <div className="small:hidden">

@@ -41,10 +41,6 @@ const CartDropdown = ({
   const itemSubtotal =
     (cartState as HttpTypes.StoreCart & { item_subtotal?: number | null })
       ?.item_subtotal ?? subtotal
-  const promotions =
-    (cartState as HttpTypes.StoreCart & {
-      promotions?: HttpTypes.StorePromotion[]
-    })?.promotions ?? []
   const itemRef = useRef<number>(totalItems || 0)
 
   const formatPrice = (cents: number) => {
@@ -330,7 +326,6 @@ const CartDropdown = ({
                   <FreeShippingBar
                     itemSubtotal={itemSubtotal}
                     currencyCode={cartState.currency_code}
-                    promotions={promotions}
                   />
                   <div className="flex items-center justify-between">
                     <span className="text-ui-fg-base font-semibold">

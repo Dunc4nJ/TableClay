@@ -2,27 +2,19 @@ import { convertToLocale } from "@lib/util/money"
 import {
   FREE_SHIPPING_THRESHOLD,
   getAmountToFreeShipping,
-  hasFreeShippingPromotion,
 } from "@lib/constants/free-shipping"
-import { HttpTypes } from "@medusajs/types"
 
 type FreeShippingBarProps = {
   itemSubtotal: number
   currencyCode: string
-  promotions?: HttpTypes.StorePromotion[]
   className?: string
 }
 
 const FreeShippingBar = ({
   itemSubtotal,
   currencyCode,
-  promotions = [],
   className = "",
 }: FreeShippingBarProps) => {
-  if (!hasFreeShippingPromotion(promotions)) {
-    return null
-  }
-
   const subtotal = Math.max(itemSubtotal, 0)
   const amountNeeded = getAmountToFreeShipping(subtotal)
   const unlocked = amountNeeded === 0
