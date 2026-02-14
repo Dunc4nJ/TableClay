@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, useCallback } from "react"
 import { HttpTypes } from "@medusajs/types"
 import { addToCart } from "@lib/data/cart"
 import { useParams, useRouter } from "next/navigation"
@@ -12,6 +12,7 @@ import { getProductPrice } from "@lib/util/get-product-price"
 import { convertToLocale } from "@lib/util/money"
 import repeat from "@lib/util/repeat"
 import SkeletonProductPreview from "@modules/skeletons/components/skeleton-product-preview"
+import Toast from "@modules/common/components/toast"
 
 type CartRecommendationsProps = {
   cart: HttpTypes.StoreCart
@@ -31,6 +32,7 @@ export default function CartRecommendations({
   const [products, setProducts] = useState<HttpTypes.StoreProduct[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [toastError, setToastError] = useState<string | null>(null)
   const [addingProductId, setAddingProductId] = useState<string | null>(null)
   const router = useRouter()
   const params = useParams()
@@ -125,10 +127,17 @@ export default function CartRecommendations({
       router.refresh()
     } catch (error) {
       console.error("Error adding to cart:", error)
+      setToastError(
+        error instanceof Error && error.message
+          ? error.message
+          : "Couldn’t add this item right now. Please try again."
+      )
     } finally {
       setAddingProductId(null)
     }
   }
+
+  const dismissToast = useCallback(() => setToastError(null), [])
 
   // Loading state - show 3 skeletons
   if (isLoading) {
@@ -278,6 +287,11 @@ export default function CartRecommendations({
           })}
         </ul>
       </div>
+      <Toast
+        message={toastError || ""}
+        visible={!!toastError}
+        onDismiss={dismissToast}
+      />
     </section>
   )
 }

@@ -12,10 +12,11 @@ import OptionSelect from "@modules/products/components/product-actions/option-se
 import BundleSelector, { SingleItemOption } from "@modules/products/components/bundle-selector"
 import { isEqual } from "lodash"
 import { useParams, usePathname, useSearchParams } from "next/navigation"
-import { useEffect, useMemo, useRef, useState, type RefObject } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from "react"
 import ProductPrice from "../product-price"
 import MobileActions from "./mobile-actions"
 import { useRouter } from "next/navigation"
+import Toast from "@modules/common/components/toast"
 import StickyCartBar from "@modules/products/components/sticky-cart-bar"
 import { generateEventId, pushEcommerceEvent } from "@lib/analytics/events"
 import { trackOmnisendEvent } from "@lib/analytics/omnisend"
@@ -79,6 +80,7 @@ export default function ProductActions({
 
   const [options, setOptions] = useState<Record<string, string | undefined>>({})
   const [isAdding, setIsAdding] = useState(false)
+  const [toastError, setToastError] = useState<string | null>(null)
   const [selectedBundle, setSelectedBundle] = useState<Bundle | null>(null)
   const [liveBundleSettings, setLiveBundleSettings] =
     useState<BundlePromoSettings | undefined>(bundleSettings)
@@ -342,10 +344,17 @@ export default function ProductActions({
       router.push(`/${countryCode}/cart`)
     } catch (error) {
       console.error("Error adding to cart:", error)
+      setToastError(
+        error instanceof Error && error.message
+          ? error.message
+          : "Something went wrong. Please try again."
+      )
     }
 
     setIsAdding(false)
   }
+
+  const dismissToast = useCallback(() => setToastError(null), [])
 
   // Handle bundle selection
   const handleBundleSelect = (bundle: Bundle | null) => {
@@ -516,6 +525,11 @@ export default function ProductActions({
           triggerRef={stickyTriggerRef}
         />
       )}
+      <Toast
+        message={toastError || ""}
+        visible={!!toastError}
+        onDismiss={dismissToast}
+      />
     </>
   )
 }
